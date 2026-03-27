@@ -28,8 +28,9 @@ The first core wave is live. Today the package includes:
 - records and lists
 - tables
 - panels and boxes
+- the first `testjson` renderer cut for `go test -json`
 
-The next major wave is a Charm-native `go test -json` renderer for use in CLIs and Mage tasks.
+The next wave is broadening `testjson`, adding more semantic blocks, and tightening the docs/examples around real developer flows such as Mage.
 
 ## Principles
 
@@ -112,6 +113,43 @@ printer := laslig.New(os.Stdout, laslig.Policy{
 
 That makes it practical to keep one semantic output path while exposing human, plain, and JSON surfaces from the same command.
 
+## Structured Test Output
+
+The `testjson` subpackage parses and renders `go test -json` streams without taking over command execution:
+
+```go
+cmd := exec.Command("go", "test", "-json", "./...")
+stdout, err := cmd.StdoutPipe()
+if err != nil {
+	return err
+}
+cmd.Stderr = os.Stderr
+
+if err := cmd.Start(); err != nil {
+	return err
+}
+
+summary, err := testjson.Render(os.Stdout, stdout, testjson.Options{
+	Policy: laslig.Policy{
+		Format: laslig.FormatAuto,
+		Style:  laslig.StyleAuto,
+	},
+	View: testjson.ViewCompact,
+})
+if err != nil {
+	return err
+}
+
+if err := cmd.Wait(); err != nil {
+	return err
+}
+if summary.HasFailures() {
+	return errors.New("tests failed")
+}
+```
+
+That shape works well in ordinary CLIs and in Mage targets. `laslig` stays responsible for rendering, while the caller stays responsible for process control.
+
 ## Demo
 
 The tracked demo command lives in [cmd/laslig-demo/main.go](/Users/evanschultz/Documents/Code/hylla/laslig/main/cmd/laslig-demo/main.go).
@@ -128,10 +166,10 @@ The README GIF is generated from [docs/vhs/showcase.tape](/Users/evanschultz/Doc
 
 ## Planned Next
 
-- `testjson` package for `go test -json`
-- compact and detailed test renderers
-- end-of-run summaries for passes, failures, skips, and build errors
+- broader `testjson` summaries and richer failure grouping
+- more semantic blocks such as badges and dedicated key/value helpers
 - Mage-oriented examples that dogfood `laslig`
+- more README visuals and side-by-side comparisons
 
 ## Development
 

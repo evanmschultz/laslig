@@ -20,6 +20,14 @@ The gap we are filling:
 - VHS is used for README/demo assets
 - examples and docs are first-class deliverables, not afterthoughts
 
+## Current Status
+
+- phase 0 is complete
+- phase 1 is complete
+- phase 2 is complete
+- phase 3 has an initial `testjson` cut in place
+- phase 4 is in progress
+
 ## Architecture
 
 ### Core Surface
