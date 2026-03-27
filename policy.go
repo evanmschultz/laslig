@@ -38,17 +38,25 @@ type Policy struct {
 	Style  StylePolicy
 }
 
-// Mode describes the resolved output behavior for one writer.
+// Mode describes the resolved output behavior for one writer, including the
+// detected terminal width when available.
 type Mode struct {
 	Format Format
 	Styled bool
+	Width  int
 }
 
 // ResolveMode resolves one writer and policy into a concrete output mode.
 func ResolveMode(out io.Writer, policy Policy) Mode {
 	isTTY := false
+	width := 0
 	if file, ok := out.(term.File); ok {
 		isTTY = term.IsTerminal(file.Fd())
+		if isTTY {
+			if terminalWidth, _, err := term.GetSize(file.Fd()); err == nil {
+				width = terminalWidth
+			}
+		}
 	}
 
 	format := policy.Format
@@ -78,5 +86,6 @@ func ResolveMode(out io.Writer, policy Policy) Mode {
 	return Mode{
 		Format: format,
 		Styled: styled,
+		Width:  width,
 	}
 }

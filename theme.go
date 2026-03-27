@@ -40,19 +40,28 @@ func DefaultTheme(mode Mode) Theme {
 		}
 	}
 
+	primary := lipgloss.Color("#7D56F4")
+	primarySoft := lipgloss.Color("#B7A2FF")
+	primaryDeep := lipgloss.Color("63")
+	text := lipgloss.Color("#FAFAFA")
+	muted := lipgloss.Color("#A1A1AA")
+	success := lipgloss.Color("#04B575")
+	warning := lipgloss.Color("#FFCC00")
+	errorColor := lipgloss.Color("#FF5F87")
+
 	return Theme{
-		Section:       lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#9DDCFF")),
-		Label:         lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#A9C6D8")),
-		Value:         lipgloss.NewStyle().Foreground(lipgloss.Color("#EAF6FF")),
-		Identifier:    lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#A2F2D9")),
-		Muted:         lipgloss.NewStyle().Foreground(lipgloss.Color("#7A8D99")),
-		Badge:         lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#0A1E2A")).Background(lipgloss.Color("#9DDCFF")).Padding(0, 1),
-		Panel:         lipgloss.NewStyle().Border(lipgloss.RoundedBorder()).BorderForeground(lipgloss.Color("#5B7688")).Padding(1, 2),
-		TableHeader:   lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#D4EEFF")),
-		TableRule:     lipgloss.NewStyle().Foreground(lipgloss.Color("#5B7688")),
-		NoticeInfo:    lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#0A1E2A")).Background(lipgloss.Color("#8EDCFF")).Padding(0, 1),
-		NoticeSuccess: lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#F4FFF8")).Background(lipgloss.Color("#1F8F56")).Padding(0, 1),
-		NoticeWarning: lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#211300")).Background(lipgloss.Color("#F4C95D")).Padding(0, 1),
-		NoticeError:   lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#FFF4F4")).Background(lipgloss.Color("#B42318")).Padding(0, 1),
+		Section:       lipgloss.NewStyle().Bold(true).Foreground(primary),
+		Label:         lipgloss.NewStyle().Bold(true).Foreground(primarySoft),
+		Value:         lipgloss.NewStyle().Foreground(text),
+		Identifier:    lipgloss.NewStyle().Bold(true).Foreground(primarySoft),
+		Muted:         lipgloss.NewStyle().Foreground(muted),
+		Badge:         lipgloss.NewStyle().Bold(true).Foreground(text).Background(primary).Padding(0, 1),
+		Panel:         lipgloss.NewStyle().Border(lipgloss.RoundedBorder()).BorderForeground(primaryDeep).Padding(1, 2),
+		TableHeader:   lipgloss.NewStyle().Bold(true).Foreground(text),
+		TableRule:     lipgloss.NewStyle().Foreground(primaryDeep),
+		NoticeInfo:    lipgloss.NewStyle().Bold(true).Foreground(text).Background(primary).Padding(0, 1),
+		NoticeSuccess: lipgloss.NewStyle().Bold(true).Foreground(text).Background(success).Padding(0, 1),
+		NoticeWarning: lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#221400")).Background(warning).Padding(0, 1),
+		NoticeError:   lipgloss.NewStyle().Bold(true).Foreground(text).Background(errorColor).Padding(0, 1),
 	}
 }

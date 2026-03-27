@@ -72,11 +72,12 @@ func (p *Printer) Notice(notice Notice) error {
 			headline += " " + p.theme.Value.Render(notice.Title)
 		}
 		lines := []string{headline}
+		textWidth := p.maxTextWidth()
 		if body := strings.TrimSpace(notice.Body); body != "" {
-			lines = append(lines, "  "+body)
+			lines = append(lines, indentBlock("  ", p.wrapText(body, textWidth)))
 		}
 		for _, detail := range notice.Detail {
-			lines = append(lines, "  "+p.theme.Muted.Render(detail))
+			lines = append(lines, indentBlock("  ", p.theme.Muted.Render(p.wrapText(detail, textWidth))))
 		}
 		_, err := fmt.Fprintln(p.out, strings.Join(lines, "\n"))
 		if err != nil {
@@ -237,20 +238,24 @@ func (p *Printer) Panel(panel Panel) error {
 
 	lines := []string{}
 	if strings.TrimSpace(panel.Title) != "" {
-		lines = append(lines, p.renderHeading(panel.Title))
+		lines = append(lines, p.renderHeading(p.wrapText(panel.Title, p.maxTextWidth())))
 	}
-	lines = append(lines, panel.Body)
+	lines = append(lines, p.wrapText(panel.Body, p.maxTextWidth()))
 	if strings.TrimSpace(panel.Footer) != "" {
 		footer := panel.Footer
 		if p.mode.Format == FormatHuman {
-			footer = p.theme.Muted.Render(footer)
+			footer = p.theme.Muted.Render(p.wrapText(footer, p.maxTextWidth()))
 		}
 		lines = append(lines, footer)
 	}
 
 	content := strings.Join(lines, "\n\n")
 	if p.mode.Format == FormatHuman {
-		content = p.theme.Panel.Render(content)
+		if maxWidth := p.maxPanelWidth(); maxWidth > 0 && p.mode.Styled {
+			content = p.theme.Panel.MaxWidth(maxWidth).Render(content)
+		} else if p.mode.Styled {
+			content = p.theme.Panel.Render(content)
+		}
 	}
 	if _, err := fmt.Fprintln(p.out, content); err != nil {
 		return fmt.Errorf("write panel: %w", err)
@@ -364,6 +369,76 @@ func (p *Printer) noticeBadge(level NoticeLevel) string {
 	}
 }
 
+func (p *Printer) maxTextWidth() int {
+	if p.mode.Format != FormatHuman || p.mode.Width <= 0 {
+		return 0
+	}
+	width := p.mode.Width - 8
+	if width < 32 {
+		return 32
+	}
+	if width > 76 {
+		return 76
+	}
+	return width
+}
+
+func (p *Printer) maxPanelWidth() int {
+	if p.mode.Format != FormatHuman || p.mode.Width <= 0 {
+		return 0
+	}
+	width := p.mode.Width - 4
+	if width < 48 {
+		return 48
+	}
+	if width > 88 {
+		return 88
+	}
+	return width
+}
+
+func (p *Printer) wrapText(value string, width int) string {
+	if width <= 0 || p.mode.Format != FormatHuman {
+		return value
+	}
+	paragraphs := strings.Split(value, "\n")
+	for index, paragraph := range paragraphs {
+		paragraphs[index] = wrapWords(paragraph, width)
+	}
+	return strings.Join(paragraphs, "\n")
+}
+
+func indentBlock(prefix string, value string) string {
+	lines := strings.Split(value, "\n")
+	for index, line := range lines {
+		lines[index] = prefix + line
+	}
+	return strings.Join(lines, "\n")
+}
+
+func wrapWords(value string, width int) string {
+	if width <= 0 || lipgloss.Width(value) <= width {
+		return value
+	}
+
+	words := strings.Fields(value)
+	if len(words) == 0 {
+		return ""
+	}
+
+	lines := []string{words[0]}
+	for _, word := range words[1:] {
+		current := lines[len(lines)-1]
+		candidate := current + " " + word
+		if lipgloss.Width(candidate) <= width {
+			lines[len(lines)-1] = candidate
+			continue
+		}
+		lines = append(lines, word)
+	}
+	return strings.Join(lines, "\n")
+}
+
 func renderTable(table Table, theme Theme, mode Mode) string {
 	rows := make([][]string, 0, len(table.Rows)+1)
 	if len(table.Header) > 0 {
@@ -435,11 +510,17 @@ func renderTable(table Table, theme Theme, mode Mode) string {
 
 	rendered := strings.Join(lines, "\n")
 	if mode.Format == FormatHuman {
-		return lipgloss.NewStyle().
+		style := lipgloss.NewStyle().
 			Border(lipgloss.RoundedBorder()).
-			BorderForeground(lipgloss.Color("#5B7688")).
-			Padding(0, 1).
-			Render(rendered)
+			BorderForeground(lipgloss.Color("63")).
+			Padding(0, 1)
+		if mode.Width > 0 {
+			maxWidth := mode.Width - 4
+			if maxWidth > 0 {
+				style = style.MaxWidth(maxWidth)
+			}
+		}
+		return style.Render(rendered)
 	}
 	return rendered
 }

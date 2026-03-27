@@ -71,6 +71,25 @@ func TestNoticeHumanStyled(t *testing.T) {
 	}
 }
 
+// TestNoticeHumanWrap verifies human notice wrapping when a width is available.
+func TestNoticeHumanWrap(t *testing.T) {
+	var buf bytes.Buffer
+	printer := NewWithMode(&buf, Mode{Format: FormatHuman, Styled: false, Width: 52})
+
+	err := printer.Notice(Notice{
+		Title: "Heads up",
+		Body:  "This notice body should wrap to fit a narrower terminal width by default.",
+	})
+	if err != nil {
+		t.Fatalf("Notice() error = %v", err)
+	}
+
+	got := buf.String()
+	if !strings.Contains(got, "fit a\n  narrower terminal width by default.") {
+		t.Fatalf("Notice() output did not wrap as expected:\n%s", got)
+	}
+}
+
 // TestSectionJSON verifies JSON section rendering.
 func TestSectionJSON(t *testing.T) {
 	var buf bytes.Buffer
@@ -252,6 +271,26 @@ func TestPanelHumanNoStyle(t *testing.T) {
 	want := "Next step\n\nRun mage test.\n\nThe repo is ready.\n"
 	if got := buf.String(); got != want {
 		t.Fatalf("Panel() output = %q, want %q", got, want)
+	}
+}
+
+// TestPanelHumanWrap verifies panel content wraps when a width is available.
+func TestPanelHumanWrap(t *testing.T) {
+	var buf bytes.Buffer
+	printer := NewWithMode(&buf, Mode{Format: FormatHuman, Styled: false, Width: 56})
+
+	err := printer.Panel(Panel{
+		Title:  "Why this shape",
+		Body:   "Panels should avoid stretching across the full terminal when a smaller readable width is more appropriate.",
+		Footer: "Readable defaults matter.",
+	})
+	if err != nil {
+		t.Fatalf("Panel() error = %v", err)
+	}
+
+	got := buf.String()
+	if !strings.Contains(got, "across the full\nterminal when a smaller") {
+		t.Fatalf("Panel() output did not wrap as expected:\n%s", got)
 	}
 }
 
