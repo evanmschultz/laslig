@@ -57,7 +57,10 @@ Rules:
 
 - use Mage instead of Just
 - keep Mage tasks readable and standard-library-first where practical
+- default to local commits plus local Mage validation; do not push after every commit
+- push only when the user explicitly asks or when the user agrees a named checkpoint should be published
 - before planning, implementation, QA, or fixing failed tests, use Context7 for relevant libraries when available
+- use `mage` targets for local verification before offering work back to the user
 - before moving beyond a pushed phase boundary, confirm CI is green with `gh run watch --exit-status`
 - enforce at least 70% statement coverage in every package
 - keep README examples, Go docs, and VHS demos aligned with shipped behavior
