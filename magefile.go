@@ -30,6 +30,9 @@ func Check() error {
 	if err := FmtCheck(); err != nil {
 		return err
 	}
+	if err := Build(); err != nil {
+		return err
+	}
 	if err := Test(); err != nil {
 		return err
 	}
