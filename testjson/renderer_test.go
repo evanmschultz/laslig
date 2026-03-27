@@ -8,6 +8,7 @@ import (
 	"github.com/evanmschultz/laslig"
 )
 
+// sampleStream exercises passing, skipped, failing, and build-error events.
 const sampleStream = `{"Action":"run","Package":"example/pkg","Test":"TestPass"}
 {"Action":"output","Package":"example/pkg","Test":"TestPass","Output":"=== RUN   TestPass\n"}
 {"Action":"output","Package":"example/pkg","Test":"TestPass","Output":"note: useful output\n"}

@@ -12,6 +12,7 @@ import (
 	"github.com/evanmschultz/laslig"
 )
 
+// outputKey identifies one buffered stream of package or test output.
 type outputKey struct {
 	pkg  string
 	test string

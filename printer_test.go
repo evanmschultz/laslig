@@ -17,6 +17,17 @@ func TestResolveModePlainForBuffer(t *testing.T) {
 	}
 }
 
+// TestResolveModeHumanStyleAlways verifies explicit human styled output resolution.
+func TestResolveModeHumanStyleAlways(t *testing.T) {
+	mode := ResolveMode(&bytes.Buffer{}, Policy{Format: FormatHuman, Style: StyleAlways})
+	if mode.Format != FormatHuman {
+		t.Fatalf("ResolveMode().Format = %q, want %q", mode.Format, FormatHuman)
+	}
+	if !mode.Styled {
+		t.Fatal("ResolveMode().Styled = false, want true")
+	}
+}
+
 // TestNoticePlain verifies plain notice rendering.
 func TestNoticePlain(t *testing.T) {
 	var buf bytes.Buffer
@@ -34,6 +45,48 @@ func TestNoticePlain(t *testing.T) {
 	want := "[WARNING] Careful\n  Something needs attention.\n"
 	if got := buf.String(); got != want {
 		t.Fatalf("Notice() output = %q, want %q", got, want)
+	}
+}
+
+// TestNoticeHumanStyled verifies styled human notice rendering and default level handling.
+func TestNoticeHumanStyled(t *testing.T) {
+	var buf bytes.Buffer
+	printer := NewWithMode(&buf, Mode{Format: FormatHuman, Styled: true})
+
+	err := printer.Notice(Notice{
+		Title:  "Heads up",
+		Body:   "Styled output should render with a default info badge.",
+		Detail: []string{"detail line"},
+	})
+	if err != nil {
+		t.Fatalf("Notice() error = %v", err)
+	}
+
+	got := buf.String()
+	if !strings.Contains(got, "Heads up") {
+		t.Fatalf("Notice() output missing title: %q", got)
+	}
+	if !strings.Contains(got, "detail line") {
+		t.Fatalf("Notice() output missing detail: %q", got)
+	}
+}
+
+// TestSectionJSON verifies JSON section rendering.
+func TestSectionJSON(t *testing.T) {
+	var buf bytes.Buffer
+	printer := NewWithMode(&buf, Mode{Format: FormatJSON})
+
+	err := printer.Section("release")
+	if err != nil {
+		t.Fatalf("Section() error = %v", err)
+	}
+
+	got := buf.String()
+	if !strings.Contains(got, `"type": "section"`) {
+		t.Fatalf("Section() output = %q, want section type", got)
+	}
+	if !strings.Contains(got, `"title": "release"`) {
+		t.Fatalf("Section() output = %q, want section title", got)
 	}
 }
 
@@ -83,6 +136,27 @@ func TestKVPlain(t *testing.T) {
 	}
 }
 
+// TestKVJSON verifies machine-readable kv rendering.
+func TestKVJSON(t *testing.T) {
+	var buf bytes.Buffer
+	printer := NewWithMode(&buf, Mode{Format: FormatJSON})
+
+	err := printer.KV(KV{
+		Title: "Project",
+		Pairs: []Field{
+			{Label: "module", Value: "github.com/evanmschultz/laslig", Identifier: true},
+		},
+	})
+	if err != nil {
+		t.Fatalf("KV() error = %v", err)
+	}
+
+	got := buf.String()
+	if !strings.Contains(got, `"type": "kv"`) {
+		t.Fatalf("KV() output = %q, want kv type", got)
+	}
+}
+
 // TestListHumanNoStyle verifies unstyled human list rendering.
 func TestListHumanNoStyle(t *testing.T) {
 	var buf bytes.Buffer
@@ -102,6 +176,22 @@ func TestListHumanNoStyle(t *testing.T) {
 	}
 
 	want := "Profiles\n- default\n  provider: codex\n"
+	if got := buf.String(); got != want {
+		t.Fatalf("List() output = %q, want %q", got, want)
+	}
+}
+
+// TestListEmptyPlain verifies plain empty list rendering.
+func TestListEmptyPlain(t *testing.T) {
+	var buf bytes.Buffer
+	printer := NewWithMode(&buf, Mode{Format: FormatPlain})
+
+	err := printer.List(List{Title: "Profiles"})
+	if err != nil {
+		t.Fatalf("List() error = %v", err)
+	}
+
+	want := "Profiles\n- (none)\n"
 	if got := buf.String(); got != want {
 		t.Fatalf("List() output = %q, want %q", got, want)
 	}
@@ -129,6 +219,22 @@ func TestTablePlain(t *testing.T) {
 	}
 }
 
+// TestTableEmptyHumanNoStyle verifies human empty table rendering.
+func TestTableEmptyHumanNoStyle(t *testing.T) {
+	var buf bytes.Buffer
+	printer := NewWithMode(&buf, Mode{Format: FormatHuman, Styled: false})
+
+	err := printer.Table(Table{Title: "Packages"})
+	if err != nil {
+		t.Fatalf("Table() error = %v", err)
+	}
+
+	want := "Packages\n(none)\n"
+	if got := buf.String(); got != want {
+		t.Fatalf("Table() output = %q, want %q", got, want)
+	}
+}
+
 // TestPanelHumanNoStyle verifies unstyled human panel rendering.
 func TestPanelHumanNoStyle(t *testing.T) {
 	var buf bytes.Buffer
@@ -146,5 +252,25 @@ func TestPanelHumanNoStyle(t *testing.T) {
 	want := "Next step\n\nRun mage test.\n\nThe repo is ready.\n"
 	if got := buf.String(); got != want {
 		t.Fatalf("Panel() output = %q, want %q", got, want)
+	}
+}
+
+// TestBoxHumanNoStyle verifies that Box is an alias for Panel.
+func TestBoxHumanNoStyle(t *testing.T) {
+	var buf bytes.Buffer
+	printer := NewWithMode(&buf, Mode{Format: FormatHuman, Styled: false})
+
+	err := printer.Box(Panel{
+		Title:  "Alias",
+		Body:   "Box should delegate to Panel.",
+		Footer: "Still plain here.",
+	})
+	if err != nil {
+		t.Fatalf("Box() error = %v", err)
+	}
+
+	want := "Alias\n\nBox should delegate to Panel.\n\nStill plain here.\n"
+	if got := buf.String(); got != want {
+		t.Fatalf("Box() output = %q, want %q", got, want)
 	}
 }

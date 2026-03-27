@@ -4,9 +4,9 @@ Require go
 
 Set Shell "zsh"
 Set FontFamily "JetBrains Mono"
-Set FontSize 18
-Set Width 1200
-Set Height 760
+Set FontSize 16
+Set Width 1400
+Set Height 820
 Set Padding 24
 Set Theme "Catppuccin Mocha"
 Set TypingSpeed 20ms

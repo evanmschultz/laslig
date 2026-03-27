@@ -104,6 +104,7 @@ func (s Summary) TotalTests() int {
 	return s.TestsPassed + s.TestsFailed + s.TestsSkipped
 }
 
+// outcome stores one terminal test or package result for grouped summaries.
 type outcome struct {
 	Package string
 	Test    string

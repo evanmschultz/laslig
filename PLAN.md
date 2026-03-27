@@ -113,6 +113,12 @@ Do not publish internal implementation packages until they have proved stable.
 - VHS tapes and generated GIFs
 - release polish and API trimming
 
+### Later Theme Pass
+
+- developer-settable themes
+- default palette refresh toward more classic Charm colors
+- theme docs and examples
+
 ## Parallel Lane Strategy
 
 Use at most three active implementation lanes per phase:

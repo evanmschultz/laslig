@@ -8,11 +8,19 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/evanmschultz/laslig"
 	"github.com/evanmschultz/laslig/testjson"
 )
+
+// coverageThreshold is the minimum allowed statement coverage for each package.
+const coverageThreshold = 70.0
+
+// coverageLinePattern extracts package names and percentages from go test coverage output.
+var coverageLinePattern = regexp.MustCompile(`^(?:ok\s+)?(\S+)(?:\s+\S+)?\s+coverage:\s+([0-9.]+)% of statements(?: in ./\.\.\.)?$`)
 
 // Check runs the primary local verification suite.
 func Check() error {
@@ -23,6 +31,9 @@ func Check() error {
 		return err
 	}
 	if err := Test(); err != nil {
+		return err
+	}
+	if err := Coverage(); err != nil {
 		return err
 	}
 	return nil
@@ -89,6 +100,72 @@ func Test() error {
 	return runGoTest("./...")
 }
 
+// Coverage enforces the minimum package coverage threshold for the module.
+func Coverage() error {
+	out, err := output("go", "test", "-cover", "./...")
+	if err != nil {
+		return err
+	}
+
+	printer := laslig.New(os.Stdout, laslig.Policy{
+		Format: laslig.FormatAuto,
+		Style:  laslig.StyleAuto,
+	})
+
+	rows := make([][]string, 0)
+	var belowThreshold []string
+	for _, line := range strings.Split(strings.TrimSpace(out), "\n") {
+		match := coverageLinePattern.FindStringSubmatch(strings.TrimSpace(line))
+		if match == nil {
+			continue
+		}
+
+		percent, parseErr := strconv.ParseFloat(match[2], 64)
+		if parseErr != nil {
+			return fmt.Errorf("parse coverage for %q: %w", match[1], parseErr)
+		}
+		rows = append(rows, []string{match[1], fmt.Sprintf("%.1f%%", percent)})
+		if percent < coverageThreshold {
+			belowThreshold = append(belowThreshold, fmt.Sprintf("%s=%.1f%%", match[1], percent))
+		}
+	}
+	if len(rows) == 0 {
+		return errors.New("no coverage rows were parsed from go test output")
+	}
+
+	if err := printer.Table(laslig.Table{
+		Title:   "Coverage",
+		Header:  []string{"package", "cover"},
+		Rows:    rows,
+		Caption: fmt.Sprintf("Minimum package coverage: %.1f%%.", coverageThreshold),
+	}); err != nil {
+		return fmt.Errorf("write coverage table: %w", err)
+	}
+
+	if len(belowThreshold) > 0 {
+		if err := printer.Notice(laslig.Notice{
+			Level: laslig.NoticeErrorLevel,
+			Title: "Coverage threshold not met",
+			Body:  fmt.Sprintf("Each package must stay at or above %.1f%% coverage.", coverageThreshold),
+			Detail: []string{
+				strings.Join(belowThreshold, ", "),
+			},
+		}); err != nil {
+			return fmt.Errorf("write coverage notice: %w", err)
+		}
+		return fmt.Errorf("coverage below %.1f%% for: %s", coverageThreshold, strings.Join(belowThreshold, ", "))
+	}
+
+	if err := printer.Notice(laslig.Notice{
+		Level: laslig.NoticeSuccessLevel,
+		Title: "Coverage threshold met",
+		Body:  fmt.Sprintf("All packages are at or above %.1f%% coverage.", coverageThreshold),
+	}); err != nil {
+		return fmt.Errorf("write coverage success notice: %w", err)
+	}
+	return nil
+}
+
 // Build compiles the demo command when it exists.
 func Build() error {
 	if _, err := os.Stat(filepath.Join("cmd", "laslig-demo")); err != nil {
@@ -120,6 +197,7 @@ func VHS() error {
 	return run("vhs", tape)
 }
 
+// goFiles returns the Go source files under one repository root.
 func goFiles(root string) ([]string, error) {
 	var files []string
 	err := filepath.WalkDir(root, func(path string, entry os.DirEntry, err error) error {
@@ -144,6 +222,7 @@ func goFiles(root string) ([]string, error) {
 	return files, nil
 }
 
+// output runs one command and returns its standard output as a string.
 func output(name string, args ...string) (string, error) {
 	cmd := exec.Command(name, args...)
 	cmd.Stderr = os.Stderr
@@ -154,6 +233,7 @@ func output(name string, args ...string) (string, error) {
 	return string(data), nil
 }
 
+// run executes one command while wiring stdio directly to the current process.
 func run(name string, args ...string) error {
 	cmd := exec.Command(name, args...)
 	cmd.Stdout = os.Stdout
@@ -165,6 +245,7 @@ func run(name string, args ...string) error {
 	return nil
 }
 
+// runGoTest renders go test -json output through laslig/testjson.
 func runGoTest(packages ...string) error {
 	args := []string{"test", "-json"}
 	args = append(args, packages...)

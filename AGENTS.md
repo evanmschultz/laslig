@@ -59,6 +59,7 @@ Rules:
 - keep Mage tasks readable and standard-library-first where practical
 - before planning, implementation, QA, or fixing failed tests, use Context7 for relevant libraries when available
 - before moving beyond a pushed phase boundary, confirm CI is green with `gh run watch --exit-status`
+- enforce at least 70% statement coverage in every package
 - keep README examples, Go docs, and VHS demos aligned with shipped behavior
 
 ## 5) Go Standards
@@ -69,7 +70,8 @@ Rules:
 - accept `io.Writer` where output is emitted
 - return errors instead of logging or exiting
 - keep interfaces near consumers and avoid speculative abstractions
-- write doc comments for every top-level declaration in production and test code
+- write strong, idiomatic doc comments for every top-level declaration in production and test code
+- keep comments and docstrings current when behavior changes
 - add concise comments for non-obvious logic blocks
 
 ## 6) Output Philosophy
