@@ -50,6 +50,7 @@ func DefaultTheme(mode Mode) Theme {
 	success := lipgloss.Color("28")
 	warning := lipgloss.Color("214")
 	errorColor := lipgloss.Color("160")
+	info := lipgloss.Color("69")
 	badgeText := lipgloss.Color("230")
 	warningText := lipgloss.Color("232")
 
@@ -63,7 +64,7 @@ func DefaultTheme(mode Mode) Theme {
 		Panel:         lipgloss.NewStyle().Border(lipgloss.RoundedBorder()).BorderForeground(border).Foreground(text).Padding(1, 2),
 		TableHeader:   lipgloss.NewStyle().Bold(true).Foreground(heading),
 		TableRule:     lipgloss.NewStyle().Foreground(border),
-		NoticeInfo:    lipgloss.NewStyle().Bold(true).Foreground(badgeText).Background(accent).Padding(0, 1),
+		NoticeInfo:    lipgloss.NewStyle().Bold(true).Foreground(badgeText).Background(info).Padding(0, 1),
 		NoticeSuccess: lipgloss.NewStyle().Bold(true).Foreground(badgeText).Background(success).Padding(0, 1),
 		NoticeWarning: lipgloss.NewStyle().Bold(true).Foreground(warningText).Background(warning).Padding(0, 1),
 		NoticeError:   lipgloss.NewStyle().Bold(true).Foreground(badgeText).Background(errorColor).Padding(0, 1),

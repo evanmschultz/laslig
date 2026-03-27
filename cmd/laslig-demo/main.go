@@ -69,7 +69,7 @@ func runArgs(out io.Writer, args []string) error {
 					Title: "Project",
 					Fields: []laslig.Field{
 						{Label: "module", Value: "github.com/evanmschultz/laslig", Identifier: true},
-						{Label: "runtime deps", Value: "Charm + stdlib", Badge: true},
+						{Label: "runtime deps", Value: "Charm + stdlib"},
 						{Label: "task runner", Value: "Mage", Muted: true},
 					},
 				})
@@ -81,7 +81,7 @@ func runArgs(out io.Writer, args []string) error {
 				return printer.KV(laslig.KV{
 					Title: "Policy",
 					Pairs: []laslig.Field{
-						{Label: "format", Value: string(printer.Mode().Format), Badge: true},
+						{Label: "format", Value: string(printer.Mode().Format)},
 						{Label: "styled", Value: fmt.Sprintf("%t", printer.Mode().Styled), Muted: true},
 					},
 				})

@@ -349,7 +349,22 @@ func (p *Printer) renderBadge(value string) string {
 	if p.mode.Format != FormatHuman {
 		return "[" + trimmed + "]"
 	}
-	return p.theme.Badge.Render(trimmed)
+
+	style := p.theme.Badge
+	// Mirror blick's compact state-chip palette so only semantic states get strong fills.
+	switch strings.ToLower(strings.TrimSpace(value)) {
+	case "approved", "active", "success", "pass", "ready", "live":
+		style = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("230")).Background(lipgloss.Color("28")).Padding(0, 1)
+	case "pending", "warn", "warning":
+		style = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("232")).Background(lipgloss.Color("214")).Padding(0, 1)
+	case "denied", "revoked", "error", "fail", "failed":
+		style = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("230")).Background(lipgloss.Color("160")).Padding(0, 1)
+	case "canceled", "cancelled", "disabled":
+		style = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("255")).Background(lipgloss.Color("240")).Padding(0, 1)
+	case "expired":
+		style = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("255")).Background(lipgloss.Color("238")).Padding(0, 1)
+	}
+	return style.Render(trimmed)
 }
 
 func (p *Printer) noticeBadge(level NoticeLevel) string {

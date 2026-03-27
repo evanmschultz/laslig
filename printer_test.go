@@ -90,6 +90,34 @@ func TestNoticeHumanWrap(t *testing.T) {
 	}
 }
 
+// TestRenderBadgeHumanStyled verifies semantic badge values use distinct styled chips.
+func TestRenderBadgeHumanStyled(t *testing.T) {
+	printer := NewWithMode(&bytes.Buffer{}, Mode{Format: FormatHuman, Styled: true})
+
+	pass := printer.renderBadge("pass")
+	custom := printer.renderBadge("custom")
+	warn := printer.renderBadge("warning")
+
+	if !strings.Contains(pass, "PASS") {
+		t.Fatalf("renderBadge(pass) = %q, want PASS text", pass)
+	}
+	if !strings.Contains(custom, "CUSTOM") {
+		t.Fatalf("renderBadge(custom) = %q, want CUSTOM text", custom)
+	}
+	if !strings.Contains(warn, "WARNING") {
+		t.Fatalf("renderBadge(warning) = %q, want WARNING text", warn)
+	}
+	if !strings.Contains(pass, "\x1b[") || !strings.Contains(custom, "\x1b[") || !strings.Contains(warn, "\x1b[") {
+		t.Fatal("renderBadge() output missing ANSI styling")
+	}
+	if pass == custom {
+		t.Fatalf("renderBadge(pass) = %q, want semantic style distinct from custom badge", pass)
+	}
+	if warn == custom {
+		t.Fatalf("renderBadge(warning) = %q, want semantic style distinct from custom badge", warn)
+	}
+}
+
 // TestSectionJSON verifies JSON section rendering.
 func TestSectionJSON(t *testing.T) {
 	var buf bytes.Buffer
