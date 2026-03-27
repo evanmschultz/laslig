@@ -26,11 +26,12 @@ The first core wave is live. Today the package includes:
 - sections
 - notices and diagnostics
 - records and lists
+- aligned key-value blocks
 - tables
 - panels and boxes
-- the first `testjson` renderer cut for `go test -json`
+- compact and detailed `testjson` rendering for `go test -json`
 
-The next wave is broadening `testjson`, adding more semantic blocks, and tightening the docs/examples around real developer flows such as Mage.
+The next wave is broadening `testjson`, adding more semantic blocks, and tightening the docs/examples further.
 
 ## Principles
 
@@ -93,6 +94,7 @@ func main() {
 printer.Section("Deploy")
 printer.Notice(laslig.Notice{Level: laslig.NoticeWarningLevel, Title: "Partial success"})
 printer.Record(laslig.Record{Title: "Build"})
+printer.KV(laslig.KV{Title: "Config"})
 printer.List(laslig.List{Title: "Packages"})
 printer.Table(laslig.Table{Title: "Results"})
 printer.Panel(laslig.Panel{Title: "Next step", Body: "Run mage check."})
@@ -150,6 +152,8 @@ if summary.HasFailures() {
 
 That shape works well in ordinary CLIs and in Mage targets. `laslig` stays responsible for rendering, while the caller stays responsible for process control.
 
+This repository already dogfoods that pattern in [`magefile.go`](/Users/evanschultz/Documents/Code/hylla/laslig/main/magefile.go): `mage test` runs `go test -json ./...`, renders compact package and failure output through `testjson`, and still returns a normal Mage error on failure.
+
 ## Demo
 
 The tracked demo command lives in [cmd/laslig-demo/main.go](/Users/evanschultz/Documents/Code/hylla/laslig/main/cmd/laslig-demo/main.go).
@@ -167,8 +171,8 @@ The README GIF is generated from [docs/vhs/showcase.tape](/Users/evanschultz/Doc
 ## Planned Next
 
 - broader `testjson` summaries and richer failure grouping
-- more semantic blocks such as badges and dedicated key/value helpers
-- Mage-oriented examples that dogfood `laslig`
+- paragraph and prefix-style helpers
+- nested list support where it adds real value
 - more README visuals and side-by-side comparisons
 
 ## Development
@@ -177,6 +181,7 @@ This repository uses Mage for local automation.
 
 ```bash
 mage check
+mage test
 mage build
 mage demo
 mage vhs

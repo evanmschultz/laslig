@@ -27,6 +27,29 @@ func ExamplePrinter_Record() {
 	//   runner: mage
 }
 
+// ExamplePrinter_KV shows aligned key-value rendering.
+func ExamplePrinter_KV() {
+	printer := laslig.New(os.Stdout, laslig.Policy{
+		Format: laslig.FormatPlain,
+		Style:  laslig.StyleNever,
+	})
+
+	_ = printer.KV(laslig.KV{
+		Title: "Config",
+		Pairs: []laslig.Field{
+			{Label: "module", Value: "github.com/evanmschultz/laslig", Identifier: true},
+			{Label: "style", Value: "auto", Badge: true},
+			{Label: "runner", Value: "mage", Muted: true},
+		},
+	})
+
+	// Output:
+	// Config
+	//   module  github.com/evanmschultz/laslig
+	//   style   [AUTO]
+	//   runner  mage
+}
+
 // ExamplePrinter_Notice shows one warning notice rendered without ANSI styling.
 func ExamplePrinter_Notice() {
 	printer := laslig.New(os.Stdout, laslig.Policy{

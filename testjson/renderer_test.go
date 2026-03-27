@@ -64,14 +64,26 @@ func TestRenderPlainCompact(t *testing.T) {
 	}
 
 	got := buf.String()
-	if !strings.Contains(got, "[PASS] example/pkg :: TestPass (0.01s)") {
-		t.Fatalf("Render() output missing pass line:\n%s", got)
+	if strings.Contains(got, "[PASS] example/pkg :: TestPass (0.01s)") {
+		t.Fatalf("Render() compact output unexpectedly included pass test line:\n%s", got)
 	}
 	if !strings.Contains(got, "[FAIL] example/pkg :: TestFail (0.02s)") {
 		t.Fatalf("Render() output missing fail line:\n%s", got)
 	}
+	if !strings.Contains(got, "[PKG FAIL] example/pkg (0.03s)") {
+		t.Fatalf("Render() output missing package fail line:\n%s", got)
+	}
 	if !strings.Contains(got, "renderer_test.go:42: expected boom") {
 		t.Fatalf("Render() output missing failure output:\n%s", got)
+	}
+	if !strings.Contains(got, "Failed tests") {
+		t.Fatalf("Render() output missing failed tests section:\n%s", got)
+	}
+	if !strings.Contains(got, "Package errors") {
+		t.Fatalf("Render() output missing package errors section:\n%s", got)
+	}
+	if !strings.Contains(got, "Skipped tests") {
+		t.Fatalf("Render() output missing skipped tests section:\n%s", got)
 	}
 	if !strings.Contains(got, "Test summary") {
 		t.Fatalf("Render() output missing summary heading:\n%s", got)
@@ -98,6 +110,9 @@ func TestRenderPlainDetailed(t *testing.T) {
 	got := buf.String()
 	if !strings.Contains(got, "note: useful output") {
 		t.Fatalf("Render() detailed output missing passing test output:\n%s", got)
+	}
+	if !strings.Contains(got, "[PASS] example/pkg :: TestPass (0.01s)") {
+		t.Fatalf("Render() detailed output missing pass line:\n%s", got)
 	}
 	if !strings.Contains(got, "[SKIP] example/pkg :: TestSkip (0.00s)") {
 		t.Fatalf("Render() detailed output missing skip line:\n%s", got)

@@ -9,6 +9,9 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+
+	"github.com/evanmschultz/laslig"
+	"github.com/evanmschultz/laslig/testjson"
 )
 
 // Check runs the primary local verification suite.
@@ -83,7 +86,7 @@ func FmtCheck() error {
 
 // Test runs the Go test suite.
 func Test() error {
-	return run("go", "test", "./...")
+	return runGoTest("./...")
 }
 
 // Build compiles the demo command when it exists.
@@ -158,6 +161,42 @@ func run(name string, args ...string) error {
 	cmd.Stdin = os.Stdin
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("%s %s: %w", name, strings.Join(args, " "), err)
+	}
+	return nil
+}
+
+func runGoTest(packages ...string) error {
+	args := []string{"test", "-json"}
+	args = append(args, packages...)
+
+	cmd := exec.Command("go", args...)
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		return fmt.Errorf("create go test stdout pipe: %w", err)
+	}
+	cmd.Stderr = os.Stderr
+
+	if err := cmd.Start(); err != nil {
+		return fmt.Errorf("start go test: %w", err)
+	}
+
+	summary, renderErr := testjson.Render(os.Stdout, stdout, testjson.Options{
+		Policy: laslig.Policy{
+			Format: laslig.FormatAuto,
+			Style:  laslig.StyleAuto,
+		},
+		View: testjson.ViewCompact,
+	})
+	waitErr := cmd.Wait()
+
+	if renderErr != nil {
+		return fmt.Errorf("render go test output: %w", renderErr)
+	}
+	if waitErr != nil {
+		return fmt.Errorf("go test %s: %w", strings.Join(packages, " "), waitErr)
+	}
+	if summary.HasFailures() {
+		return fmt.Errorf("go test %s: test summary reported failures", strings.Join(packages, " "))
 	}
 	return nil
 }

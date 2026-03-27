@@ -123,6 +123,46 @@ func (p *Printer) Record(record Record) error {
 	return nil
 }
 
+// KV writes one aligned key-value block.
+func (p *Printer) KV(kv KV) error {
+	if p.mode.Format == FormatJSON {
+		return p.writeJSON("kv", kv)
+	}
+
+	if strings.TrimSpace(kv.Title) != "" {
+		if _, err := fmt.Fprintln(p.out, p.renderHeading(kv.Title)); err != nil {
+			return fmt.Errorf("write kv heading: %w", err)
+		}
+	}
+	if len(kv.Pairs) == 0 {
+		empty := kv.Empty
+		if strings.TrimSpace(empty) == "" {
+			empty = "(none)"
+		}
+		return p.writeEmpty("  " + empty)
+	}
+
+	width := 0
+	for _, pair := range kv.Pairs {
+		if cellWidth := lipgloss.Width(pair.Label); cellWidth > width {
+			width = cellWidth
+		}
+	}
+
+	for _, pair := range kv.Pairs {
+		label := pair.Label
+		if p.mode.Format == FormatHuman {
+			label = p.theme.Label.Render(lipgloss.NewStyle().Width(width).Render(label))
+		} else {
+			label = fmt.Sprintf("%-*s", width, label)
+		}
+		if _, err := fmt.Fprintf(p.out, "  %s  %s\n", label, p.renderFieldValue(pair)); err != nil {
+			return fmt.Errorf("write kv pair: %w", err)
+		}
+	}
+	return nil
+}
+
 // List writes one titled list block.
 func (p *Printer) List(list List) error {
 	if p.mode.Format == FormatJSON {

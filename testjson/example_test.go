@@ -25,7 +25,6 @@ func ExampleRender() {
 	fmt.Printf("tests=%d packages=%d failures=%t\n", summary.TotalTests(), summary.TotalPackages(), summary.HasFailures())
 
 	// Output:
-	// [PASS] example/pkg :: TestRender (0.01s)
 	// [PKG PASS] example/pkg (0.01s)
 	//
 	// Test summary
@@ -34,6 +33,9 @@ func ExampleRender() {
 	//   failed: 0
 	//   skipped: 0
 	//   packages: 1
+	//   pkg passed: 1
+	//   pkg failed: 0
+	//   pkg skipped: 0
 	// [SUCCESS] All tests passed
 	//   1 test passed across 1 package.
 	// tests=1 packages=1 failures=false

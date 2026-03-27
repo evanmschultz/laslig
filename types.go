@@ -37,6 +37,13 @@ type Record struct {
 	Fields []Field `json:"fields,omitempty"`
 }
 
+// KV describes one aligned key-value block.
+type KV struct {
+	Title string  `json:"title,omitempty"`
+	Pairs []Field `json:"pairs,omitempty"`
+	Empty string  `json:"empty,omitempty"`
+}
+
 // ListItem describes one item in a rendered list.
 type ListItem struct {
 	Title  string  `json:"title"`

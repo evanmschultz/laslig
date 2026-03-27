@@ -27,6 +27,9 @@ type Renderer struct {
 	summary      Summary
 	outputs      map[outputKey][]string
 	buildFailed  map[string]bool
+	failedTests  []outcome
+	skippedTests []outcome
+	packageError []outcome
 	wroteResults bool
 	jsonEncoder  *json.Encoder
 }
@@ -99,6 +102,9 @@ func (r *Renderer) Finish() error {
 			{Label: "failed", Value: fmt.Sprintf("%d", r.summary.TestsFailed)},
 			{Label: "skipped", Value: fmt.Sprintf("%d", r.summary.TestsSkipped)},
 			{Label: "packages", Value: fmt.Sprintf("%d", r.summary.TotalPackages())},
+			{Label: "pkg passed", Value: fmt.Sprintf("%d", r.summary.PackagesPassed)},
+			{Label: "pkg failed", Value: fmt.Sprintf("%d", r.summary.PackagesFailed)},
+			{Label: "pkg skipped", Value: fmt.Sprintf("%d", r.summary.PackagesSkipped)},
 		},
 	}
 	if r.summary.BuildErrors > 0 {
@@ -109,6 +115,21 @@ func (r *Renderer) Finish() error {
 	}
 	if err := r.printer.Record(record); err != nil {
 		return fmt.Errorf("write summary record: %w", err)
+	}
+	if len(r.failedTests) > 0 {
+		if err := r.printer.List(r.outcomeList("Failed tests", "fail", r.failedTests, false)); err != nil {
+			return fmt.Errorf("write failed tests list: %w", err)
+		}
+	}
+	if len(r.packageError) > 0 {
+		if err := r.printer.List(r.outcomeList("Package errors", "error", r.packageError, true)); err != nil {
+			return fmt.Errorf("write package errors list: %w", err)
+		}
+	}
+	if len(r.skippedTests) > 0 {
+		if err := r.printer.List(r.outcomeList("Skipped tests", "skip", r.skippedTests, false)); err != nil {
+			return fmt.Errorf("write skipped tests list: %w", err)
+		}
 	}
 
 	notice := laslig.Notice{
@@ -121,10 +142,12 @@ func (r *Renderer) Finish() error {
 		notice.Level = laslig.NoticeErrorLevel
 		notice.Title = "Test failures detected"
 		notice.Body = fmt.Sprintf("%d test failure%s and %d build error%s across %d package%s.", r.summary.TestsFailed, plural(r.summary.TestsFailed), r.summary.BuildErrors, plural(r.summary.BuildErrors), r.summary.TotalPackages(), plural(r.summary.TotalPackages()))
-	case r.summary.TestsSkipped > 0 || r.summary.PackagesSkipped > 0:
+	case r.summary.TestsSkipped > 0:
 		notice.Level = laslig.NoticeWarningLevel
 		notice.Title = "Tests passed with skips"
 		notice.Body = fmt.Sprintf("%d skipped test%s across %d package%s.", r.summary.TestsSkipped, plural(r.summary.TestsSkipped), r.summary.TotalPackages(), plural(r.summary.TotalPackages()))
+	case r.summary.PackagesSkipped > 0:
+		notice.Detail = append(notice.Detail, fmt.Sprintf("%d package%s had no tests.", r.summary.PackagesSkipped, plural(r.summary.PackagesSkipped)))
 	}
 	if err := r.printer.Notice(notice); err != nil {
 		return fmt.Errorf("write summary notice: %w", err)
@@ -207,6 +230,13 @@ func (r *Renderer) recordTerminal(event Event) {
 			r.summary.PackagesPassed++
 		case ActionFail:
 			r.summary.PackagesFailed++
+			if lines := r.cleanedOutput(outputKey{pkg: event.Package}); len(lines) > 0 || r.buildFailed[event.Package] {
+				r.packageError = append(r.packageError, outcome{
+					Package: event.Package,
+					Elapsed: event.Elapsed,
+					Output:  lines,
+				})
+			}
 			if r.buildFailed[event.Package] {
 				r.summary.BuildErrors++
 			}
@@ -221,8 +251,19 @@ func (r *Renderer) recordTerminal(event Event) {
 		r.summary.TestsPassed++
 	case ActionFail:
 		r.summary.TestsFailed++
+		r.failedTests = append(r.failedTests, outcome{
+			Package: event.Package,
+			Test:    event.Test,
+			Elapsed: event.Elapsed,
+			Output:  r.cleanedOutput(outputKey{pkg: event.Package, test: event.Test}),
+		})
 	case ActionSkip:
 		r.summary.TestsSkipped++
+		r.skippedTests = append(r.skippedTests, outcome{
+			Package: event.Package,
+			Test:    event.Test,
+			Elapsed: event.Elapsed,
+		})
 	}
 }
 
@@ -239,6 +280,9 @@ func (r *Renderer) renderTerminal(event Event) error {
 		return nil
 	}
 
+	if r.options.View == ViewCompact && event.Action != ActionFail {
+		return nil
+	}
 	if err := r.writeLine(r.renderTestLine(event)); err != nil {
 		return err
 	}
@@ -248,6 +292,38 @@ func (r *Renderer) renderTerminal(event Event) error {
 		}
 	}
 	return nil
+}
+
+func (r *Renderer) outcomeList(title string, badge string, outcomes []outcome, includeOutput bool) laslig.List {
+	items := make([]laslig.ListItem, 0, len(outcomes))
+	for _, item := range outcomes {
+		titleValue := item.Package
+		if item.Test != "" {
+			titleValue = item.Test
+		}
+
+		fields := []laslig.Field{
+			{Label: "package", Value: item.Package, Identifier: true},
+			{Label: "elapsed", Value: fmt.Sprintf("%.2fs", item.Elapsed), Muted: true},
+		}
+		if includeOutput && len(item.Output) > 0 {
+			fields = append(fields, laslig.Field{
+				Label: "detail",
+				Value: item.Output[0],
+				Muted: true,
+			})
+		}
+
+		items = append(items, laslig.ListItem{
+			Title:  titleValue,
+			Badge:  badge,
+			Fields: fields,
+		})
+	}
+	return laslig.List{
+		Title: title,
+		Items: items,
+	}
 }
 
 func (r *Renderer) writeOutputLines(key outputKey) error {

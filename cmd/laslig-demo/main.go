@@ -51,6 +51,15 @@ func run() error {
 	}); err != nil {
 		return err
 	}
+	if err := printer.KV(laslig.KV{
+		Title: "Policy",
+		Pairs: []laslig.Field{
+			{Label: "format", Value: string(printer.Mode().Format), Badge: true},
+			{Label: "styled", Value: fmt.Sprintf("%t", printer.Mode().Styled), Muted: true},
+		},
+	}); err != nil {
+		return err
+	}
 	if err := printer.List(laslig.List{
 		Title: "Primitives",
 		Items: []laslig.ListItem{
@@ -70,7 +79,7 @@ func run() error {
 			},
 			{
 				Title: "testjson",
-				Badge: "next",
+				Badge: "live",
 				Fields: []laslig.Field{
 					{Label: "use", Value: "Charm-native go test output", Muted: true},
 				},
@@ -94,6 +103,6 @@ func run() error {
 	return printer.Panel(laslig.Panel{
 		Title:  "Why this shape",
 		Body:   "Fang should keep owning help and command errors. Laslig should own ordinary output blocks and structured summaries.",
-		Footer: "Next up: go test -json rendering.",
+		Footer: "Next up: richer go test -json summaries and more small helpers.",
 	})
 }

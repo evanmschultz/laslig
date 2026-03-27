@@ -61,6 +61,28 @@ func TestRecordJSON(t *testing.T) {
 	}
 }
 
+// TestKVPlain verifies plain aligned key-value rendering.
+func TestKVPlain(t *testing.T) {
+	var buf bytes.Buffer
+	printer := NewWithMode(&buf, Mode{Format: FormatPlain})
+
+	err := printer.KV(KV{
+		Title: "Project",
+		Pairs: []Field{
+			{Label: "module", Value: "github.com/evanmschultz/laslig", Identifier: true},
+			{Label: "task runner", Value: "mage", Muted: true},
+		},
+	})
+	if err != nil {
+		t.Fatalf("KV() error = %v", err)
+	}
+
+	want := "Project\n  module       github.com/evanmschultz/laslig\n  task runner  mage\n"
+	if got := buf.String(); got != want {
+		t.Fatalf("KV() output = %q, want %q", got, want)
+	}
+}
+
 // TestListHumanNoStyle verifies unstyled human list rendering.
 func TestListHumanNoStyle(t *testing.T) {
 	var buf bytes.Buffer

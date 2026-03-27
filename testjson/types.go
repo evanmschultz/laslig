@@ -103,3 +103,10 @@ func (s Summary) TotalPackages() int {
 func (s Summary) TotalTests() int {
 	return s.TestsPassed + s.TestsFailed + s.TestsSkipped
 }
+
+type outcome struct {
+	Package string
+	Test    string
+	Elapsed float64
+	Output  []string
+}
