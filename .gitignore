@@ -1,0 +1,10 @@
+.cache/
+.tmp/
+bin/
+dist/
+coverage.out
+coverage.html
+*.prof
+*.test
+*.exe
+*.log
