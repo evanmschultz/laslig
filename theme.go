@@ -41,23 +41,24 @@ func DefaultTheme(mode Mode) Theme {
 	}
 
 	primary := lipgloss.Color("#7D56F4")
-	primarySoft := lipgloss.Color("#B7A2FF")
+	primarySoft := lipgloss.Color("99")
 	primaryDeep := lipgloss.Color("63")
 	text := lipgloss.Color("#FAFAFA")
-	muted := lipgloss.Color("#A1A1AA")
+	subtleText := lipgloss.Color("252")
+	muted := lipgloss.Color("245")
 	success := lipgloss.Color("#04B575")
 	warning := lipgloss.Color("#FFCC00")
 	errorColor := lipgloss.Color("#FF5F87")
 
 	return Theme{
 		Section:       lipgloss.NewStyle().Bold(true).Foreground(primary),
-		Label:         lipgloss.NewStyle().Bold(true).Foreground(primarySoft),
+		Label:         lipgloss.NewStyle().Bold(true).Foreground(subtleText),
 		Value:         lipgloss.NewStyle().Foreground(text),
 		Identifier:    lipgloss.NewStyle().Bold(true).Foreground(primarySoft),
 		Muted:         lipgloss.NewStyle().Foreground(muted),
 		Badge:         lipgloss.NewStyle().Bold(true).Foreground(text).Background(primary).Padding(0, 1),
-		Panel:         lipgloss.NewStyle().Border(lipgloss.RoundedBorder()).BorderForeground(primaryDeep).Padding(1, 2),
-		TableHeader:   lipgloss.NewStyle().Bold(true).Foreground(text),
+		Panel:         lipgloss.NewStyle().Border(lipgloss.RoundedBorder()).BorderForeground(primaryDeep).Foreground(text).Padding(1, 2),
+		TableHeader:   lipgloss.NewStyle().Bold(true).Foreground(primarySoft),
 		TableRule:     lipgloss.NewStyle().Foreground(primaryDeep),
 		NoticeInfo:    lipgloss.NewStyle().Bold(true).Foreground(text).Background(primary).Padding(0, 1),
 		NoticeSuccess: lipgloss.NewStyle().Bold(true).Foreground(text).Background(success).Padding(0, 1),

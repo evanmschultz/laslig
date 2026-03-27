@@ -3,7 +3,7 @@ Output docs/vhs/showcase.gif
 Require go
 
 Set Shell "zsh"
-Set FontFamily "JetBrains Mono"
+Set FontFamily "IosevkaTerm NFM"
 Set FontSize 16
 Set Width 1400
 Set Height 820

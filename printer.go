@@ -505,7 +505,15 @@ func renderTable(table Table, theme Theme, mode Mode) string {
 		lines = append(lines, strings.Join(ruleParts, ruleSeparator))
 	}
 	for _, row := range table.Rows {
-		lines = append(lines, joinRow(row, theme.Value))
+		rowStyle := theme.Value
+		if mode.Format == FormatHuman {
+			if len(lines)%2 == 0 {
+				rowStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("241"))
+			} else {
+				rowStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("245"))
+			}
+		}
+		lines = append(lines, joinRow(row, rowStyle))
 	}
 
 	rendered := strings.Join(lines, "\n")
