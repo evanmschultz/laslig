@@ -99,3 +99,22 @@ func ExamplePrinter_Table() {
 	// demo  | ready
 	// One policy, three surfaces.
 }
+
+// ExamplePrinter_LogBlock shows one plain boxed-log surface without owning logging.
+func ExamplePrinter_LogBlock() {
+	printer := laslig.New(os.Stdout, laslig.Policy{
+		Format: laslig.FormatPlain,
+		Style:  laslig.StyleNever,
+	})
+
+	_ = printer.LogBlock(laslig.LogBlock{
+		Title: "stderr excerpt",
+		Body:  "INFO boot complete\nWARN retry scheduled",
+	})
+
+	// Output:
+	// stderr excerpt
+	//
+	// INFO boot complete
+	// WARN retry scheduled
+}

@@ -322,6 +322,94 @@ func TestPanelHumanWrap(t *testing.T) {
 	}
 }
 
+// TestCodeBlockPlain verifies plain code-block rendering preserves content.
+func TestCodeBlockPlain(t *testing.T) {
+	var buf bytes.Buffer
+	printer := NewWithMode(&buf, Mode{Format: FormatPlain})
+
+	err := printer.CodeBlock(CodeBlock{
+		Title:    "Example",
+		Language: "go",
+		Body:     "fmt.Println(\"hello\")",
+		Footer:   "Go snippet.",
+	})
+	if err != nil {
+		t.Fatalf("CodeBlock() error = %v", err)
+	}
+
+	want := "Example\n\nfmt.Println(\"hello\")\n\nGo snippet.\n"
+	if got := buf.String(); got != want {
+		t.Fatalf("CodeBlock() output = %q, want %q", got, want)
+	}
+}
+
+// TestCodeBlockHumanStyled verifies styled code-block rendering uses ANSI output.
+func TestCodeBlockHumanStyled(t *testing.T) {
+	var buf bytes.Buffer
+	printer := NewWithMode(&buf, Mode{Format: FormatHuman, Styled: true, Width: 80})
+
+	err := printer.CodeBlock(CodeBlock{
+		Title:    "Example",
+		Language: "go",
+		Body:     "fmt.Println(\"hello\")",
+	})
+	if err != nil {
+		t.Fatalf("CodeBlock() error = %v", err)
+	}
+
+	got := buf.String()
+	if !strings.Contains(got, "Println") {
+		t.Fatalf("CodeBlock() output missing code body:\n%s", got)
+	}
+	if !strings.Contains(got, "\"hello\"") {
+		t.Fatalf("CodeBlock() output missing string literal:\n%s", got)
+	}
+	if !strings.Contains(got, "\x1b[") {
+		t.Fatalf("CodeBlock() output missing ANSI styling: %q", got)
+	}
+}
+
+// TestLogBlockPlain verifies plain log-block rendering preserves newlines exactly.
+func TestLogBlockPlain(t *testing.T) {
+	var buf bytes.Buffer
+	printer := NewWithMode(&buf, Mode{Format: FormatPlain})
+
+	err := printer.LogBlock(LogBlock{
+		Title: "Recent logs",
+		Body:  "INFO boot complete\nWARN retry scheduled",
+	})
+	if err != nil {
+		t.Fatalf("LogBlock() error = %v", err)
+	}
+
+	want := "Recent logs\n\nINFO boot complete\nWARN retry scheduled\n"
+	if got := buf.String(); got != want {
+		t.Fatalf("LogBlock() output = %q, want %q", got, want)
+	}
+}
+
+// TestLogBlockJSON verifies machine-readable log-block rendering.
+func TestLogBlockJSON(t *testing.T) {
+	var buf bytes.Buffer
+	printer := NewWithMode(&buf, Mode{Format: FormatJSON})
+
+	err := printer.LogBlock(LogBlock{
+		Title: "stderr",
+		Body:  "panic: boom",
+	})
+	if err != nil {
+		t.Fatalf("LogBlock() error = %v", err)
+	}
+
+	got := buf.String()
+	if !strings.Contains(got, `"type": "log_block"`) {
+		t.Fatalf("LogBlock() output = %q, want log_block type", got)
+	}
+	if !strings.Contains(got, `"title": "stderr"`) {
+		t.Fatalf("LogBlock() output = %q, want title", got)
+	}
+}
+
 // TestBoxHumanNoStyle verifies that Box is an alias for Panel.
 func TestBoxHumanNoStyle(t *testing.T) {
 	var buf bytes.Buffer

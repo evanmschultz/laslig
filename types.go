@@ -73,3 +73,18 @@ type Panel struct {
 	Body   string `json:"body"`
 	Footer string `json:"footer,omitempty"`
 }
+
+// CodeBlock describes one titled code-style block with optional language hinting.
+type CodeBlock struct {
+	Title    string `json:"title,omitempty"`
+	Language string `json:"language,omitempty"`
+	Body     string `json:"body"`
+	Footer   string `json:"footer,omitempty"`
+}
+
+// LogBlock describes one titled boxed transcript or log excerpt.
+type LogBlock struct {
+	Title  string `json:"title,omitempty"`
+	Body   string `json:"body"`
+	Footer string `json:"footer,omitempty"`
+}

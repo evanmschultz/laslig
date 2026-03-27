@@ -16,6 +16,7 @@ The gap we are filling:
 - runtime/library dependencies should be Charm packages plus the standard library
 - `laslig` should not require `fang`
 - `laslig` should not require `charm/log`
+- `glamour` should back Markdown and fenced code-block rendering when those primitives land
 - Mage is the repository task runner
 - VHS is used for README/demo assets
 - examples and docs are first-class deliverables, not afterthoughts
@@ -27,6 +28,7 @@ The gap we are filling:
 - phase 2 is complete
 - phase 3 has compact/detailed `testjson` rendering and Mage dogfooding in place
 - phase 4 is in progress
+- phase 4A has shipped `CodeBlock` and explicit `LogBlock` primitives; Glamour-backed Markdown is next
 
 ## Architecture
 
@@ -48,8 +50,11 @@ The main package should eventually own:
 - `Panel`
 - `Badge`
 - `KV`
+- `Paragraph`
+- `StatusLine`
 - `Markdown`
 - `CodeBlock`
+- log-friendly boxed transcript helpers for caller-provided output excerpts
 
 ### Stream Surface
 
@@ -72,6 +77,14 @@ Keep internal packages small and implementation-oriented:
 - `internal/testjson`
 
 Do not publish internal implementation packages until they have proved stable.
+
+## Integration Boundaries
+
+- `laslig` should render caller-provided content, not own logging policy or command-framework behavior
+- `fang` remains an application-level choice for help, usage, and command-boundary errors
+- application logging stays with the caller's logger such as `log/slog`, `charm/log`, or Zap
+- `laslig` may render selected log excerpts, transcripts, stderr captures, or diagnostics in structured blocks
+- `laslig` itself should not intercept global logs, install sinks, or emit operational logs
 
 ## Phases
 
@@ -113,6 +126,14 @@ Do not publish internal implementation packages until they have proved stable.
 - VHS tapes and generated GIFs
 - release polish and API trimming
 
+### Phase 4A: Rich Text And Transcript Primitives
+
+- `Paragraph` for wrapped long-form body text
+- `StatusLine` for compact semantic single-line output
+- `CodeBlock` for preformatted or syntax-highlighted terminal blocks
+- explicit log/transcript helper built on top of boxed block rendering
+- `Markdown` powered by `glamour`
+
 ### Later Theme Pass
 
 - developer-settable themes
@@ -128,3 +149,15 @@ Use at most three active implementation lanes per phase:
 3. stream/test rendering
 
 Avoid overlapping write scopes between lanes whenever possible.
+
+## MVP Finish Line
+
+The MVP should be considered feature-complete when the repository has:
+
+- stable core primitives for sections, notices, records, KV, lists, tables, panels, and boxes
+- one wrapped long-form text primitive
+- one compact status-line primitive
+- one Glamour-backed rich-text/code-block path
+- one explicit log/transcript rendering path for caller-provided output
+- compact and detailed `testjson` rendering with caller-tunable summary sections
+- README, Go docs, Mage tasks, and VHS demos aligned with shipped behavior

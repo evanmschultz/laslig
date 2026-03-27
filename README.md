@@ -29,6 +29,8 @@ The first core wave is live. Today the package includes:
 - aligned key-value blocks
 - tables
 - panels and boxes
+- Glamour-backed code blocks
+- boxed log/transcript blocks for caller-provided output
 - compact and detailed `testjson` rendering for `go test -json`
 
 The next wave is broadening `testjson`, adding more semantic blocks, and tightening the docs/examples further.
@@ -40,6 +42,7 @@ The next wave is broadening `testjson`, adding more semantic blocks, and tighten
 - no hidden process control
 - Charm-native output without depending on Fang or `charm/log`
 - easy adoption in Fang, Cobra, Mage, and plain Go commands
+- explicit rendering of caller-provided log excerpts without becoming a logger
 
 ## Non-Goals
 
@@ -99,6 +102,8 @@ printer.List(laslig.List{Title: "Packages"})
 printer.Table(laslig.Table{Title: "Results"})
 printer.Panel(laslig.Panel{Title: "Next step", Body: "Run mage check."})
 printer.Box(laslig.Panel{Body: "Box is an alias for Panel."})
+printer.CodeBlock(laslig.CodeBlock{Title: "Example", Language: "go", Body: `fmt.Println("hi")`})
+printer.LogBlock(laslig.LogBlock{Title: "stderr excerpt", Body: "INFO boot complete\nWARN retry scheduled"})
 ```
 
 `FormatAuto` resolves to human output on a terminal and plain text otherwise. `StyleAuto` enables ANSI styling only when the writer is attached to a TTY.
@@ -114,6 +119,26 @@ printer := laslig.New(os.Stdout, laslig.Policy{
 ```
 
 That makes it practical to keep one semantic output path while exposing human, plain, and JSON surfaces from the same command.
+
+## Code And Log Blocks
+
+`laslig` can now render caller-provided code or log excerpts without taking over logging itself:
+
+```go
+_ = printer.CodeBlock(laslig.CodeBlock{
+	Title:    "example.go",
+	Language: "go",
+	Body:     `fmt.Println("hello from laslig")`,
+	Footer:   "Rendered through Glamour for terminal output.",
+})
+
+_ = printer.LogBlock(laslig.LogBlock{
+	Title: "stderr excerpt",
+	Body:  "INFO boot complete\nWARN retry scheduled\nERROR dependency missing",
+})
+```
+
+`CodeBlock` uses Glamour for rich terminal rendering when styled human output is active. `LogBlock` is for explicit caller-provided excerpts, transcripts, and stderr captures. `laslig` still does not replace the application's logger.
 
 ## Structured Test Output
 
@@ -170,9 +195,9 @@ The README GIF is generated from [docs/vhs/showcase.tape](/Users/evanschultz/Doc
 
 ## Planned Next
 
-- broader `testjson` summaries and richer failure grouping
+- Markdown blocks on top of the same Glamour path
 - paragraph and prefix-style helpers
-- nested list support where it adds real value
+- broader `testjson` summaries with caller-tunable sections
 - more README visuals and side-by-side comparisons
 
 ## Development
