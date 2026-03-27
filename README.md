@@ -1,20 +1,43 @@
 # laslig
 
-`laslig` helps Go CLIs print structured, human-readable terminal output with Charm-native styling and sensible defaults.
+`laslig` helps Go CLIs print structured, human-readable output with Charm-native styling and Go-idiomatic ergonomics.
 
 The name comes from the Swedish `läslig`, meaning `legible`.
 
+![laslig demo](docs/vhs/showcase.gif)
+
+## Why
+
+Charm already gives Go developers strong building blocks:
+
+- Lip Gloss for styling and layout
+- Fang for help, usage, and CLI error presentation
+
+What is still missing is a narrow, reusable layer for ordinary command output: results, notices, summaries, tables, and diagnostics that should look intentional without forcing an application into a framework.
+
+`laslig` is that layer.
+
 ## Status
 
-The repository is being bootstrapped now. The design direction is set, the bare-root/worktree workflow is in place, and the initial implementation is being built in phases.
+The first core wave is live. Today the package includes:
 
-## Goals
+- output policy and mode resolution
+- a `Printer`
+- sections
+- notices and diagnostics
+- records and lists
+- tables
+- panels and boxes
 
-- make ordinary CLI output look intentional and readable
-- provide small, composable helpers instead of a framework
-- stay Go-idiomatic: writers in, errors out, no hidden process control
-- work well with Fang, Cobra, Mage, and plain Go CLIs
-- support structured stream rendering, especially `go test -json`
+The next major wave is a Charm-native `go test -json` renderer for use in CLIs and Mage tasks.
+
+## Principles
+
+- small, composable helpers instead of a framework
+- writers in, errors out
+- no hidden process control
+- Charm-native output without depending on Fang or `charm/log`
+- easy adoption in Fang, Cobra, Mage, and plain Go commands
 
 ## Non-Goals
 
@@ -23,68 +46,106 @@ The repository is being bootstrapped now. The design direction is set, the bare-
 - shipping interactive prompt widgets in v1
 - becoming a kitchen-sink terminal toolkit
 
-## Planned Surface
+## Install
 
-The core package is planned to cover:
+```bash
+go get github.com/evanmschultz/laslig
+```
 
-- sections
-- notices and diagnostics
-- records and lists
-- tables
-- boxes and panels
-- badges and key/value views
-- markdown/code rendering where useful
+## Quick Start
 
-The first specialist subpackage is planned for structured test output:
+```go
+package main
 
-- `go test -json` parsing
+import (
+	"os"
+
+	"github.com/evanmschultz/laslig"
+)
+
+func main() {
+	printer := laslig.New(os.Stdout, laslig.Policy{
+		Format: laslig.FormatAuto,
+		Style:  laslig.StyleAuto,
+	})
+
+	_ = printer.Section("release")
+	_ = printer.Notice(laslig.Notice{
+		Level: laslig.NoticeSuccessLevel,
+		Title: "All checks passed",
+		Body:  "The CLI can now print structured output with one small helper.",
+	})
+	_ = printer.Table(laslig.Table{
+		Title:  "artifacts",
+		Header: []string{"name", "status"},
+		Rows: [][]string{
+			{"darwin-arm64", "ready"},
+			{"linux-amd64", "ready"},
+		},
+	})
+}
+```
+
+## Current Surface
+
+```go
+printer.Section("Deploy")
+printer.Notice(laslig.Notice{Level: laslig.NoticeWarningLevel, Title: "Partial success"})
+printer.Record(laslig.Record{Title: "Build"})
+printer.List(laslig.List{Title: "Packages"})
+printer.Table(laslig.Table{Title: "Results"})
+printer.Panel(laslig.Panel{Title: "Next step", Body: "Run mage check."})
+printer.Box(laslig.Panel{Body: "Box is an alias for Panel."})
+```
+
+`FormatAuto` resolves to human output on a terminal and plain text otherwise. `StyleAuto` enables ANSI styling only when the writer is attached to a TTY.
+
+## JSON Mode
+
+The same primitives can render machine-readable payloads:
+
+```go
+printer := laslig.New(os.Stdout, laslig.Policy{
+	Format: laslig.FormatJSON,
+})
+```
+
+That makes it practical to keep one semantic output path while exposing human, plain, and JSON surfaces from the same command.
+
+## Demo
+
+The tracked demo command lives in [cmd/laslig-demo/main.go](/Users/evanschultz/Documents/Code/hylla/laslig/main/cmd/laslig-demo/main.go).
+
+Run it locally:
+
+```bash
+mage demo
+go run ./cmd/laslig-demo --format human --style always
+go run ./cmd/laslig-demo --format json
+```
+
+The README GIF is generated from [docs/vhs/showcase.tape](/Users/evanschultz/Documents/Code/hylla/laslig/main/docs/vhs/showcase.tape).
+
+## Planned Next
+
+- `testjson` package for `go test -json`
 - compact and detailed test renderers
-- end-of-run summaries
-
-## Why This Exists
-
-Charm gives Go developers excellent primitives:
-
-- Lip Gloss for styling and layout
-- Fang for help, usage, and CLI error presentation
-
-What is still missing is a narrow, reusable layer for normal command output.
-
-Two local reference projects in this repo’s research phase, `valv` and `blick`, both had to build their own output layer on top of Lip Gloss. `laslig` is intended to turn that repeated pattern into a reusable package.
-
-## Repository Workflow
-
-This repository uses a bare-root Git workflow:
-
-- the bare control repo lives at the repository root
-- tracked project files live in `main/`
-- local reference clones and development resources live in `.tmp/`
+- end-of-run summaries for passes, failures, skips, and build errors
+- Mage-oriented examples that dogfood `laslig`
 
 ## Development
 
-This project uses Mage for local automation.
-
-Common tasks:
+This repository uses Mage for local automation.
 
 ```bash
 mage check
-mage test
-mage fmt
 mage build
+mage demo
 mage vhs
 ```
 
-## Documentation And Visual Demos
-
-README examples and terminal GIFs are generated from the tracked demo app and VHS tapes under [`docs/vhs/`](/Users/evanschultz/Documents/Code/hylla/laslig/main/docs/vhs).
-
-As the library stabilizes, this README will include:
-
-- API examples
-- before/after output comparisons
-- Mage-oriented examples
-- test renderer demos
+README examples and terminal GIFs are generated from the tracked demo app and VHS tapes under [docs/vhs/](/Users/evanschultz/Documents/Code/hylla/laslig/main/docs/vhs).
 
 ## Plan
 
-The current tracked execution plan lives in [`PLAN.md`](/Users/evanschultz/Documents/Code/hylla/laslig/main/PLAN.md).
+The tracked execution plan lives in [PLAN.md](/Users/evanschultz/Documents/Code/hylla/laslig/main/PLAN.md).

@@ -100,6 +100,11 @@ func Build() error {
 	return run("go", "build", "-o", filepath.Join("bin", "laslig-demo"), "./cmd/laslig-demo")
 }
 
+// Demo runs the tracked demo command.
+func Demo() error {
+	return run("go", "run", "./cmd/laslig-demo")
+}
+
 // VHS renders tracked terminal demos when tapes exist locally.
 func VHS() error {
 	tape := filepath.Join("docs", "vhs", "showcase.tape")
