@@ -40,29 +40,32 @@ func DefaultTheme(mode Mode) Theme {
 		}
 	}
 
-	primary := lipgloss.Color("#7D56F4")
-	primarySoft := lipgloss.Color("99")
-	primaryDeep := lipgloss.Color("63")
-	text := lipgloss.Color("#FAFAFA")
-	subtleText := lipgloss.Color("252")
+	heading := lipgloss.Color("69")
+	label := lipgloss.Color("109")
+	identifier := lipgloss.Color("81")
+	accent := lipgloss.Color("62")
+	border := lipgloss.Color("63")
+	text := lipgloss.Color("252")
 	muted := lipgloss.Color("245")
-	success := lipgloss.Color("#04B575")
-	warning := lipgloss.Color("#FFCC00")
-	errorColor := lipgloss.Color("#FF5F87")
+	success := lipgloss.Color("28")
+	warning := lipgloss.Color("214")
+	errorColor := lipgloss.Color("160")
+	badgeText := lipgloss.Color("230")
+	warningText := lipgloss.Color("232")
 
 	return Theme{
-		Section:       lipgloss.NewStyle().Bold(true).Foreground(primary),
-		Label:         lipgloss.NewStyle().Bold(true).Foreground(subtleText),
+		Section:       lipgloss.NewStyle().Bold(true).Foreground(heading),
+		Label:         lipgloss.NewStyle().Bold(true).Foreground(label),
 		Value:         lipgloss.NewStyle().Foreground(text),
-		Identifier:    lipgloss.NewStyle().Bold(true).Foreground(primarySoft),
+		Identifier:    lipgloss.NewStyle().Bold(true).Foreground(identifier),
 		Muted:         lipgloss.NewStyle().Foreground(muted),
-		Badge:         lipgloss.NewStyle().Bold(true).Foreground(text).Background(primary).Padding(0, 1),
-		Panel:         lipgloss.NewStyle().Border(lipgloss.RoundedBorder()).BorderForeground(primaryDeep).Foreground(text).Padding(1, 2),
-		TableHeader:   lipgloss.NewStyle().Bold(true).Foreground(primarySoft),
-		TableRule:     lipgloss.NewStyle().Foreground(primaryDeep),
-		NoticeInfo:    lipgloss.NewStyle().Bold(true).Foreground(text).Background(primary).Padding(0, 1),
-		NoticeSuccess: lipgloss.NewStyle().Bold(true).Foreground(text).Background(success).Padding(0, 1),
-		NoticeWarning: lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#221400")).Background(warning).Padding(0, 1),
-		NoticeError:   lipgloss.NewStyle().Bold(true).Foreground(text).Background(errorColor).Padding(0, 1),
+		Badge:         lipgloss.NewStyle().Bold(true).Foreground(badgeText).Background(accent).Padding(0, 1),
+		Panel:         lipgloss.NewStyle().Border(lipgloss.RoundedBorder()).BorderForeground(border).Foreground(text).Padding(1, 2),
+		TableHeader:   lipgloss.NewStyle().Bold(true).Foreground(heading),
+		TableRule:     lipgloss.NewStyle().Foreground(border),
+		NoticeInfo:    lipgloss.NewStyle().Bold(true).Foreground(badgeText).Background(accent).Padding(0, 1),
+		NoticeSuccess: lipgloss.NewStyle().Bold(true).Foreground(badgeText).Background(success).Padding(0, 1),
+		NoticeWarning: lipgloss.NewStyle().Bold(true).Foreground(warningText).Background(warning).Padding(0, 1),
+		NoticeError:   lipgloss.NewStyle().Bold(true).Foreground(badgeText).Background(errorColor).Padding(0, 1),
 	}
 }
