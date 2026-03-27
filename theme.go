@@ -47,7 +47,7 @@ func DefaultTheme(mode Mode) Theme {
 	border := lipgloss.Color("63")
 	text := lipgloss.Color("252")
 	muted := lipgloss.Color("245")
-	success := lipgloss.Color("28")
+	success := lipgloss.Color("#04B575")
 	warning := lipgloss.Color("214")
 	errorColor := lipgloss.Color("160")
 	info := lipgloss.Color("69")

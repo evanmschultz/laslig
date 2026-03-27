@@ -354,7 +354,7 @@ func (p *Printer) renderBadge(value string) string {
 	// Mirror blick's compact state-chip palette so only semantic states get strong fills.
 	switch strings.ToLower(strings.TrimSpace(value)) {
 	case "approved", "active", "success", "pass", "ready", "live":
-		style = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("230")).Background(lipgloss.Color("28")).Padding(0, 1)
+		style = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("230")).Background(lipgloss.Color("#04B575")).Padding(0, 1)
 	case "pending", "warn", "warning":
 		style = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("232")).Background(lipgloss.Color("214")).Padding(0, 1)
 	case "denied", "revoked", "error", "fail", "failed":
