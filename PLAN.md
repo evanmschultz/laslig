@@ -310,6 +310,17 @@ Current recommendation:
 - explicit log/transcript helper built on top of boxed block rendering
 - `Markdown` powered by `glamour`
 
+### Pre-Release Ship Pass
+
+- add `LICENSE` with `Apache-2.0`
+- do a full Go-doc and exported-surface comment audit
+- do a full README/docs/example audit for accuracy and consistency
+- do the API freeze pass:
+  - review exported names, fields, defaults, and behavior
+  - rename or trim awkward public surface before release
+  - decide what is considered stable for the first `v0.x` release
+- only after the docs/license/API pass, finish `goreleaser` setup and release workflow wiring
+
 ### Later Theme Pass
 
 - developer-settable themes
