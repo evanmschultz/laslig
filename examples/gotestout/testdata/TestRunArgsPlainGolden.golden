@@ -1,3 +1,7 @@
+
+[INFO] Mixed fixture demo
+  This example intentionally renders one passing test, one skipped test, one failing test, and one package build failure.
+  The example command itself is expected to exit successfully so you can inspect the output shape.
 [FAIL] example/pkg :: TestFail (0.02s)
   main_test.go:42: expected boom
 [PKG FAIL] example/pkg (0.03s)

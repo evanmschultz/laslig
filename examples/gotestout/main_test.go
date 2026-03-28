@@ -34,6 +34,9 @@ func TestRunArgsPlain(t *testing.T) {
 	}
 
 	got := buf.String()
+	if !strings.Contains(got, "[INFO] Mixed fixture demo") {
+		t.Fatalf("runArgs() output missing explanatory notice:\n%s", got)
+	}
 	if !strings.Contains(got, "[FAIL] example/pkg :: TestFail (0.02s)") {
 		t.Fatalf("runArgs() output missing failed test line:\n%s", got)
 	}
@@ -73,6 +76,9 @@ func TestRunArgsHumanStyled(t *testing.T) {
 		t.Fatalf("runArgs() output missing ANSI styling: %q", got)
 	}
 	plain := stripANSI(got)
+	if !strings.Contains(plain, "Mixed fixture demo") {
+		t.Fatalf("runArgs() stripped output missing explanatory notice:\n%s", plain)
+	}
 	if !strings.Contains(plain, "Test summary") {
 		t.Fatalf("runArgs() stripped output missing summary:\n%s", plain)
 	}
@@ -134,5 +140,8 @@ func TestMain(t *testing.T) {
 
 	if !strings.Contains(string(data), "Test summary") {
 		t.Fatalf("main() output missing summary:\n%s", string(data))
+	}
+	if !strings.Contains(string(data), "Mixed fixture demo") {
+		t.Fatalf("main() output missing explanatory notice:\n%s", string(data))
 	}
 }

@@ -12,6 +12,8 @@ import (
 )
 
 // sampleStream is the fixed go test -json fixture used by the focused example.
+// It intentionally includes pass, skip, fail, and build-failure events so the
+// demo shows both happy-path and failure rendering.
 const sampleStream = `{"Action":"run","Package":"example/pkg","Test":"TestPass"}
 {"Action":"output","Package":"example/pkg","Test":"TestPass","Output":"=== RUN   TestPass\n"}
 {"Action":"output","Package":"example/pkg","Test":"TestPass","Output":"note: useful output\n"}
@@ -54,12 +56,27 @@ func runArgs(out io.Writer, args []string) error {
 		return fmt.Errorf("parse flags: %w", err)
 	}
 
+	policy := laslig.Policy{
+		Format: laslig.Format(*format),
+		Style:  laslig.StylePolicy(*style),
+	}
+	if mode := laslig.ResolveMode(out, policy); mode.Format != laslig.FormatJSON {
+		printer := laslig.New(out, policy)
+		if err := printer.Notice(laslig.Notice{
+			Level: laslig.NoticeInfoLevel,
+			Title: "Mixed fixture demo",
+			Body:  "This example intentionally renders one passing test, one skipped test, one failing test, and one package build failure.",
+			Detail: []string{
+				"The example command itself is expected to exit successfully so you can inspect the output shape.",
+			},
+		}); err != nil {
+			return fmt.Errorf("render gotestout example: %w", err)
+		}
+	}
+
 	_, err := gotestout.Render(out, strings.NewReader(sampleStream), gotestout.Options{
-		Policy: laslig.Policy{
-			Format: laslig.Format(*format),
-			Style:  laslig.StylePolicy(*style),
-		},
-		View: gotestout.View(*view),
+		Policy: policy,
+		View:   gotestout.View(*view),
 	})
 	if err != nil {
 		return fmt.Errorf("render gotestout example: %w", err)

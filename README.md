@@ -10,7 +10,8 @@ The main walkthrough shows the core primitives working together:
 
 ![Läslig demo](docs/vhs/showcase.gif)
 
-The focused `gotestout` example shows Charm-native `go test -json` rendering:
+The focused `gotestout` example intentionally uses a mixed pass/skip/fail
+fixture so the README shows Läslig's failure rendering too:
 
 ![gotestout example](docs/vhs/gotestout.gif)
 
@@ -259,6 +260,10 @@ Common ways to try that surface locally:
 go run ./examples/gotestout --format human --style always
 mage test
 ```
+
+The focused `gotestout` GIF and example command intentionally include passing,
+skipped, and failing test events plus one package build failure. That keeps the
+README honest about both the success path and the failure path.
 
 ## Demo
 
