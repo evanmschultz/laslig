@@ -230,7 +230,7 @@ func Build() error {
 	return nil
 }
 
-// Demo clears the screen and walks the focused examples one by one.
+// Demo walks the focused examples one by one as one accumulating walkthrough.
 func Demo() error {
 	examples := []string{
 		"section",
@@ -249,9 +249,9 @@ func Demo() error {
 		"magecheck",
 	}
 
+	fmt.Fprintln(os.Stdout, "Läslig demo")
 	for index, name := range examples {
-		fmt.Fprint(os.Stdout, "\033[H\033[2J")
-		fmt.Fprintf(os.Stdout, "Läslig demo: %s\n\n", name)
+		fmt.Fprintf(os.Stdout, "\nExample: %s\n", name)
 		if err := run("go", "run", localBuildVCSFlag, "./examples/"+name, "--format", "human", "--style", "always"); err != nil {
 			return err
 		}

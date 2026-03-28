@@ -6,7 +6,7 @@ The package and module name stay `laslig`. The product branding is `Läslig`, fr
 
 ## Visual Examples
 
-Every guided demo item now has its own runnable example under [`examples/`](./examples) and its own focused VHS capture under [`docs/vhs/`](./docs/vhs). `mage demo` now clears the screen and walks those focused examples one by one. The hero GIF below is a direct capture of that real `mage demo` flow, while the smaller GIFs underneath stay focused one primitive at a time.
+Every guided demo item now has its own runnable example under [`examples/`](./examples) and its own focused VHS capture under [`docs/vhs/`](./docs/vhs). `mage demo` now prints those focused examples one after another as one accumulating walkthrough. The hero GIF below is a direct capture of that real `mage demo` flow, while the smaller GIFs underneath stay focused one primitive at a time.
 
 [![Läslig full demo walkthrough](docs/vhs/demo.gif)](./examples)
 
