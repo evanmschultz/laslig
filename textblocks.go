@@ -38,7 +38,7 @@ func (p *Printer) Paragraph(paragraph Paragraph) error {
 		lines = append(lines, footer)
 	}
 
-	if _, err := fmt.Fprintln(p.out, strings.Join(lines, "\n\n")); err != nil {
+	if err := p.writeContentString(strings.Join(lines, "\n\n")); err != nil {
 		return fmt.Errorf("write paragraph: %w", err)
 	}
 	return nil
@@ -66,7 +66,7 @@ func (p *Printer) StatusLine(line StatusLine) error {
 		if detail := strings.TrimSpace(line.Detail); detail != "" {
 			rendered += " (" + detail + ")"
 		}
-		if _, err := fmt.Fprintln(p.out, rendered); err != nil {
+		if err := p.writeContentString(rendered); err != nil {
 			return fmt.Errorf("write status line: %w", err)
 		}
 		return nil
@@ -80,7 +80,7 @@ func (p *Printer) StatusLine(line StatusLine) error {
 	if detail := strings.TrimSpace(line.Detail); detail != "" {
 		parts = append(parts, " ", p.theme.Muted.Render("("+detail+")"))
 	}
-	if _, err := fmt.Fprintln(p.out, lipgloss.JoinHorizontal(lipgloss.Top, parts...)); err != nil {
+	if err := p.writeContentString(lipgloss.JoinHorizontal(lipgloss.Top, parts...)); err != nil {
 		return fmt.Errorf("write status line: %w", err)
 	}
 	return nil

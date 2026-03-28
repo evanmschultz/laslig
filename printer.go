@@ -16,9 +16,11 @@ import (
 type Printer struct {
 	out         io.Writer
 	mode        Mode
+	layout      Layout
 	theme       Theme
 	wroteBlocks bool
 	lastBlock   blockKind
+	sectionOpen bool
 }
 
 // blockKind identifies one top-level rendered block family for spacing rules.
@@ -33,18 +35,24 @@ const (
 
 // New constructs one printer by resolving a writer against the provided policy.
 func New(out io.Writer, policy Policy) *Printer {
-	return NewWithMode(out, ResolveMode(out, policy))
+	return newPrinter(out, ResolveMode(out, policy), resolveLayout(policy))
 }
 
 // NewWithMode constructs one printer using an already-resolved output mode.
 func NewWithMode(out io.Writer, mode Mode) *Printer {
+	return newPrinter(out, mode, DefaultLayout())
+}
+
+// newPrinter constructs one printer from already-resolved mode and layout inputs.
+func newPrinter(out io.Writer, mode Mode, layout Layout) *Printer {
 	if out == nil {
 		out = io.Discard
 	}
 	return &Printer{
-		out:   out,
-		mode:  mode,
-		theme: DefaultTheme(mode),
+		out:    out,
+		mode:   mode,
+		layout: layout,
+		theme:  DefaultTheme(mode),
 	}
 }
 
@@ -72,6 +80,7 @@ func (p *Printer) Section(title string) error {
 	if err != nil {
 		return fmt.Errorf("write section: %w", err)
 	}
+	p.sectionOpen = true
 	return nil
 }
 
@@ -100,8 +109,7 @@ func (p *Printer) Notice(notice Notice) error {
 		for _, detail := range notice.Detail {
 			lines = append(lines, internallayout.IndentBlock("  ", p.theme.Muted.Render(p.wrapText(detail, textWidth))))
 		}
-		_, err := fmt.Fprintln(p.out, strings.Join(lines, "\n"))
-		if err != nil {
+		if err := p.writeContentString(strings.Join(lines, "\n")); err != nil {
 			return fmt.Errorf("write notice: %w", err)
 		}
 		return nil
@@ -118,8 +126,7 @@ func (p *Printer) Notice(notice Notice) error {
 	for _, detail := range notice.Detail {
 		lines = append(lines, "  "+detail)
 	}
-	_, err := fmt.Fprintln(p.out, strings.Join(lines, "\n"))
-	if err != nil {
+	if err := p.writeContentString(strings.Join(lines, "\n")); err != nil {
 		return fmt.Errorf("write notice: %w", err)
 	}
 	return nil
@@ -134,16 +141,19 @@ func (p *Printer) Record(record Record) error {
 		return fmt.Errorf("prepare record: %w", err)
 	}
 
-	if _, err := fmt.Fprintln(p.out, p.renderHeading(record.Title)); err != nil {
-		return fmt.Errorf("write record heading: %w", err)
-	}
+	lines := []string{p.renderHeading(record.Title)}
 	if len(record.Fields) == 0 {
-		return p.writeEmpty("  (none)")
+		lines = append(lines, p.theme.Muted.Render("(none)"))
+		if err := p.writeContentString(strings.Join(lines, "\n")); err != nil {
+			return fmt.Errorf("write record empty state: %w", err)
+		}
+		return nil
 	}
 	for _, field := range record.Fields {
-		if _, err := fmt.Fprintf(p.out, "%s\n", p.renderField(field)); err != nil {
-			return fmt.Errorf("write record field: %w", err)
-		}
+		lines = append(lines, p.renderField(field))
+	}
+	if err := p.writeContentString(strings.Join(lines, "\n")); err != nil {
+		return fmt.Errorf("write record: %w", err)
 	}
 	return nil
 }
@@ -157,17 +167,23 @@ func (p *Printer) KV(kv KV) error {
 		return fmt.Errorf("prepare kv: %w", err)
 	}
 
+	lines := []string{}
 	if strings.TrimSpace(kv.Title) != "" {
-		if _, err := fmt.Fprintln(p.out, p.renderHeading(kv.Title)); err != nil {
-			return fmt.Errorf("write kv heading: %w", err)
-		}
+		lines = append(lines, p.renderHeading(kv.Title))
 	}
 	if len(kv.Pairs) == 0 {
 		empty := kv.Empty
 		if strings.TrimSpace(empty) == "" {
 			empty = "(none)"
 		}
-		return p.writeEmpty("  " + empty)
+		if p.mode.Format == FormatHuman {
+			empty = p.theme.Muted.Render(empty)
+		}
+		lines = append(lines, "  "+empty)
+		if err := p.writeContentString(strings.Join(lines, "\n")); err != nil {
+			return fmt.Errorf("write kv empty state: %w", err)
+		}
+		return nil
 	}
 
 	width := 0
@@ -184,9 +200,10 @@ func (p *Printer) KV(kv KV) error {
 		} else {
 			label = fmt.Sprintf("%-*s", width, label)
 		}
-		if _, err := fmt.Fprintf(p.out, "  %s  %s\n", label, p.renderFieldValue(pair)); err != nil {
-			return fmt.Errorf("write kv pair: %w", err)
-		}
+		lines = append(lines, fmt.Sprintf("  %s  %s", label, p.renderFieldValue(pair)))
+	}
+	if err := p.writeContentString(strings.Join(lines, "\n")); err != nil {
+		return fmt.Errorf("write kv: %w", err)
 	}
 	return nil
 }
@@ -200,29 +217,26 @@ func (p *Printer) List(list List) error {
 		return fmt.Errorf("prepare list: %w", err)
 	}
 
-	if _, err := fmt.Fprintln(p.out, p.renderHeading(list.Title)); err != nil {
-		return fmt.Errorf("write list heading: %w", err)
-	}
+	lines := []string{p.renderHeading(list.Title)}
 	if len(list.Items) == 0 {
 		empty := list.Empty
 		if strings.TrimSpace(empty) == "" {
 			empty = "(none)"
 		}
-		return p.writeEmpty("- " + empty)
+		return p.writeContentString(strings.Join(append(lines, p.renderListMarker(0)+" "+empty), "\n"))
 	}
-	for _, item := range list.Items {
+	for index, item := range list.Items {
 		title := item.Title
 		if strings.TrimSpace(item.Badge) != "" {
 			title += " " + p.renderBadge(item.Badge)
 		}
-		if _, err := fmt.Fprintf(p.out, "- %s\n", p.renderValue(title)); err != nil {
-			return fmt.Errorf("write list title: %w", err)
-		}
+		lines = append(lines, p.renderListMarker(index)+" "+p.renderValue(title))
 		for _, field := range item.Fields {
-			if _, err := fmt.Fprintf(p.out, "%s\n", p.renderField(field)); err != nil {
-				return fmt.Errorf("write list field: %w", err)
-			}
+			lines = append(lines, p.renderField(field))
 		}
+	}
+	if err := p.writeContentString(strings.Join(lines, "\n")); err != nil {
+		return fmt.Errorf("write list: %w", err)
 	}
 	return nil
 }
@@ -236,39 +250,44 @@ func (p *Printer) Table(table Table) error {
 		return fmt.Errorf("prepare table: %w", err)
 	}
 
+	lines := []string{}
 	if strings.TrimSpace(table.Title) != "" {
-		if _, err := fmt.Fprintln(p.out, p.renderHeading(table.Title)); err != nil {
-			return fmt.Errorf("write table heading: %w", err)
-		}
+		lines = append(lines, p.renderHeading(table.Title))
 	}
 	if len(table.Rows) == 0 {
 		empty := table.Empty
 		if strings.TrimSpace(empty) == "" {
 			empty = "(none)"
 		}
-		return p.writeEmpty("  " + empty)
+		if p.mode.Format == FormatHuman {
+			empty = p.theme.Muted.Render(empty)
+		}
+		lines = append(lines, empty)
+		if err := p.writeContentString(strings.Join(lines, "\n")); err != nil {
+			return fmt.Errorf("write table empty state: %w", err)
+		}
+		return nil
 	}
 
 	rendered := internaltable.Render(table.Header, table.Rows, internaltable.Mode{
 		Human: p.mode.Format == FormatHuman,
-		Width: p.mode.Width,
+		Width: p.availableWidth(),
 	}, internaltable.Styles{
 		Header: p.theme.TableHeader,
 		Rule:   p.theme.TableRule,
 		Even:   lipgloss.NewStyle().Foreground(lipgloss.Color("241")),
 		Odd:    lipgloss.NewStyle().Foreground(lipgloss.Color("245")),
 	})
-	if _, err := fmt.Fprintln(p.out, rendered); err != nil {
-		return fmt.Errorf("write table body: %w", err)
-	}
+	lines = append(lines, rendered)
 	if strings.TrimSpace(table.Caption) != "" {
 		caption := table.Caption
 		if p.mode.Format == FormatHuman {
 			caption = p.theme.Muted.Render(caption)
 		}
-		if _, err := fmt.Fprintf(p.out, "%s\n", caption); err != nil {
-			return fmt.Errorf("write table caption: %w", err)
-		}
+		lines = append(lines, caption)
+	}
+	if err := p.writeContentString(strings.Join(lines, "\n")); err != nil {
+		return fmt.Errorf("write table: %w", err)
 	}
 	return nil
 }
@@ -303,7 +322,7 @@ func (p *Printer) Panel(panel Panel) error {
 			content = p.theme.Panel.Render(content)
 		}
 	}
-	if _, err := fmt.Fprintln(p.out, content); err != nil {
+	if err := p.writeContentString(content); err != nil {
 		return fmt.Errorf("write panel: %w", err)
 	}
 	return nil
@@ -333,14 +352,17 @@ func (p *Printer) beginBlock(kind blockKind) error {
 		return nil
 	}
 	if !p.wroteBlocks {
+		if err := p.writeBlankLines(p.layout.leadingGap); err != nil {
+			return err
+		}
 		p.wroteBlocks = true
 		p.lastBlock = kind
 		return nil
 	}
 
-	gapLines := 1
+	gapLines := p.layout.blockGap
 	if kind == blockKindSection && p.lastBlock != blockKindSection {
-		gapLines = 2
+		gapLines = p.layout.sectionGap
 	}
 	if err := p.writeBlankLines(gapLines); err != nil {
 		return err
@@ -360,17 +382,10 @@ func (p *Printer) writeBlankLines(count int) error {
 }
 
 func (p *Printer) writeEmpty(value string) error {
+	value = p.applyContentIndent(strings.TrimSpace(value))
 	switch p.mode.Format {
 	case FormatHuman:
-		trimmed := strings.TrimSpace(value)
-		if strings.HasPrefix(trimmed, "-") {
-			_, err := fmt.Fprintf(p.out, "- %s\n", p.theme.Muted.Render(strings.TrimSpace(strings.TrimPrefix(trimmed, "-"))))
-			if err != nil {
-				return fmt.Errorf("write empty state: %w", err)
-			}
-			return nil
-		}
-		_, err := fmt.Fprintf(p.out, "%s\n", p.theme.Muted.Render(strings.TrimSpace(value)))
+		_, err := fmt.Fprintf(p.out, "%s\n", p.theme.Muted.Render(value))
 		if err != nil {
 			return fmt.Errorf("write empty state: %w", err)
 		}
@@ -463,10 +478,11 @@ func (p *Printer) noticeBadge(level NoticeLevel) string {
 }
 
 func (p *Printer) maxTextWidth() int {
-	if p.mode.Format != FormatHuman || p.mode.Width <= 0 {
+	width := p.availableWidth()
+	if p.mode.Format != FormatHuman || width <= 0 {
 		return 0
 	}
-	width := p.mode.Width - 8
+	width -= 8
 	if width < 32 {
 		return 32
 	}
@@ -477,10 +493,11 @@ func (p *Printer) maxTextWidth() int {
 }
 
 func (p *Printer) maxPanelWidth() int {
-	if p.mode.Format != FormatHuman || p.mode.Width <= 0 {
+	width := p.availableWidth()
+	if p.mode.Format != FormatHuman || width <= 0 {
 		return 0
 	}
-	width := p.mode.Width - 4
+	width -= 4
 	if width < 48 {
 		return 48
 	}
@@ -495,4 +512,53 @@ func (p *Printer) wrapText(value string, width int) string {
 		return value
 	}
 	return internallayout.WrapText(value, width)
+}
+
+// availableWidth returns the terminal width remaining after section indentation.
+func (p *Printer) availableWidth() int {
+	if p.mode.Width <= 0 {
+		return 0
+	}
+	width := p.mode.Width - p.currentContentIndent()
+	if width < 0 {
+		return 0
+	}
+	return width
+}
+
+// currentContentIndent returns the active section-body indent for content blocks.
+func (p *Printer) currentContentIndent() int {
+	if !p.sectionOpen {
+		return 0
+	}
+	return p.layout.sectionIndent
+}
+
+// applyContentIndent applies the active section indent to one rendered block.
+func (p *Printer) applyContentIndent(value string) string {
+	indent := p.currentContentIndent()
+	if indent <= 0 || strings.TrimSpace(value) == "" {
+		return value
+	}
+	return internallayout.IndentBlock(strings.Repeat(" ", indent), value)
+}
+
+// writeContentString writes one rendered content block with active section indentation.
+func (p *Printer) writeContentString(value string) error {
+	if _, err := fmt.Fprintln(p.out, p.applyContentIndent(value)); err != nil {
+		return fmt.Errorf("write content block: %w", err)
+	}
+	return nil
+}
+
+// renderListMarker renders the configured marker for one list item index.
+func (p *Printer) renderListMarker(index int) string {
+	switch p.layout.listMarker {
+	case ListMarkerBullet:
+		return "•"
+	case ListMarkerNumber:
+		return fmt.Sprintf("%d.", index+1)
+	default:
+		return "-"
+	}
 }

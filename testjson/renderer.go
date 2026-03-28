@@ -39,12 +39,17 @@ type Renderer struct {
 func NewRenderer(out io.Writer, options Options) *Renderer {
 	options = withDefaults(options)
 	mode := laslig.ResolveMode(out, options.Policy)
+	layout := laslig.DefaultLayout().WithLeadingGap(0)
 
 	renderer := &Renderer{
-		out:         out,
-		mode:        mode,
-		theme:       laslig.DefaultTheme(mode),
-		printer:     laslig.NewWithMode(out, mode),
+		out:   out,
+		mode:  mode,
+		theme: laslig.DefaultTheme(mode),
+		printer: laslig.New(out, laslig.Policy{
+			Format: options.Policy.Format,
+			Style:  options.Policy.Style,
+			Layout: &layout,
+		}),
 		options:     options,
 		outputs:     make(map[outputKey][]string),
 		buildFailed: make(map[string]bool),

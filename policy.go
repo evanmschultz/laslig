@@ -36,6 +36,75 @@ const (
 type Policy struct {
 	Format Format
 	Style  StylePolicy
+	Layout *Layout
+}
+
+// ListMarker identifies the marker shape used for unordered and ordered list output.
+type ListMarker string
+
+const (
+	// ListMarkerDash renders list items with a dash marker.
+	ListMarkerDash ListMarker = "dash"
+	// ListMarkerBullet renders list items with a bullet marker.
+	ListMarkerBullet ListMarker = "bullet"
+	// ListMarkerNumber renders list items with an ordinal marker.
+	ListMarkerNumber ListMarker = "number"
+)
+
+// Layout describes the high-level document rhythm used by one printer.
+//
+// Use DefaultLayout as a base, then override individual values with the
+// builder-style helpers when a command wants a different shape.
+type Layout struct {
+	leadingGap    int
+	blockGap      int
+	sectionGap    int
+	sectionIndent int
+	listMarker    ListMarker
+}
+
+// DefaultLayout returns the opinionated default document layout used by laslig.
+func DefaultLayout() Layout {
+	return Layout{
+		leadingGap:    1,
+		blockGap:      1,
+		sectionGap:    2,
+		sectionIndent: 2,
+		listMarker:    ListMarkerDash,
+	}
+}
+
+// WithLeadingGap returns one layout with an updated leading gap.
+func (l Layout) WithLeadingGap(count int) Layout {
+	l.leadingGap = clampNonNegative(count)
+	return l
+}
+
+// WithBlockGap returns one layout with an updated ordinary block gap.
+func (l Layout) WithBlockGap(count int) Layout {
+	l.blockGap = clampNonNegative(count)
+	return l
+}
+
+// WithSectionGap returns one layout with an updated section gap.
+func (l Layout) WithSectionGap(count int) Layout {
+	l.sectionGap = clampNonNegative(count)
+	return l
+}
+
+// WithSectionIndent returns one layout with an updated section-body indent.
+func (l Layout) WithSectionIndent(count int) Layout {
+	l.sectionIndent = clampNonNegative(count)
+	return l
+}
+
+// WithListMarker returns one layout with an updated list marker style.
+func (l Layout) WithListMarker(marker ListMarker) Layout {
+	if marker == "" {
+		marker = ListMarkerDash
+	}
+	l.listMarker = marker
+	return l
 }
 
 // Mode describes the resolved output behavior for one writer, including the
@@ -88,4 +157,28 @@ func ResolveMode(out io.Writer, policy Policy) Mode {
 		Styled: styled,
 		Width:  width,
 	}
+}
+
+// resolveLayout resolves the requested layout policy into one concrete layout.
+func resolveLayout(policy Policy) Layout {
+	if policy.Layout == nil {
+		return DefaultLayout()
+	}
+	layout := *policy.Layout
+	if layout.listMarker == "" {
+		layout.listMarker = ListMarkerDash
+	}
+	layout.leadingGap = clampNonNegative(layout.leadingGap)
+	layout.blockGap = clampNonNegative(layout.blockGap)
+	layout.sectionGap = clampNonNegative(layout.sectionGap)
+	layout.sectionIndent = clampNonNegative(layout.sectionIndent)
+	return layout
+}
+
+// clampNonNegative keeps layout counts at zero or above.
+func clampNonNegative(count int) int {
+	if count < 0 {
+		return 0
+	}
+	return count
 }

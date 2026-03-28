@@ -22,6 +22,7 @@ What is still missing is a narrow, reusable layer for ordinary command output: r
 The first core wave is live. Today the package includes:
 
 - output policy and mode resolution
+- document-layout defaults with caller-tunable spacing, section indentation, and list markers
 - a `Printer`
 - sections
 - notices and diagnostics
@@ -114,6 +115,30 @@ printer.LogBlock(laslig.LogBlock{Title: "stderr excerpt", Body: "INFO boot compl
 ```
 
 `FormatAuto` resolves to human output on a terminal and plain text otherwise. `StyleAuto` enables ANSI styling only when the writer is attached to a TTY.
+
+## Layout
+
+Läslig now treats output more like a document by default:
+
+- one leading blank line before the first rendered block
+- one blank line between ordinary blocks
+- stronger separation before new sections
+- section-owned indentation for blocks that follow a `Section`
+
+Commands can tune that shape when they need something flatter:
+
+```go
+layout := laslig.DefaultLayout().
+	WithLeadingGap(0).
+	WithSectionIndent(0).
+	WithListMarker(laslig.ListMarkerBullet)
+
+printer := laslig.New(os.Stdout, laslig.Policy{
+	Format: laslig.FormatAuto,
+	Style:  laslig.StyleAuto,
+	Layout: &layout,
+})
+```
 
 ## JSON Mode
 
@@ -208,6 +233,7 @@ This repository already dogfoods that pattern in [`magefile.go`](/Users/evanschu
 ## Demo
 
 The tracked all-in-one showcase lives in [examples/all/main.go](/Users/evanschultz/Documents/Code/hylla/laslig/main/examples/all/main.go).
+The focused logging example that uses `charm.land/log/v2` as a demo-only dependency lives in [examples/logging/main.go](/Users/evanschultz/Documents/Code/hylla/laslig/main/examples/logging/main.go).
 Small verified Go doc examples live in [example_test.go](/Users/evanschultz/Documents/Code/hylla/laslig/main/example_test.go).
 The main showcase groups the library into structured blocks and rich-text blocks so the visual walkthrough stays readable.
 
@@ -215,8 +241,10 @@ Run it locally:
 
 ```bash
 mage demo
+mage demoLogging
 go run ./examples/all --format human --style always
 go run ./examples/all --format json
+cd examples/logging && go run .
 ```
 
 The README GIF is generated from [docs/vhs/showcase.tape](/Users/evanschultz/Documents/Code/hylla/laslig/main/docs/vhs/showcase.tape).

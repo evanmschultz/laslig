@@ -31,6 +31,8 @@ The gap we are filling:
 - phase 4A has shipped `Paragraph`, `StatusLine`, `Markdown`, `CodeBlock`, and explicit `LogBlock` primitives
 - phase 4 docs/demo alignment is expanding the grouped showcase for the newer rich-text blocks
 - structural output review now includes golden snapshots for the demo and `testjson` plain output
+- the layout pass now includes public layout defaults for leading gap, section-owned indentation, and list-marker customization
+- runnable examples now live under `examples/`, including a demo-only `charm/log` transcript example
 
 ## Architecture
 

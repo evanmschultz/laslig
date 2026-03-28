@@ -220,6 +220,18 @@ func Demo() error {
 	return run("go", "run", "./examples/all")
 }
 
+// DemoLogging runs the focused charm/log integration showcase from its own example module.
+func DemoLogging() error {
+	command := exec.Command("go", "run", ".")
+	command.Dir = filepath.Join("examples", "logging")
+	command.Stdout = os.Stdout
+	command.Stderr = os.Stderr
+	if err := command.Run(); err != nil {
+		return fmt.Errorf("go run ./examples/logging: %w", err)
+	}
+	return nil
+}
+
 // VHS renders tracked terminal demos when tapes exist locally.
 func VHS() error {
 	tape := filepath.Join("docs", "vhs", "showcase.tape")

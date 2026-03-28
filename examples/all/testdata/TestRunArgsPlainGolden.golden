@@ -1,71 +1,72 @@
+
 Läslig demo
 
-[INFO] Readable by default
-  Structured output should look intentional without forcing a framework.
-  Use laslig for results and diagnostics.
-  Keep logging and CLI orchestration separate.
+  [INFO] Readable by default
+    Structured output should look intentional without forcing a framework.
+    Use laslig for results and diagnostics.
+    Keep logging and CLI orchestration separate.
 
 
 Structured Blocks
 
-Project
-  module: github.com/evanmschultz/laslig
-  runtime deps: Charm + stdlib
-  task runner: Mage
+  Project
+    module: github.com/evanmschultz/laslig
+    runtime deps: Charm + stdlib
+    task runner: Mage
 
-Policy
-  format  plain
-  styled  false
+  Policy
+    format  plain
+    styled  false
 
-Surfaces
-- Structured blocks [READY]
-  use: records, tables, notices, panels
-- Rich text [READY]
-  use: paragraphs, markdown, code, transcripts
-- testjson [LIVE]
-  use: Charm-native go test output
+  Surfaces
+  - Structured blocks [READY]
+    use: records, tables, notices, panels
+  - Rich text [READY]
+    use: paragraphs, markdown, code, transcripts
+  - testjson [LIVE]
+    use: Charm-native go test output
 
-Formats
-format | goal
--------+--------------------------
-human  | pleasant terminal output
-plain  | stable no-ANSI text
-json   | machine-readable payloads
-One policy, three surfaces.
+  Formats
+  format | goal
+  -------+--------------------------
+  human  | pleasant terminal output
+  plain  | stable no-ANSI text
+  json   | machine-readable payloads
+  One policy, three surfaces.
 
 
 Rich Text
 
-Why prose matters
+  Why prose matters
+  
+  Long-form command output should stay readable without forcing every caller to hand-build wrapped Lip Gloss layouts.
+  
+  Use Paragraph when a Notice or Panel would be too heavy.
 
-Long-form command output should stay readable without forcing every caller to hand-build wrapped Lip Gloss layouts.
+  [SUCCESS] Build ready (mage check)
 
-Use Paragraph when a Notice or Panel would be too heavy.
+  # Release Notes
+  
+  ## Highlights
+  
+  - one renderer
+  - three output surfaces
+  - caller-owned logging
 
-[SUCCESS] Build ready (mage check)
+  example.go
+  
+  fmt.Println("hello from laslig")
+  
+  Rendered through Glamour in styled human mode.
 
-# Release Notes
+  stderr excerpt
+  
+  INFO boot complete
+  WARN retry scheduled
+  ERROR dependency missing
 
-## Highlights
-
-- one renderer
-- three output surfaces
-- caller-owned logging
-
-example.go
-
-fmt.Println("hello from laslig")
-
-Rendered through Glamour in styled human mode.
-
-stderr excerpt
-
-INFO boot complete
-WARN retry scheduled
-ERROR dependency missing
-
-Why this shape
-
-Fang should own help and command errors. Laslig should own ordinary output blocks, rich text, and stream summaries.
-
-Next up: theme presets and richer test classification.
+  Why this shape
+  
+  Fang should own help and command errors. Laslig should own ordinary output blocks, rich text, and stream summaries.
+  
+  Next up: theme presets and richer test classification.

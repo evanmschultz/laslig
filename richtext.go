@@ -43,7 +43,7 @@ func (p *Printer) Markdown(block Markdown) error {
 		lines = append(lines, rendered)
 	}
 
-	if _, err := fmt.Fprintln(p.out, strings.Join(lines, "\n\n")); err != nil {
+	if err := p.writeContentString(strings.Join(lines, "\n\n")); err != nil {
 		return fmt.Errorf("write markdown: %w", err)
 	}
 	return nil
@@ -113,7 +113,7 @@ func (p *Printer) writeFramedBlock(kind string, title string, body string, foote
 	if p.mode.Format == FormatHuman && p.mode.Styled {
 		content = p.renderFramedContent(content)
 	}
-	if _, err := fmt.Fprintln(p.out, content); err != nil {
+	if err := p.writeContentString(content); err != nil {
 		return fmt.Errorf("write %s content: %w", kind, err)
 	}
 	return nil

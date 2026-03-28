@@ -6,12 +6,20 @@ import (
 	"github.com/evanmschultz/laslig"
 )
 
-// ExamplePrinter_Record shows one simple record render with plain output.
-func ExamplePrinter_Record() {
-	printer := laslig.New(os.Stdout, laslig.Policy{
+// newExamplePrinter constructs one plain printer without the default leading gap
+// so package examples stay compact in rendered Go docs.
+func newExamplePrinter() *laslig.Printer {
+	layout := laslig.DefaultLayout().WithLeadingGap(0)
+	return laslig.New(os.Stdout, laslig.Policy{
 		Format: laslig.FormatPlain,
 		Style:  laslig.StyleNever,
+		Layout: &layout,
 	})
+}
+
+// ExamplePrinter_Record shows one simple record render with plain output.
+func ExamplePrinter_Record() {
+	printer := newExamplePrinter()
 
 	_ = printer.Record(laslig.Record{
 		Title: "Build",
@@ -29,10 +37,7 @@ func ExamplePrinter_Record() {
 
 // ExamplePrinter_KV shows aligned key-value rendering.
 func ExamplePrinter_KV() {
-	printer := laslig.New(os.Stdout, laslig.Policy{
-		Format: laslig.FormatPlain,
-		Style:  laslig.StyleNever,
-	})
+	printer := newExamplePrinter()
 
 	_ = printer.KV(laslig.KV{
 		Title: "Config",
@@ -52,10 +57,7 @@ func ExamplePrinter_KV() {
 
 // ExamplePrinter_Notice shows one warning notice rendered without ANSI styling.
 func ExamplePrinter_Notice() {
-	printer := laslig.New(os.Stdout, laslig.Policy{
-		Format: laslig.FormatPlain,
-		Style:  laslig.StyleNever,
-	})
+	printer := newExamplePrinter()
 
 	_ = printer.Notice(laslig.Notice{
 		Level: laslig.NoticeWarningLevel,
@@ -76,10 +78,7 @@ func ExamplePrinter_Notice() {
 
 // ExamplePrinter_Table shows one plain table render for stable text output.
 func ExamplePrinter_Table() {
-	printer := laslig.New(os.Stdout, laslig.Policy{
-		Format: laslig.FormatPlain,
-		Style:  laslig.StyleNever,
-	})
+	printer := newExamplePrinter()
 
 	_ = printer.Table(laslig.Table{
 		Title:  "Targets",
@@ -102,10 +101,7 @@ func ExamplePrinter_Table() {
 
 // ExamplePrinter_Paragraph shows one wrapped long-form text block in plain mode.
 func ExamplePrinter_Paragraph() {
-	printer := laslig.New(os.Stdout, laslig.Policy{
-		Format: laslig.FormatPlain,
-		Style:  laslig.StyleNever,
-	})
+	printer := newExamplePrinter()
 
 	_ = printer.Paragraph(laslig.Paragraph{
 		Title:  "Why",
@@ -123,10 +119,7 @@ func ExamplePrinter_Paragraph() {
 
 // ExamplePrinter_StatusLine shows one compact status row in plain mode.
 func ExamplePrinter_StatusLine() {
-	printer := laslig.New(os.Stdout, laslig.Policy{
-		Format: laslig.FormatPlain,
-		Style:  laslig.StyleNever,
-	})
+	printer := newExamplePrinter()
 
 	_ = printer.StatusLine(laslig.StatusLine{
 		Level:  laslig.NoticeSuccessLevel,
@@ -140,10 +133,7 @@ func ExamplePrinter_StatusLine() {
 
 // ExamplePrinter_Markdown shows one Markdown block rendered as source in plain mode.
 func ExamplePrinter_Markdown() {
-	printer := laslig.New(os.Stdout, laslig.Policy{
-		Format: laslig.FormatPlain,
-		Style:  laslig.StyleNever,
-	})
+	printer := newExamplePrinter()
 
 	_ = printer.Markdown(laslig.Markdown{
 		Body: "# Notes\n\n- first\n- second",
@@ -158,10 +148,7 @@ func ExamplePrinter_Markdown() {
 
 // ExamplePrinter_LogBlock shows one plain boxed-log surface without owning logging.
 func ExamplePrinter_LogBlock() {
-	printer := laslig.New(os.Stdout, laslig.Policy{
-		Format: laslig.FormatPlain,
-		Style:  laslig.StyleNever,
-	})
+	printer := newExamplePrinter()
 
 	_ = printer.LogBlock(laslig.LogBlock{
 		Title: "stderr excerpt",

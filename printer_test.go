@@ -2,9 +2,17 @@ package laslig
 
 import (
 	"bytes"
+	"io"
 	"strings"
 	"testing"
 )
+
+// newTestPrinter constructs one printer with the default leading gap disabled so
+// primitive formatting tests can focus on block content.
+func newTestPrinter(out io.Writer, mode Mode) *Printer {
+	layout := DefaultLayout().WithLeadingGap(0)
+	return newPrinter(out, mode, layout)
+}
 
 // TestResolveModePlainForBuffer verifies that non-terminal writers resolve to plain output by default.
 func TestResolveModePlainForBuffer(t *testing.T) {
@@ -31,7 +39,7 @@ func TestResolveModeHumanStyleAlways(t *testing.T) {
 // TestNoticePlain verifies plain notice rendering.
 func TestNoticePlain(t *testing.T) {
 	var buf bytes.Buffer
-	printer := NewWithMode(&buf, Mode{Format: FormatPlain})
+	printer := newTestPrinter(&buf, Mode{Format: FormatPlain})
 
 	err := printer.Notice(Notice{
 		Level: NoticeWarningLevel,
@@ -51,7 +59,7 @@ func TestNoticePlain(t *testing.T) {
 // TestNoticeHumanStyled verifies styled human notice rendering and default level handling.
 func TestNoticeHumanStyled(t *testing.T) {
 	var buf bytes.Buffer
-	printer := NewWithMode(&buf, Mode{Format: FormatHuman, Styled: true})
+	printer := newTestPrinter(&buf, Mode{Format: FormatHuman, Styled: true})
 
 	err := printer.Notice(Notice{
 		Title:  "Heads up",
@@ -74,7 +82,7 @@ func TestNoticeHumanStyled(t *testing.T) {
 // TestNoticeHumanWrap verifies human notice wrapping when a width is available.
 func TestNoticeHumanWrap(t *testing.T) {
 	var buf bytes.Buffer
-	printer := NewWithMode(&buf, Mode{Format: FormatHuman, Styled: false, Width: 52})
+	printer := newTestPrinter(&buf, Mode{Format: FormatHuman, Styled: false, Width: 52})
 
 	err := printer.Notice(Notice{
 		Title: "Heads up",
@@ -92,7 +100,7 @@ func TestNoticeHumanWrap(t *testing.T) {
 
 // TestRenderBadgeHumanStyled verifies semantic badge values use distinct styled chips.
 func TestRenderBadgeHumanStyled(t *testing.T) {
-	printer := NewWithMode(&bytes.Buffer{}, Mode{Format: FormatHuman, Styled: true})
+	printer := newTestPrinter(&bytes.Buffer{}, Mode{Format: FormatHuman, Styled: true})
 
 	pass := printer.renderBadge("pass")
 	custom := printer.renderBadge("custom")
@@ -121,7 +129,7 @@ func TestRenderBadgeHumanStyled(t *testing.T) {
 // TestSectionJSON verifies JSON section rendering.
 func TestSectionJSON(t *testing.T) {
 	var buf bytes.Buffer
-	printer := NewWithMode(&buf, Mode{Format: FormatJSON})
+	printer := newTestPrinter(&buf, Mode{Format: FormatJSON})
 
 	err := printer.Section("release")
 	if err != nil {
@@ -152,7 +160,7 @@ func TestSectionPlainSpacing(t *testing.T) {
 		t.Fatalf("Section() error = %v", err)
 	}
 
-	want := "Intro\n\n[INFO] Readable\n\n\nNext\n"
+	want := "\nIntro\n\n  [INFO] Readable\n\n\nNext\n"
 	if got := buf.String(); got != want {
 		t.Fatalf("flow spacing output = %q, want %q", got, want)
 	}
@@ -172,7 +180,7 @@ func TestDefaultThemeHumanStyled(t *testing.T) {
 // TestRecordJSON verifies machine-readable record rendering.
 func TestRecordJSON(t *testing.T) {
 	var buf bytes.Buffer
-	printer := NewWithMode(&buf, Mode{Format: FormatJSON})
+	printer := newTestPrinter(&buf, Mode{Format: FormatJSON})
 
 	err := printer.Record(Record{
 		Title: "Project",
@@ -196,7 +204,7 @@ func TestRecordJSON(t *testing.T) {
 // TestKVPlain verifies plain aligned key-value rendering.
 func TestKVPlain(t *testing.T) {
 	var buf bytes.Buffer
-	printer := NewWithMode(&buf, Mode{Format: FormatPlain})
+	printer := newTestPrinter(&buf, Mode{Format: FormatPlain})
 
 	err := printer.KV(KV{
 		Title: "Project",
@@ -218,7 +226,7 @@ func TestKVPlain(t *testing.T) {
 // TestKVJSON verifies machine-readable kv rendering.
 func TestKVJSON(t *testing.T) {
 	var buf bytes.Buffer
-	printer := NewWithMode(&buf, Mode{Format: FormatJSON})
+	printer := newTestPrinter(&buf, Mode{Format: FormatJSON})
 
 	err := printer.KV(KV{
 		Title: "Project",
@@ -239,7 +247,7 @@ func TestKVJSON(t *testing.T) {
 // TestListHumanNoStyle verifies unstyled human list rendering.
 func TestListHumanNoStyle(t *testing.T) {
 	var buf bytes.Buffer
-	printer := NewWithMode(&buf, Mode{Format: FormatHuman, Styled: false})
+	printer := newTestPrinter(&buf, Mode{Format: FormatHuman, Styled: false})
 
 	err := printer.List(List{
 		Title: "Profiles",
@@ -263,7 +271,7 @@ func TestListHumanNoStyle(t *testing.T) {
 // TestListEmptyPlain verifies plain empty list rendering.
 func TestListEmptyPlain(t *testing.T) {
 	var buf bytes.Buffer
-	printer := NewWithMode(&buf, Mode{Format: FormatPlain})
+	printer := newTestPrinter(&buf, Mode{Format: FormatPlain})
 
 	err := printer.List(List{Title: "Profiles"})
 	if err != nil {
@@ -279,7 +287,7 @@ func TestListEmptyPlain(t *testing.T) {
 // TestTablePlain verifies plain table rendering.
 func TestTablePlain(t *testing.T) {
 	var buf bytes.Buffer
-	printer := NewWithMode(&buf, Mode{Format: FormatPlain})
+	printer := newTestPrinter(&buf, Mode{Format: FormatPlain})
 
 	err := printer.Table(Table{
 		Title:  "Packages",
@@ -301,7 +309,7 @@ func TestTablePlain(t *testing.T) {
 // TestTableEmptyHumanNoStyle verifies human empty table rendering.
 func TestTableEmptyHumanNoStyle(t *testing.T) {
 	var buf bytes.Buffer
-	printer := NewWithMode(&buf, Mode{Format: FormatHuman, Styled: false})
+	printer := newTestPrinter(&buf, Mode{Format: FormatHuman, Styled: false})
 
 	err := printer.Table(Table{Title: "Packages"})
 	if err != nil {
@@ -317,7 +325,7 @@ func TestTableEmptyHumanNoStyle(t *testing.T) {
 // TestPanelHumanNoStyle verifies unstyled human panel rendering.
 func TestPanelHumanNoStyle(t *testing.T) {
 	var buf bytes.Buffer
-	printer := NewWithMode(&buf, Mode{Format: FormatHuman, Styled: false})
+	printer := newTestPrinter(&buf, Mode{Format: FormatHuman, Styled: false})
 
 	err := printer.Panel(Panel{
 		Title:  "Next step",
@@ -337,7 +345,7 @@ func TestPanelHumanNoStyle(t *testing.T) {
 // TestPanelHumanWrap verifies panel content wraps when a width is available.
 func TestPanelHumanWrap(t *testing.T) {
 	var buf bytes.Buffer
-	printer := NewWithMode(&buf, Mode{Format: FormatHuman, Styled: false, Width: 56})
+	printer := newTestPrinter(&buf, Mode{Format: FormatHuman, Styled: false, Width: 56})
 
 	err := printer.Panel(Panel{
 		Title:  "Why this shape",
@@ -357,7 +365,7 @@ func TestPanelHumanWrap(t *testing.T) {
 // TestParagraphPlain verifies plain paragraph rendering preserves structure.
 func TestParagraphPlain(t *testing.T) {
 	var buf bytes.Buffer
-	printer := NewWithMode(&buf, Mode{Format: FormatPlain})
+	printer := newTestPrinter(&buf, Mode{Format: FormatPlain})
 
 	err := printer.Paragraph(Paragraph{
 		Title:  "Why",
@@ -377,7 +385,7 @@ func TestParagraphPlain(t *testing.T) {
 // TestParagraphHumanWrap verifies paragraph bodies wrap for narrower human widths.
 func TestParagraphHumanWrap(t *testing.T) {
 	var buf bytes.Buffer
-	printer := NewWithMode(&buf, Mode{Format: FormatHuman, Styled: false, Width: 48})
+	printer := newTestPrinter(&buf, Mode{Format: FormatHuman, Styled: false, Width: 48})
 
 	err := printer.Paragraph(Paragraph{
 		Title: "Why",
@@ -395,7 +403,7 @@ func TestParagraphHumanWrap(t *testing.T) {
 // TestStatusLinePlain verifies plain status-line rendering is compact and stable.
 func TestStatusLinePlain(t *testing.T) {
 	var buf bytes.Buffer
-	printer := NewWithMode(&buf, Mode{Format: FormatPlain})
+	printer := newTestPrinter(&buf, Mode{Format: FormatPlain})
 
 	err := printer.StatusLine(StatusLine{
 		Level:  NoticeSuccessLevel,
@@ -415,7 +423,7 @@ func TestStatusLinePlain(t *testing.T) {
 // TestStatusLineJSON verifies machine-readable status-line rendering.
 func TestStatusLineJSON(t *testing.T) {
 	var buf bytes.Buffer
-	printer := NewWithMode(&buf, Mode{Format: FormatJSON})
+	printer := newTestPrinter(&buf, Mode{Format: FormatJSON})
 
 	err := printer.StatusLine(StatusLine{
 		Level: NoticeWarningLevel,
@@ -437,7 +445,7 @@ func TestStatusLineJSON(t *testing.T) {
 // TestMarkdownPlain verifies plain Markdown rendering preserves the source text.
 func TestMarkdownPlain(t *testing.T) {
 	var buf bytes.Buffer
-	printer := NewWithMode(&buf, Mode{Format: FormatPlain})
+	printer := newTestPrinter(&buf, Mode{Format: FormatPlain})
 
 	err := printer.Markdown(Markdown{
 		Title:  "Notes",
@@ -457,7 +465,7 @@ func TestMarkdownPlain(t *testing.T) {
 // TestMarkdownHumanStyled verifies styled Markdown rendering flows through Glamour.
 func TestMarkdownHumanStyled(t *testing.T) {
 	var buf bytes.Buffer
-	printer := NewWithMode(&buf, Mode{Format: FormatHuman, Styled: true, Width: 80})
+	printer := newTestPrinter(&buf, Mode{Format: FormatHuman, Styled: true, Width: 80})
 
 	err := printer.Markdown(Markdown{
 		Body: "# Heading\n\n- first item\n- second item",
@@ -481,7 +489,7 @@ func TestMarkdownHumanStyled(t *testing.T) {
 // TestCodeBlockPlain verifies plain code-block rendering preserves content.
 func TestCodeBlockPlain(t *testing.T) {
 	var buf bytes.Buffer
-	printer := NewWithMode(&buf, Mode{Format: FormatPlain})
+	printer := newTestPrinter(&buf, Mode{Format: FormatPlain})
 
 	err := printer.CodeBlock(CodeBlock{
 		Title:    "Example",
@@ -502,7 +510,7 @@ func TestCodeBlockPlain(t *testing.T) {
 // TestCodeBlockHumanStyled verifies styled code-block rendering uses ANSI output.
 func TestCodeBlockHumanStyled(t *testing.T) {
 	var buf bytes.Buffer
-	printer := NewWithMode(&buf, Mode{Format: FormatHuman, Styled: true, Width: 80})
+	printer := newTestPrinter(&buf, Mode{Format: FormatHuman, Styled: true, Width: 80})
 
 	err := printer.CodeBlock(CodeBlock{
 		Title:    "Example",
@@ -528,7 +536,7 @@ func TestCodeBlockHumanStyled(t *testing.T) {
 // TestLogBlockPlain verifies plain log-block rendering preserves newlines exactly.
 func TestLogBlockPlain(t *testing.T) {
 	var buf bytes.Buffer
-	printer := NewWithMode(&buf, Mode{Format: FormatPlain})
+	printer := newTestPrinter(&buf, Mode{Format: FormatPlain})
 
 	err := printer.LogBlock(LogBlock{
 		Title: "Recent logs",
@@ -547,7 +555,7 @@ func TestLogBlockPlain(t *testing.T) {
 // TestLogBlockJSON verifies machine-readable log-block rendering.
 func TestLogBlockJSON(t *testing.T) {
 	var buf bytes.Buffer
-	printer := NewWithMode(&buf, Mode{Format: FormatJSON})
+	printer := newTestPrinter(&buf, Mode{Format: FormatJSON})
 
 	err := printer.LogBlock(LogBlock{
 		Title: "stderr",
@@ -569,7 +577,7 @@ func TestLogBlockJSON(t *testing.T) {
 // TestBoxHumanNoStyle verifies that Box is an alias for Panel.
 func TestBoxHumanNoStyle(t *testing.T) {
 	var buf bytes.Buffer
-	printer := NewWithMode(&buf, Mode{Format: FormatHuman, Styled: false})
+	printer := newTestPrinter(&buf, Mode{Format: FormatHuman, Styled: false})
 
 	err := printer.Box(Panel{
 		Title:  "Alias",
