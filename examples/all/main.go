@@ -237,16 +237,6 @@ func renderShowcase(printer *laslig.Printer) error {
 				return printer.LogBlock(loggingexample.Block())
 			},
 		},
-		{
-			name: "stream note",
-			render: func() error {
-				return printer.Panel(laslig.Panel{
-					Title:  "testjson",
-					Body:   "Use the testjson subpackage when you want Charm-native go test output without giving up caller-owned process control.",
-					Footer: "Next up: theme presets, stronger Section styling, and richer test classification.",
-				})
-			},
-		},
 	}
 	for _, step := range steps {
 		if err := step.render(); err != nil {

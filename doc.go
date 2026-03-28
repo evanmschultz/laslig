@@ -20,6 +20,6 @@
 //   - plain text for non-terminal writers
 //   - JSON payloads for machine-readable consumers
 //
-// A specialist testjson package provides Charm-native rendering for go test
+// A specialist gotestout package provides Charm-native rendering for go test
 // -json streams.
 package laslig

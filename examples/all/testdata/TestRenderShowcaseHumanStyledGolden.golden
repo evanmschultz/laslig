@@ -129,17 +129,3 @@ Rich Text Primitives
   │  owning the logger.                                              │
   │                                                                  │
   ╰──────────────────────────────────────────────────────────────────╯
-
-  ╭──────────────────────────────────────────────────────────────────╮
-  │                                                                  │
-  │  testjson                                                        │
-  │                                                                  │
-  │  Use the testjson subpackage when you want Charm-native go test  │
-  │  output                                                          │
-  │  without giving up caller-owned process control.                 │
-  │                                                                  │
-  │  Next up: theme presets, stronger Section styling, and richer    │
-  │  test                                                            │
-  │  classification.                                                 │
-  │                                                                  │
-  ╰──────────────────────────────────────────────────────────────────╯

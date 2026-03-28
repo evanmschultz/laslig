@@ -58,9 +58,6 @@ func TestRunArgsPlain(t *testing.T) {
 	if !strings.Contains(got, "boot complete") {
 		t.Fatalf("runArgs() output missing captured log transcript:\n%s", got)
 	}
-	if !strings.Contains(got, "testjson") {
-		t.Fatalf("runArgs() output missing stream note:\n%s", got)
-	}
 }
 
 // TestRunArgsJSON verifies JSON demo rendering through the testable entrypoint.

@@ -1,4 +1,4 @@
-package testjson
+package gotestout
 
 import (
 	"time"

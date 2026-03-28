@@ -1,4 +1,4 @@
-// Package testjson renders go test -json streams using laslig output
+// Package gotestout renders go test -json streams using laslig output
 // primitives and Charm-native styling.
 //
 // The package focuses on parsing and rendering the event stream itself. It does
@@ -7,4 +7,4 @@
 // events. Options allow compact or detailed views and let callers disable
 // grouped failed-test, skipped-test, package-error, or captured-output
 // sections when they want a tighter summary.
-package testjson
+package gotestout

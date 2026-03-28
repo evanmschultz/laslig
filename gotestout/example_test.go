@@ -1,4 +1,4 @@
-package testjson_test
+package gotestout_test
 
 import (
 	"fmt"
@@ -6,16 +6,16 @@ import (
 	"strings"
 
 	"github.com/evanmschultz/laslig"
-	"github.com/evanmschultz/laslig/testjson"
+	"github.com/evanmschultz/laslig/gotestout"
 )
 
-// ExampleRender shows one small plain-text testjson render.
+// ExampleRender shows one small plain-text gotestout render.
 func ExampleRender() {
 	stream := strings.NewReader(`{"Action":"pass","Package":"example/pkg","Test":"TestRender","Elapsed":0.01}
 {"Action":"pass","Package":"example/pkg","Elapsed":0.01}
 `)
 
-	summary, _ := testjson.Render(os.Stdout, stream, testjson.Options{
+	summary, _ := gotestout.Render(os.Stdout, stream, gotestout.Options{
 		Policy: laslig.Policy{
 			Format: laslig.FormatPlain,
 			Style:  laslig.StyleNever,

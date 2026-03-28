@@ -26,13 +26,13 @@ The gap we are filling:
 - phase 0 is complete
 - phase 1 is complete
 - phase 2 is complete
-- phase 3 has compact/detailed `testjson` rendering, Mage dogfooding, and caller-tunable grouped sections in place
+- phase 3 has compact/detailed `gotestout` rendering, Mage dogfooding, and caller-tunable grouped sections in place
 - phase 4 is in progress
 - phase 4A has shipped `Paragraph`, `StatusLine`, `Markdown`, `CodeBlock`, and explicit `LogBlock` primitives
 - phase 4 docs/demo alignment is rewriting the showcase as a guided primitive walkthrough that says what each block is and when to use it
-- structural output review now includes plain and fixed-width human golden snapshots for the showcase plus `testjson` plain output
+- structural output review now includes plain and fixed-width human golden snapshots for the showcase plus `gotestout` plain output
 - the layout pass now includes public layout defaults for leading gap, section-owned indentation, and list-marker customization
-- runnable examples now live under `examples/`, including a demo-only `charm/log` transcript example
+- runnable examples now live under `examples/`, including a demo-only `charm/log` transcript example and a focused `gotestout` stream example
 
 ## Architecture
 
@@ -64,11 +64,12 @@ The main package should eventually own:
 
 Structured stream rendering should be isolated in a specialist package:
 
-- `testjson`
+- `gotestout`
   - parse `go test -json`
   - render compact and detailed views
   - produce end-of-run summaries
   - support JSONL capture for later tooling
+  - stay clearly distinct from generic JSON display or formatting primitives
 
 ### Internal Shape
 
@@ -78,7 +79,7 @@ Keep internal packages small and implementation-oriented:
 - `internal/theme`
 - `internal/render`
 - `internal/layout`
-- `internal/testjson`
+- `internal/gotestout`
 
 Do not publish internal implementation packages until they have proved stable.
 
@@ -120,6 +121,7 @@ Do not publish internal implementation packages until they have proved stable.
 
 - keep doc examples in root `example_test.go` for Go documentation while adding more runnable examples elsewhere
 - decide how quickly to add focused concept demos beside the all-in-one showcase now that the main runnable demo lives in `examples/`
+- keep guided showcase wording consistent by pairing `PrimitiveName` with `Use PrimitiveName for...`
 - revisit whether the public root package has grown enough to justify moving more implementation into `internal/` packages now, instead of later
 
 ### Mage And CI UX
@@ -175,6 +177,8 @@ These are the current recommended directions for closing the open questions abov
 - move the showcase/demo surface toward `examples/` instead of treating `cmd/laslig-demo` as the long-term home
 - keep one "all primitives" showcase and add focused concept demos beside it
 - keep the `charm/log` demo as one focused example package imported by the all-in-one showcase, instead of adding a second primary demo command
+- keep specialized public packages such as `gotestout` out of the primitive walkthrough unless they are shown with real output
+- prefer focused example commands for specialized packages instead of explanatory placeholder panels in the primitive walkthrough
 - keep the root package as the public API surface, but move more non-exported implementation into `internal/` over time
 
 ## Agreed Decisions
@@ -224,6 +228,12 @@ These items are considered settled enough to drive the next implementation pass.
 - move runnable showcases toward `examples/`
 - keep one all-in-one showcase plus focused concept demos
 - add a demo-only `charm/log` example if it helps explain `LogBlock`
+- rename the structured `go test -json` helper package to `gotestout` so it is not confused with generic JSON viewing or formatting
+- show `gotestout` through a focused runnable example with real rendered stream output rather than a fake note inside the primitive walkthrough
+- keep guided walkthrough copy intentionally explicit:
+  - title the block with the exact exported primitive or package name
+  - immediately follow with `Use <Name> for...`
+  - avoid category-intro text that repeats the next block's explanation
 - keep the public import surface in the root package and gradually move more implementation details into `internal/`
 
 ## Remaining Semantic Question
@@ -246,7 +256,7 @@ Current recommendation:
 4. Move Markdown rendering back toward standard Glamour defaults and fix heading rendering so markdown headers render as real headers again.
 5. Rework `CodeBlock` presentation to be lighter and clearer than the current generic box.
 6. Rewrite the main showcase around the new section ownership model so every primitive explains what it is and when to use it.
-7. Start moving demos into `examples/`, including one all-in-one showcase and one focused log example.
+7. Start moving demos into `examples/`, including one all-in-one showcase, one focused log example, and one focused `gotestout` example.
 
 ## Phases
 
@@ -321,5 +331,5 @@ The MVP should be considered feature-complete when the repository has:
 - one compact status-line primitive
 - one Glamour-backed rich-text/code-block path
 - one explicit log/transcript rendering path for caller-provided output
-- compact and detailed `testjson` rendering with caller-tunable summary sections
+- compact and detailed `gotestout` rendering with caller-tunable summary sections
 - README, Go docs, Mage tasks, and VHS demos aligned with shipped behavior

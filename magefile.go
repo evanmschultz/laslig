@@ -13,7 +13,7 @@ import (
 	"strings"
 
 	"github.com/evanmschultz/laslig"
-	"github.com/evanmschultz/laslig/testjson"
+	"github.com/evanmschultz/laslig/gotestout"
 )
 
 // coverageThreshold is the minimum allowed statement coverage for each package.
@@ -280,7 +280,7 @@ func run(name string, args ...string) error {
 	return nil
 }
 
-// runGoTest renders go test -json output through laslig/testjson.
+// runGoTest renders go test -json output through laslig/gotestout.
 func runGoTest(packages ...string) error {
 	args := []string{"test", "-json"}
 	args = append(args, packages...)
@@ -296,12 +296,12 @@ func runGoTest(packages ...string) error {
 		return fmt.Errorf("start go test: %w", err)
 	}
 
-	summary, renderErr := testjson.Render(os.Stdout, stdout, testjson.Options{
+	summary, renderErr := gotestout.Render(os.Stdout, stdout, gotestout.Options{
 		Policy: laslig.Policy{
 			Format: laslig.FormatAuto,
 			Style:  laslig.StyleAuto,
 		},
-		View: testjson.ViewCompact,
+		View: gotestout.ViewCompact,
 	})
 	waitErr := cmd.Wait()
 

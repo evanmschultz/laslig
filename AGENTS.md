@@ -102,6 +102,11 @@ Rules:
 
 - keep runnable showcase examples under `examples/`
 - keep one all-in-one showcase example that Mage and VHS can drive
+- keep the all-in-one showcase focused on exported primitives, not specialized subpackages
+- present specialized public subpackages through focused examples with real output
+- in guided showcase demos, title blocks with the exact exported primitive or package name being demonstrated
+- in guided showcase demos, follow primitive titles with explicit `Use <Name> for...` wording
+- only add category-intro text when it contributes information not immediately repeated by the next primitive demo
 - keep VHS tapes and generated assets for README demos under `docs/vhs/`
 - when user-visible terminal output intentionally changes, update the relevant README examples and VHS assets
 
