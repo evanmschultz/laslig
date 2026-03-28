@@ -28,7 +28,7 @@ func TestRenderShowcaseHumanStyledGolden(t *testing.T) {
 		Width:  80,
 	})
 
-	if err := renderShowcase(printer); err != nil {
+	if err := renderShowcase(&buf, printer); err != nil {
 		t.Fatalf("renderShowcase() error = %v", err)
 	}
 

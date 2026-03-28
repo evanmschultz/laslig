@@ -33,7 +33,7 @@ The gap we are filling:
 - structural output review now includes plain and fixed-width human golden snapshots for the showcase plus `gotestout` plain output
 - the layout pass now includes public layout defaults for leading gap, section-owned indentation, and list-marker customization
 - runnable examples now live under `examples/`, including a demo-only `charm/log` transcript example and a focused `gotestout` stream example
-- the all-in-one walkthrough now points readers at the `gotestout` Mage flow directly instead of leaving it as a side note in README only
+- the all-in-one walkthrough now renders a real `gotestout` Mage-style preview instead of leaving that story in README prose only
 - README/VHS assets now cover both the all-in-one walkthrough and the focused `gotestout` example
 
 ## Architecture

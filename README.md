@@ -255,7 +255,7 @@ The tracked all-in-one showcase lives in [examples/all/main.go](/Users/evanschul
 The focused logging example package that uses `charm.land/log/v2` as a demo-only dependency lives in [examples/logging/logging.go](/Users/evanschultz/Documents/Code/hylla/laslig/main/examples/logging/logging.go) and is imported directly by the main showcase.
 The focused `gotestout` example lives in [examples/gotestout/main.go](/Users/evanschultz/Documents/Code/hylla/laslig/main/examples/gotestout/main.go).
 Small verified Go doc examples live in [example_test.go](/Users/evanschultz/Documents/Code/hylla/laslig/main/example_test.go).
-The main showcase is a guided walkthrough: it names each primitive directly and explains what it is for and when to use it, then closes with an explicit `gotestout` section that points to the focused example and Mage flow.
+The main showcase is a guided walkthrough: it names each primitive directly and explains what it is for and when to use it, then closes with an explicit `gotestout` section that renders a real Mage-style Build, Tests, and Coverage preview inline.
 
 Run it locally:
 

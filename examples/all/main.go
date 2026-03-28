@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 
 	"github.com/evanmschultz/laslig"
 	loggingexample "github.com/evanmschultz/laslig/examples/logging"
+	"github.com/evanmschultz/laslig/gotestout"
 )
 
 // main runs the demo command and exits non-zero on failure.
@@ -38,11 +40,11 @@ func runArgs(out io.Writer, args []string) error {
 		Format: laslig.Format(*format),
 		Style:  laslig.StylePolicy(*style),
 	})
-	return renderShowcase(printer)
+	return renderShowcase(out, printer)
 }
 
 // renderShowcase renders the all-in-one Läslig walkthrough with one prepared printer.
-func renderShowcase(printer *laslig.Printer) error {
+func renderShowcase(out io.Writer, printer *laslig.Printer) error {
 	steps := []struct {
 		name   string
 		render func() error
@@ -249,19 +251,14 @@ func renderShowcase(printer *laslig.Printer) error {
 				return printer.Paragraph(laslig.Paragraph{
 					Title:  "gotestout",
 					Body:   "Use gotestout for Charm-native go test output when a Mage target or CLI command should keep owning process control.",
-					Footer: "This repository dogfoods that path through mage test and also ships a focused runnable example.",
+					Footer: "The output below shows the same Build, Tests, and Coverage shape this repository prints through mage check.",
 				})
 			},
 		},
 		{
-			name: "gotestout usage",
+			name: "gotestout output",
 			render: func() error {
-				return printer.CodeBlock(laslig.CodeBlock{
-					Title:    "Use gotestout with Mage",
-					Language: "bash",
-					Body:     "go run ./examples/gotestout --format human --style always\nmage test",
-					Footer:   "Use the focused example command first, then use mage test to see the same renderer shape in a Mage target.",
-				})
+				return renderMageCheckShowcase(out, printer)
 			},
 		},
 	}
@@ -271,4 +268,103 @@ func renderShowcase(printer *laslig.Printer) error {
 		}
 	}
 	return nil
+}
+
+// renderMageCheckShowcase renders one Mage-style flow that uses gotestout for
+// the test stream and the core laslig primitives for build and coverage.
+func renderMageCheckShowcase(out io.Writer, printer *laslig.Printer) error {
+	if err := printer.Section("Build"); err != nil {
+		return fmt.Errorf("render build section: %w", err)
+	}
+	if err := printer.StatusLine(laslig.StatusLine{
+		Level:  laslig.NoticeInfoLevel,
+		Text:   "Building showcase example",
+		Detail: "./examples/all",
+	}); err != nil {
+		return fmt.Errorf("render build start: %w", err)
+	}
+	if err := printer.StatusLine(laslig.StatusLine{
+		Level:  laslig.NoticeSuccessLevel,
+		Text:   "Built showcase example",
+		Detail: "bin/laslig-demo",
+	}); err != nil {
+		return fmt.Errorf("render build success: %w", err)
+	}
+
+	if err := printer.Section("Tests"); err != nil {
+		return fmt.Errorf("render tests section: %w", err)
+	}
+	if _, err := gotestout.Render(out, strings.NewReader(mageCheckSampleStream()), gotestout.Options{
+		Policy: laslig.Policy{
+			Format: printer.Mode().Format,
+			Style:  stylePolicyForMode(printer.Mode()),
+		},
+		View: gotestout.ViewCompact,
+	}); err != nil {
+		return fmt.Errorf("render gotestout stream: %w", err)
+	}
+
+	if err := printer.Section("Coverage"); err != nil {
+		return fmt.Errorf("render coverage section: %w", err)
+	}
+	if err := printer.Table(laslig.Table{
+		Header: []string{"package", "cover"},
+		Rows: [][]string{
+			{"github.com/evanmschultz/laslig", "71.2%"},
+			{"github.com/evanmschultz/laslig/examples/all", "84.4%"},
+			{"github.com/evanmschultz/laslig/examples/gotestout", "86.7%"},
+			{"github.com/evanmschultz/laslig/internal/layout", "87.5%"},
+			{"github.com/evanmschultz/laslig/internal/glamrender", "83.3%"},
+			{"github.com/evanmschultz/laslig/examples/logging", "75.0%"},
+			{"github.com/evanmschultz/laslig/internal/table", "96.6%"},
+			{"github.com/evanmschultz/laslig/gotestout", "82.3%"},
+		},
+		Caption: "Minimum package coverage: 70.0%.",
+	}); err != nil {
+		return fmt.Errorf("render coverage table: %w", err)
+	}
+	if err := printer.Notice(laslig.Notice{
+		Level: laslig.NoticeSuccessLevel,
+		Title: "Coverage threshold met",
+		Body:  "All packages are at or above 70.0% coverage.",
+	}); err != nil {
+		return fmt.Errorf("render coverage success notice: %w", err)
+	}
+	return nil
+}
+
+// mageCheckSampleStream returns one deterministic passing test stream that
+// mirrors the package-level shape this repository prints through mage test.
+func mageCheckSampleStream() string {
+	packages := []struct {
+		name  string
+		tests int
+	}{
+		{"github.com/evanmschultz/laslig", 12},
+		{"github.com/evanmschultz/laslig/examples/all", 8},
+		{"github.com/evanmschultz/laslig/examples/gotestout", 8},
+		{"github.com/evanmschultz/laslig/internal/layout", 6},
+		{"github.com/evanmschultz/laslig/internal/glamrender", 6},
+		{"github.com/evanmschultz/laslig/examples/logging", 5},
+		{"github.com/evanmschultz/laslig/internal/table", 12},
+		{"github.com/evanmschultz/laslig/gotestout", 14},
+	}
+
+	var stream strings.Builder
+	for _, pkg := range packages {
+		for index := 1; index <= pkg.tests; index++ {
+			fmt.Fprintf(&stream, "{\"Action\":\"pass\",\"Package\":\"%s\",\"Test\":\"Test%02d\",\"Elapsed\":0}\n", pkg.name, index)
+		}
+		fmt.Fprintf(&stream, "{\"Action\":\"pass\",\"Package\":\"%s\",\"Elapsed\":0}\n", pkg.name)
+	}
+	return stream.String()
+}
+
+// stylePolicyForMode converts one resolved mode back into a policy choice for
+// renderers that only accept Policy input.
+func stylePolicyForMode(mode laslig.Mode) laslig.StylePolicy {
+	if mode.Styled {
+		return laslig.StyleAlways
+	}
+	return laslig.StyleNever
 }

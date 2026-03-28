@@ -58,8 +58,8 @@ func TestRunArgsPlain(t *testing.T) {
 	if !strings.Contains(got, "boot complete") {
 		t.Fatalf("runArgs() output missing captured log transcript:\n%s", got)
 	}
-	if !strings.Contains(got, "gotestout") || !strings.Contains(got, "mage test") {
-		t.Fatalf("runArgs() output missing gotestout package guidance:\n%s", got)
+	if !strings.Contains(got, "gotestout") || !strings.Contains(got, "Build") || !strings.Contains(got, "Coverage threshold met") {
+		t.Fatalf("runArgs() output missing gotestout mage-check preview:\n%s", got)
 	}
 }
 
