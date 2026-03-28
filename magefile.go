@@ -64,9 +64,20 @@ func VerifyBootstrap() error {
 		"AGENTS.md",
 		"PLAN.md",
 		"README.md",
+		"LICENSE",
+		"CONTRIBUTING.md",
+		"SECURITY.md",
 		"magefile.go",
 		"go.mod",
+		".goreleaser.yaml",
 		".github/workflows/ci.yml",
+		".github/workflows/release.yml",
+		".github/pull_request_template.md",
+		".github/ISSUE_TEMPLATE/bug_report.md",
+		".github/ISSUE_TEMPLATE/feature_request.md",
+		".github/ISSUE_TEMPLATE/config.yml",
+		".github/dependabot.yml",
+		".github/CODEOWNERS",
 	}
 	for _, path := range required {
 		if _, err := os.Stat(path); err != nil {

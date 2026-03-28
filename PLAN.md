@@ -27,40 +27,46 @@ The gap we are filling:
 - phase 1 is complete
 - phase 2 is complete
 - phase 3 has compact/detailed `gotestout` rendering, Mage dogfooding, and caller-tunable grouped sections in place
-- phase 4 is in progress
+- phase 4 is functionally complete for the main primitive surface
 - phase 4A has shipped `Paragraph`, `StatusLine`, `Markdown`, `CodeBlock`, and explicit `LogBlock` primitives
-- phase 4 docs/demo alignment is rewriting the showcase as a guided primitive walkthrough that says what each block is and when to use it
-- structural output review now includes plain and fixed-width human golden snapshots for the showcase plus `gotestout` plain output
-- the layout pass now includes public layout defaults for leading gap, section-owned indentation, and list-marker customization
-- runnable examples now live under `examples/`, including a demo-only `charm/log` transcript example and a focused `gotestout` stream example
-- the all-in-one walkthrough now renders a real `gotestout` Mage-style preview instead of leaving that story in README prose only
-- README/VHS assets now cover both the all-in-one walkthrough and the focused `gotestout` example
+- the showcase/docs pass is complete enough for API-freeze review:
+  - the walkthrough names each exported primitive directly
+  - focused runnable examples live under `examples/`
+  - README and VHS assets cover both the all-in-one walkthrough and the focused `gotestout` example
+  - structural output review includes plain and fixed-width human golden snapshots for the showcase plus `gotestout` output
+- the layout pass is complete:
+  - public layout defaults exist for leading gap, section-owned indentation, and list-marker customization
+  - section ownership is now a library behavior rather than demo-only output shaping
+- the only remaining product-surface decision before API freeze is whether `gotestout` gets an explicit JSONL capture/export helper in `v0.1.0` or that promise is cut
+- the release-clean scaffolding is now in the repo:
+  - `LICENSE`, `CONTRIBUTING.md`, and `SECURITY.md`
+  - issue templates, PR template, Dependabot, and CODEOWNERS
+  - `.goreleaser.yaml` and a tag-driven `release.yml`
+- theme preset/config flow is intentionally deferred until after `v0.1.0`
 
 ## Architecture
 
 ### Core Surface
 
-The main package should eventually own:
+The main package should own:
 
 - `Policy`
 - `Mode`
+- `Layout`
 - `Theme`
 - `Printer`
 - `Section`
 - `Notice`
-- `Diagnostic`
 - `Record`
-- `List`
-- `Table`
-- `Box`
-- `Panel`
-- `Badge`
 - `KV`
 - `Paragraph`
+- `List`
+- `Table`
+- `Panel`
 - `StatusLine`
 - `Markdown`
 - `CodeBlock`
-- log-friendly boxed transcript helpers for caller-provided output excerpts
+- `LogBlock`
 
 ### Stream Surface
 
@@ -70,8 +76,8 @@ Structured stream rendering should be isolated in a specialist package:
   - parse `go test -json`
   - render compact and detailed views
   - produce end-of-run summaries
-  - support JSONL capture for later tooling
   - stay clearly distinct from generic JSON display or formatting primitives
+  - optionally add explicit JSONL capture/export helpers later if a real caller needs them
 
 ### Internal Shape
 
@@ -93,174 +99,53 @@ Do not publish internal implementation packages until they have proved stable.
 - `laslig` may render selected log excerpts, transcripts, stderr captures, or diagnostics in structured blocks
 - `laslig` itself should not intercept global logs, install sinks, or emit operational logs
 
-## Open Questions
+## Remaining Decisions Before `v0.1.0`
 
-### Output Rhythm And Grouping
+### Product Surface
 
-- keep the new default flow spacing as an internal opinionated default or expose it later as printer/theme configuration
-- clarify whether `Section` is only a heading primitive or should become a stronger grouping/container concept
-- decide whether content that follows a `Section` should remain flush-left or be indented to make section membership more obvious
-- define whether all block kinds should have the same vertical rhythm or whether sections deserve stronger separation than ordinary blocks
+- cut the explicit `gotestout` JSONL capture/export helper from `v0.1.0` unless a concrete caller appears during API freeze
+- do not reintroduce stale planned primitives such as `Diagnostic`, `Badge`, or `Box` unless a real post-freeze use case appears
 
-### Primitive Semantics
+### Dependency And Automation Policy
 
-- decide whether `Section` should visually behave more like a markdown `#` heading
-- decide how much explanatory language the demo should include so each primitive communicates what it is and when to use it
-- decide whether `StatusLine` defaults should become more self-describing or stay minimal
-- decide whether `List` should default to `-`, `•`, numbered items, or support a configurable marker strategy later
-- confirm that `KV` intentionally keeps aligned labels without `:` after every key in aligned mode, even though `Record` and `List` fields do use `:`
+- include `.github/dependabot.yml` in `v0.1.0` for `gomod` and GitHub Actions on a conservative cadence
+- include a minimal `CODEOWNERS` file that names the primary maintainer
+- keep `v0.1.0` release notes curated and manual
+- require green `ci` on `main` before release tags are cut
 
-### Markdown, Code, And Logs
+### Post-`v0.1.0`
 
-- clarify the intended relationship between `Markdown.Title` and headings inside `Markdown.Body`
-- decide whether the demo should show both modes:
-  - pure markdown documents with headings in `Body`
-  - markdown blocks with an outer laslig title plus markdown body
-- decide whether `CodeBlock` titles should default to filenames, language labels, package names, or caller-provided arbitrary labels
-- decide whether demo log examples should remain explicit `LogBlock` excerpts or use a demo-only dependency on `charm/log` to show real log lines flowing into laslig rendering
-
-### Demo And Repository Shape
-
-- keep doc examples in root `example_test.go` for Go documentation while adding more runnable examples elsewhere
-- decide how quickly to add focused concept demos beside the all-in-one showcase now that the main runnable demo lives in `examples/`
-- keep guided showcase wording consistent by pairing `PrimitiveName` with `Use PrimitiveName for...`
-- revisit whether the public root package has grown enough to justify moving more implementation into `internal/` packages now, instead of later
-- decide how prominently the all-in-one walkthrough should point readers to focused package examples such as `gotestout`
-
-### Mage And CI UX
-
-- keep `mage check` and `mage ci` as identical entrypoints with different social meanings, or differentiate them later
-- decide how much stage output Mage should print for silent successful steps like bootstrap/format versus only stages that emit meaningful content
+- developer-settable theme/preset flow
+- deeper `gotestout` classification and subtest rollups
+- any future standalone `Badge`/`Header`/capture helper work that survives API freeze review
 
 ## Recommended Closures
 
-These are the current recommended directions for closing the open questions above. They are not final until implemented, but they reflect the present design bias.
+- treat the currently shipped surface as the `v0.1.0` candidate API:
+  - `Section`, `Notice`, `Record`, `KV`, `Paragraph`, `List`, `Table`, `Panel`, `StatusLine`, `Markdown`, `CodeBlock`, `LogBlock`
+  - `Policy`, `Mode`, `Layout`, `Theme`, and `Printer`
+  - `gotestout` for `go test -json` rendering
+- keep `Notice` as the user-facing diagnostic surface for `v0.1.0`
+- keep badge rendering embedded in list items and fields for `v0.1.0`
+- keep `Panel` as the boxed callout primitive; if `Box` remains in code, treat it as compatibility sugar rather than a separately documented primitive
+- cut the explicit `gotestout` JSONL capture/export helper from `v0.1.0` unless a concrete release-blocking consumer appears during API freeze
+- keep theme presets/configuration explicitly post-release
 
-### Layout And Grouping
+## Execution Order To `v0.1.0`
 
-- add a public layout/config surface for leading gap, content indent, list marker style, and section spacing instead of burying those choices permanently in `Printer`
-- change `Section` from "heading only" toward "heading that establishes section ownership" by letting later content render with a configurable section indent until the next section
-- keep the defaults opinionated but small:
-  - leading gap: `1`
-  - content gap between ordinary blocks: `1`
-  - extra gap before a new section: `2`
-  - section content indent: `2`
-- keep all layout knobs simple integer or enum values so callers can set them to `0` when they want fully flush output
-
-### Section And Header Semantics
-
-- keep the name `Section` if it gains ownership semantics; that name becomes clearer once following content is visibly grouped beneath it
-- only introduce a separate `Header` primitive later if real demand appears for a standalone heading that does not establish section ownership
-- keep indentation and rhythm as the primary section signal for now; only revisit stronger visual section treatment if real usage pressure appears
-
-### Lists, Records, And KV
-
-- keep `KV` aligned without `:` by default because it reads better as compact configuration/status data
-- keep `Record` and list-item fields with `:` because they read better as labeled facts
-- add a later list-marker option with defaults of:
-  - `-` for unordered/default
-  - `•` as an alternate styled marker
-  - numbered only when callers want ordered semantics
-
-### Markdown And Glamour
-
-- move back toward largely unmodified Glamour defaults for Markdown rendering
-- limit laslig-side Glamour customization to wrapping and only the smallest amount of palette alignment needed for coexistence with the rest of the library
-- avoid stripping or rewriting heading semantics unless there is a very clear readability win
-
-### Code, Logs, And Borders
-
-- keep `CodeBlock` as a separate public primitive even if it renders through Markdown/Glamour internally because the structured API is valuable
-- keep the current `CodeBlock` treatment for now; revisit only after broader theme/preset work if users still find it too heavy
-- keep `LogBlock` boxed by default because boxed transcripts/log excerpts scan well and benefit from stronger separation
-- leave `Panel` boxed by default for now, but revisit its default border weight after the layout pass
-
-### Demo And Repository Shape
-
-- move the showcase/demo surface toward `examples/` instead of treating `cmd/laslig-demo` as the long-term home
-- keep one "all primitives" showcase and add focused concept demos beside it
-- keep the `charm/log` demo as one focused example package imported by the all-in-one showcase, instead of adding a second primary demo command
-- keep specialized public packages such as `gotestout` out of the primitive walkthrough unless they are shown with real output
-- prefer focused example commands for specialized packages instead of explanatory placeholder panels in the primitive walkthrough
-- keep the root package as the public API surface, but move more non-exported implementation into `internal/` over time
-
-## Agreed Decisions
-
-These items are considered settled enough to drive the next implementation pass.
-
-### Output Layout Defaults
-
-- add a public layout/config surface with simple caller-tunable values instead of hard-coding spacing forever
-- default leading gap before the first rendered block: `1`
-- default gap between ordinary rendered blocks: `1`
-- default gap before a new section after ordinary content: `2`
-- default section content indent: `2`
-- all of the above should be configurable down to `0`
-
-### Section Ownership
-
-- `Section` should stop being "just a bold heading line"
-- `Section` should establish visible ownership over the blocks that follow it until the next `Section`
-- the default way to show that ownership is section-body indentation rather than extra borders
-- if a caller sets section indent to `0`, `Section` still acts as a heading and spacing boundary
-
-### Lists, Records, And KV
-
-- list content should follow section indentation by default so it reads more like a structured document
-- default list marker stays `-`
-- add later support for alternate list markers like `•` and numbered items
-- keep `Record` and list-item fields with `:`
-- keep `KV` aligned without `:` by default
-
-### Markdown And Glamour
-
-- move back toward standard Glamour defaults rather than heavily rewriting heading behavior
-- keep laslig-side Markdown tuning limited to the smallest amount needed for wrapping and palette coexistence
-- preserve real markdown heading semantics in the demo and in the renderer
-
-### Code, Logs, And Panels
-
-- keep `CodeBlock` as a separate primitive even if it internally renders through a markdown path
-- make the default `CodeBlock` presentation lighter and clearer than the current generic framed-block treatment
-- keep `LogBlock` boxed by default
-- keep tables bordered by default
-- revisit panel border strength during the same layout pass
-
-### Demo And Repository Shape
-
-- move runnable showcases toward `examples/`
-- keep one all-in-one showcase plus focused concept demos
-- add a demo-only `charm/log` example if it helps explain `LogBlock`
-- rename the structured `go test -json` helper package to `gotestout` so it is not confused with generic JSON viewing or formatting
-- show `gotestout` through a focused runnable example with real rendered stream output rather than a fake note inside the primitive walkthrough
-- make the all-in-one walkthrough explicitly point readers to the `gotestout` Mage flow and focused example command
-- keep guided walkthrough copy intentionally explicit:
-  - title the block with the exact exported primitive or package name
-  - immediately follow with `Use <Name> for...`
-  - avoid category-intro text that repeats the next block's explanation
-- keep the public import surface in the root package and gradually move more implementation details into `internal/`
-
-## Remaining Semantic Question
-
-One naming and semantics question is still intentionally open:
-
-- once `Section` establishes ownership over following blocks, is that enough, or do we still want a separate `Header` primitive later for a standalone heading that does not create section ownership
-
-Current recommendation:
-
-- do not add `Header` now
-- first make `Section` mean "start a section here"
-- only add `Header` later if a real use case appears for a heading that should not affect following layout
-
-## Next Refactor Plan
-
-1. Add a public layout/options surface for leading gap, block gap, section gap, section indent, and list marker style.
-2. Rework `Printer` flow state so `Section` establishes current section ownership and following blocks render with the active indent until the next `Section`.
-3. Update wrap and width calculations so indentation reduces available width cleanly for paragraphs, markdown, panels, code blocks, and tables.
-4. Move Markdown rendering back toward standard Glamour defaults and fix heading rendering so markdown headers render as real headers again.
-5. Rework `CodeBlock` presentation to be lighter and clearer than the current generic box.
-6. Rewrite the main showcase around the new section ownership model so every primitive explains what it is and when to use it.
-7. Start moving demos into `examples/`, including one all-in-one showcase, one focused log example, and one focused `gotestout` example.
+1. Close the last product-surface decision:
+   - cut the explicit `gotestout` JSONL capture/export helper unless a concrete caller appears immediately
+2. Run the API freeze pass:
+   - review exported names, fields, defaults, and behavior
+   - remove stale promises from docs and plan
+   - confirm the `v0.1.0` stable surface
+3. Run the pre-release ship pass:
+   - contributor bootstrap
+   - dependency-maintenance policy
+   - governance/community files
+   - release workflow and GoReleaser
+4. Do the final docs/examples/VHS audit
+5. Tag and publish `v0.1.0`
 
 ## Phases
 
@@ -312,17 +197,40 @@ Current recommendation:
 
 ### Pre-Release Ship Pass
 
-- add `LICENSE` with `Apache-2.0`
-- add `CONTRIBUTING.md` with setup, coding, test, snapshot, and release expectations
-- add `SECURITY.md` with reporting guidance and support boundaries
-- add `.github/ISSUE_TEMPLATE/` coverage for bug reports and feature requests
-- add `.github/pull_request_template.md` for release-note and validation hygiene
-- decide whether to add `CODEOWNERS` and `.github/dependabot.yml` in `v0.1.0` or immediately after
+- keep `LICENSE` as `Apache-2.0`
+- audit `CONTRIBUTING.md` for setup, coding, test, snapshot, and release expectations
+- keep contributor bootstrap explicit in `CONTRIBUTING.md`:
+  - required Go version follows `go.mod`
+  - install Mage with the pinned project version used in CI:
+    - `go install github.com/magefile/mage@v1.17.0`
+  - document when `vhs` is optional versus required
+  - document when `gh` is optional versus required
+  - document the normal local flow: `mage check`, `mage test`, `mage demo`, and `mage vhs` when visual output changes
+  - document how to update golden snapshots intentionally
+  - document when contributors only need Go + Mage versus when maintainers need the release toolchain too
+- audit `SECURITY.md` for reporting guidance and support boundaries
+- keep `.github/ISSUE_TEMPLATE/` coverage for bug reports and feature requests
+- keep `.github/pull_request_template.md` focused on validation and release-note hygiene
+- keep `CODEOWNERS` and `.github/dependabot.yml` aligned with the actual maintainer/review model
 - do a full Go-doc and exported-surface comment audit
 - do a full README/docs/example audit for accuracy and consistency
+- do the dependency-maintenance pass:
+  - document the boundary between core runtime deps, demo-only deps, test-only deps, and tooling deps
+  - document how Charm-family upgrades are evaluated before landing
+  - decide whether dependency updates are manual, Dependabot-driven, or both
+  - prefer patch/minor updates by default and require explicit review for major upgrades
+  - require release-note and compatibility review before upgrading Charm, Glamour, or `x/*` dependencies
+  - keep the Mage version pinned in CI and contributor docs so local and CI automation stay aligned
+  - add an explicit update path for toolchain dependencies such as Mage, VHS, GitHub Actions, and GoReleaser
+  - require `go mod tidy`, `mage check`, and output/golden/VHS refresh when dependency bumps intentionally change rendering
 - do the GitHub workflow pass:
   - keep `ci.yml` minimal and stable
-  - add tag-driven release workflow wiring for GoReleaser
+  - keep tag-driven release workflow wiring for GoReleaser aligned:
+    - tag-triggered workflow
+    - checkout with full history
+    - Go from `go.mod`
+    - `goreleaser release --clean`
+    - `GITHUB_TOKEN` with `contents: write`
   - confirm required checks/branch protection expectations outside the repo
 - do the community/release-management pass:
   - define issue-triage expectations and label strategy
@@ -331,8 +239,21 @@ Current recommendation:
 - do the API freeze pass:
   - review exported names, fields, defaults, and behavior
   - rename or trim awkward public surface before release
+  - decide whether the remaining `gotestout` JSONL capture/export helper ships in `v0.1.0` or is explicitly deferred
+  - remove any stale plan/docs promises that are cut from `v0.1.0`
   - decide what is considered stable for the first `v0.x` release
-- only after the docs/license/API pass, finish `.goreleaser.yaml`, release artifacts, checksums, and GitHub release workflow wiring
+- finish the release-operator checklist:
+  - release only from green `main`
+  - verify the worktree is clean and docs/examples/goldens are current
+  - run `mage ci`
+  - run `mage vhs` when visual output changed during the release train
+  - tag with the intended semver release tag
+  - run tag-driven GoReleaser publishing through GitHub Actions
+  - publish checksums alongside release artifacts
+  - edit the draft GitHub release with curated release notes
+  - watch the release workflow to completion
+  - verify the GitHub release contents before publishing the draft
+- only after the docs/license/API pass, finalize `.goreleaser.yaml`, release artifacts, checksums, and GitHub release workflow wiring
 
 ### Later Theme Pass
 
@@ -354,10 +275,11 @@ Avoid overlapping write scopes between lanes whenever possible.
 
 The MVP should be considered feature-complete when the repository has:
 
-- stable core primitives for sections, notices, records, KV, lists, tables, panels, and boxes
+- stable core primitives for sections, notices, records, KV, lists, tables, panels, and log/transcript blocks
 - one wrapped long-form text primitive
 - one compact status-line primitive
 - one Glamour-backed rich-text/code-block path
 - one explicit log/transcript rendering path for caller-provided output
 - compact and detailed `gotestout` rendering with caller-tunable summary sections
+- an explicit decision on whether `gotestout` JSONL capture/export ships in `v0.1.0`
 - README, Go docs, Mage tasks, and VHS demos aligned with shipped behavior

@@ -1,0 +1,30 @@
+version: 2
+
+project_name: laslig
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - skip: true
+
+source:
+  enabled: true
+  name_template: "{{ .ProjectName }}_{{ .Version }}_source"
+
+checksum:
+  name_template: checksums.txt
+  algorithm: sha256
+
+snapshot:
+  version_template: "{{ incpatch .Version }}-next"
+
+changelog:
+  disable: true
+
+release:
+  draft: true
+  prerelease: auto
+  make_latest: true
+  name_template: "{{ .ProjectName }} v{{ .Version }}"

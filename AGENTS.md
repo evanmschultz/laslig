@@ -34,7 +34,7 @@ Current dependency direction:
 - `charm.land/lipgloss/v2` is expected for styling/layout
 - other Charm packages are allowed only when they solve a real problem cleanly
 - do not make `fang` a core dependency
-- do not make `github.com/charmbracelet/log` a core dependency
+- do not make `charm.land/log/v2` a core dependency
 
 `laslig` is a rendering library, not a logging framework and not a CLI framework.
 

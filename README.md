@@ -13,7 +13,7 @@ Charm already gives Go developers strong building blocks:
 - Lip Gloss for styling and layout
 - Fang for help, usage, and CLI error presentation
 
-What is still missing is a narrow, reusable layer for ordinary command output: results, notices, summaries, tables, and diagnostics that should look intentional without forcing an application into a framework.
+What is still missing is a narrow, reusable layer for ordinary command output: results, notices, summaries, tables, warnings, and errors that should look intentional without forcing an application into a framework.
 
 `laslig` is that layer.
 
@@ -25,13 +25,13 @@ The first core wave is live. Today the package includes:
 - document-layout defaults with caller-tunable spacing, section indentation, and list markers
 - a `Printer`
 - sections
-- notices and diagnostics
+- notices for info, success, warning, and error output
 - records and lists
 - aligned key-value blocks
 - paragraph blocks
 - compact status lines
 - tables
-- panels and boxes
+- panels
 - Glamour-backed Markdown blocks
 - Glamour-backed code blocks
 - boxed log/transcript blocks for caller-provided output
@@ -108,7 +108,6 @@ printer.Paragraph(laslig.Paragraph{Title: "Why", Body: "Readable defaults matter
 printer.StatusLine(laslig.StatusLine{Level: laslig.NoticeSuccessLevel, Text: "Build ready"})
 printer.Table(laslig.Table{Title: "Results"})
 printer.Panel(laslig.Panel{Title: "Next step", Body: "Run mage check."})
-printer.Box(laslig.Panel{Body: "Box is an alias for Panel."})
 printer.Markdown(laslig.Markdown{Body: "# Notes\n\n- first\n- second"})
 printer.CodeBlock(laslig.CodeBlock{Title: "Example", Language: "go", Body: `fmt.Println("hi")`})
 printer.LogBlock(laslig.LogBlock{Title: "stderr excerpt", Body: "INFO boot complete\nWARN retry scheduled"})
@@ -282,6 +281,12 @@ The README GIF is generated from [docs/vhs/showcase.tape](/Users/evanschultz/Doc
 
 This repository uses Mage for local automation.
 
+Install the same Mage version used in CI:
+
+```bash
+go install github.com/magefile/mage@v1.17.0
+```
+
 ```bash
 mage check
 mage test
@@ -289,6 +294,8 @@ mage build
 mage demo
 mage vhs
 ```
+
+See [CONTRIBUTING.md](/Users/evanschultz/Documents/Code/hylla/laslig/main/CONTRIBUTING.md) for contributor workflow details and [SECURITY.md](/Users/evanschultz/Documents/Code/hylla/laslig/main/SECURITY.md) for vulnerability reporting guidance.
 
 Structural terminal output is also covered by Charm `x/exp/golden` snapshots in the demo and `gotestout` packages. Update them intentionally with:
 
@@ -299,6 +306,10 @@ go test ./gotestout -run 'TestRenderPlainCompactGolden|TestRenderHumanStyledComp
 ```
 
 README examples and terminal GIFs are generated from the tracked demo app and VHS tapes under [docs/vhs/](/Users/evanschultz/Documents/Code/hylla/laslig/main/docs/vhs).
+
+## License
+
+`laslig` is licensed under [Apache-2.0](/Users/evanschultz/Documents/Code/hylla/laslig/main/LICENSE).
 
 ## Plan
 
