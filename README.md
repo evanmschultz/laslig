@@ -192,6 +192,8 @@ _ = printer.LogBlock(laslig.LogBlock{
 
 The `gotestout` subpackage parses and renders `go test -json` streams without taking over command execution:
 
+![gotestout example](docs/vhs/gotestout.gif)
+
 ```go
 import (
 	"errors"
@@ -240,13 +242,20 @@ That shape works well in ordinary CLIs and in Mage targets. `laslig` stays respo
 This repository already dogfoods that pattern in [`magefile.go`](/Users/evanschultz/Documents/Code/hylla/laslig/main/magefile.go): `mage test` runs `go test -json ./...`, renders compact package and failure output through `gotestout`, and still returns a normal Mage error on failure.
 The focused runnable example for that package lives in [examples/gotestout/main.go](/Users/evanschultz/Documents/Code/hylla/laslig/main/examples/gotestout/main.go).
 
+Common ways to try that surface locally:
+
+```bash
+go run ./examples/gotestout --format human --style always
+mage test
+```
+
 ## Demo
 
 The tracked all-in-one showcase lives in [examples/all/main.go](/Users/evanschultz/Documents/Code/hylla/laslig/main/examples/all/main.go).
 The focused logging example package that uses `charm.land/log/v2` as a demo-only dependency lives in [examples/logging/logging.go](/Users/evanschultz/Documents/Code/hylla/laslig/main/examples/logging/logging.go) and is imported directly by the main showcase.
 The focused `gotestout` example lives in [examples/gotestout/main.go](/Users/evanschultz/Documents/Code/hylla/laslig/main/examples/gotestout/main.go).
 Small verified Go doc examples live in [example_test.go](/Users/evanschultz/Documents/Code/hylla/laslig/main/example_test.go).
-The main showcase is a guided walkthrough: it names each primitive directly and explains what it is for and when to use it. Specialized public packages are shown in focused examples with real output instead of being mixed into the primitive walkthrough.
+The main showcase is a guided walkthrough: it names each primitive directly and explains what it is for and when to use it, then closes with an explicit `gotestout` section that points to the focused example and Mage flow.
 
 Run it locally:
 
@@ -254,10 +263,11 @@ Run it locally:
 mage demo
 go run ./examples/all --format human --style always
 go run ./examples/all --format json
-go run ./examples/gotestout --format plain
+go run ./examples/gotestout --format human --style always
+mage test
 ```
 
-`mage demo` is the normal convenience entrypoint. The `go run` forms above are the same showcase with explicit format/style flags.
+`mage demo` is the normal primitive walkthrough entrypoint. `mage test` is the real Mage-facing `gotestout` dogfood path. The `go run` forms above are the same examples with explicit format/style flags.
 
 The README GIF is generated from [docs/vhs/showcase.tape](/Users/evanschultz/Documents/Code/hylla/laslig/main/docs/vhs/showcase.tape).
 
@@ -284,7 +294,8 @@ Structural terminal output is also covered by Charm `x/exp/golden` snapshots in 
 
 ```bash
 go test ./examples/all -run TestRunArgsPlainGolden -args -update
-go test ./gotestout -run TestRenderPlainCompactGolden -args -update
+go test ./examples/gotestout -run TestRunArgsPlainGolden -args -update
+go test ./gotestout -run 'TestRenderPlainCompactGolden|TestRenderHumanStyledCompactGolden' -args -update
 ```
 
 README examples and terminal GIFs are generated from the tracked demo app and VHS tapes under [docs/vhs/](/Users/evanschultz/Documents/Code/hylla/laslig/main/docs/vhs).

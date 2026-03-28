@@ -2,11 +2,15 @@ package gotestout
 
 import (
 	"bytes"
+	"regexp"
 	"strings"
 	"testing"
 
 	"github.com/evanmschultz/laslig"
 )
+
+// ansiPattern matches ANSI escape sequences for stable renderer golden snapshots.
+var ansiPattern = regexp.MustCompile(`\x1b\[[0-9;]*m`)
 
 // sampleStream exercises passing, skipped, failing, and build-error events.
 const sampleStream = `{"Action":"run","Package":"example/pkg","Test":"TestPass"}

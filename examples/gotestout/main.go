@@ -11,7 +11,7 @@ import (
 	"github.com/evanmschultz/laslig/gotestout"
 )
 
-// sampleStream exercises passing, skipped, failing, and build-error events.
+// sampleStream is the fixed go test -json fixture used by the focused example.
 const sampleStream = `{"Action":"run","Package":"example/pkg","Test":"TestPass"}
 {"Action":"output","Package":"example/pkg","Test":"TestPass","Output":"=== RUN   TestPass\n"}
 {"Action":"output","Package":"example/pkg","Test":"TestPass","Output":"note: useful output\n"}
@@ -36,12 +36,13 @@ func main() {
 	}
 }
 
-// run renders the example with process arguments.
+// run renders the focused example with process arguments.
 func run() error {
 	return runArgs(os.Stdout, os.Args[1:])
 }
 
-// runArgs renders the focused gotestout example to one writer.
+// runArgs renders the focused gotestout example to one writer in the same shape
+// callers would use from a Mage target or ordinary CLI command.
 func runArgs(out io.Writer, args []string) error {
 	flags := flag.NewFlagSet("gotestout-example", flag.ContinueOnError)
 	flags.SetOutput(io.Discard)

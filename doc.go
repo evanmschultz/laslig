@@ -21,5 +21,5 @@
 //   - JSON payloads for machine-readable consumers
 //
 // A specialist gotestout package provides Charm-native rendering for go test
-// -json streams.
+// -json streams in Mage targets and ordinary Go CLI commands.
 package laslig

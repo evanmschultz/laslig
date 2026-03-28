@@ -5,9 +5,13 @@ import (
 	"errors"
 	"io"
 	"os"
+	"regexp"
 	"strings"
 	"testing"
 )
+
+// ansiPattern matches ANSI escape sequences for stable test assertions.
+var ansiPattern = regexp.MustCompile(`\x1b\[[0-9;]*m`)
 
 // failWriter is an io.Writer that always fails.
 type failWriter struct{}
@@ -15,6 +19,11 @@ type failWriter struct{}
 // Write implements io.Writer by always returning an error.
 func (failWriter) Write(_ []byte) (int, error) {
 	return 0, errors.New("boom")
+}
+
+// stripANSI removes ANSI escape sequences from one string for stable assertions.
+func stripANSI(value string) string {
+	return ansiPattern.ReplaceAllString(value, "")
 }
 
 // TestRunArgsPlain verifies focused plain gotestout rendering.
@@ -49,6 +58,26 @@ func TestRunArgsJSON(t *testing.T) {
 	}
 	if strings.Contains(got, "Test summary") {
 		t.Fatalf("runArgs() JSON output unexpectedly included human summary:\n%s", got)
+	}
+}
+
+// TestRunArgsHumanStyled verifies focused human/styled gotestout rendering.
+func TestRunArgsHumanStyled(t *testing.T) {
+	var buf bytes.Buffer
+	if err := runArgs(&buf, []string{"-format", "human", "-style", "always"}); err != nil {
+		t.Fatalf("runArgs() error = %v", err)
+	}
+
+	got := buf.String()
+	if !strings.Contains(got, "\x1b[") {
+		t.Fatalf("runArgs() output missing ANSI styling: %q", got)
+	}
+	plain := stripANSI(got)
+	if !strings.Contains(plain, "Test summary") {
+		t.Fatalf("runArgs() stripped output missing summary:\n%s", plain)
+	}
+	if !strings.Contains(plain, "Failed tests") {
+		t.Fatalf("runArgs() stripped output missing failed tests section:\n%s", plain)
 	}
 }
 

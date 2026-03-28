@@ -129,3 +129,28 @@ Rich Text Primitives
   │  owning the logger.                                              │
   │                                                                  │
   ╰──────────────────────────────────────────────────────────────────╯
+
+
+Specialized Packages
+
+  gotestout
+  
+  Use gotestout for Charm-native go test output when a Mage target or
+  CLI command should keep owning process control.
+  
+  This repository dogfoods that path through mage test and also ships a
+  focused runnable example.                                            
+
+  ╭─────────────────────────────────────────────────────────────────────╮
+  │                                                                     │
+  │  Use gotestout with Mage                                            │
+  │                                                                     │
+  │                                                                     │
+  │      go run ./examples/gotestout --format human --style always      │
+  │      mage test                                                      │
+  │                                                                     │
+  │  Use the focused example command first, then use mage test to       │
+  │  see the                                                            │
+  │  same renderer shape in a Mage target.                              │
+  │                                                                     │
+  ╰─────────────────────────────────────────────────────────────────────╯

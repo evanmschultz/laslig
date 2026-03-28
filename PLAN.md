@@ -33,6 +33,8 @@ The gap we are filling:
 - structural output review now includes plain and fixed-width human golden snapshots for the showcase plus `gotestout` plain output
 - the layout pass now includes public layout defaults for leading gap, section-owned indentation, and list-marker customization
 - runnable examples now live under `examples/`, including a demo-only `charm/log` transcript example and a focused `gotestout` stream example
+- the all-in-one walkthrough now points readers at the `gotestout` Mage flow directly instead of leaving it as a side note in README only
+- README/VHS assets now cover both the all-in-one walkthrough and the focused `gotestout` example
 
 ## Architecture
 
@@ -123,6 +125,7 @@ Do not publish internal implementation packages until they have proved stable.
 - decide how quickly to add focused concept demos beside the all-in-one showcase now that the main runnable demo lives in `examples/`
 - keep guided showcase wording consistent by pairing `PrimitiveName` with `Use PrimitiveName for...`
 - revisit whether the public root package has grown enough to justify moving more implementation into `internal/` packages now, instead of later
+- decide how prominently the all-in-one walkthrough should point readers to focused package examples such as `gotestout`
 
 ### Mage And CI UX
 
@@ -148,7 +151,7 @@ These are the current recommended directions for closing the open questions abov
 
 - keep the name `Section` if it gains ownership semantics; that name becomes clearer once following content is visibly grouped beneath it
 - only introduce a separate `Header` primitive later if real demand appears for a standalone heading that does not establish section ownership
-- make `Section` visually stronger than today so it reads more like a document heading and less like plain bold text
+- keep indentation and rhythm as the primary section signal for now; only revisit stronger visual section treatment if real usage pressure appears
 
 ### Lists, Records, And KV
 
@@ -168,7 +171,7 @@ These are the current recommended directions for closing the open questions abov
 ### Code, Logs, And Borders
 
 - keep `CodeBlock` as a separate public primitive even if it renders through Markdown/Glamour internally because the structured API is valuable
-- lighten the default `CodeBlock` treatment so it feels more like code and less like a general boxed callout
+- keep the current `CodeBlock` treatment for now; revisit only after broader theme/preset work if users still find it too heavy
 - keep `LogBlock` boxed by default because boxed transcripts/log excerpts scan well and benefit from stronger separation
 - leave `Panel` boxed by default for now, but revisit its default border weight after the layout pass
 
@@ -230,6 +233,7 @@ These items are considered settled enough to drive the next implementation pass.
 - add a demo-only `charm/log` example if it helps explain `LogBlock`
 - rename the structured `go test -json` helper package to `gotestout` so it is not confused with generic JSON viewing or formatting
 - show `gotestout` through a focused runnable example with real rendered stream output rather than a fake note inside the primitive walkthrough
+- make the all-in-one walkthrough explicitly point readers to the `gotestout` Mage flow and focused example command
 - keep guided walkthrough copy intentionally explicit:
   - title the block with the exact exported primitive or package name
   - immediately follow with `Use <Name> for...`

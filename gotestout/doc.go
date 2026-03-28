@@ -6,5 +6,6 @@
 // exec.Command, Mage, or another runner to an io.Reader that yields go test
 // events. Options allow compact or detailed views and let callers disable
 // grouped failed-test, skipped-test, package-error, or captured-output
-// sections when they want a tighter summary.
+// sections when they want a tighter summary. This makes the package a good fit
+// for Mage targets such as `mage test` and ordinary Go CLI commands.
 package gotestout

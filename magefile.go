@@ -222,14 +222,19 @@ func Demo() error {
 
 // VHS renders tracked terminal demos when tapes exist locally.
 func VHS() error {
-	tape := filepath.Join("docs", "vhs", "showcase.tape")
-	if _, err := os.Stat(tape); err != nil {
-		if errors.Is(err, os.ErrNotExist) {
-			return nil
-		}
-		return err
+	tapes, err := filepath.Glob(filepath.Join("docs", "vhs", "*.tape"))
+	if err != nil {
+		return fmt.Errorf("list vhs tapes: %w", err)
 	}
-	return run("vhs", tape)
+	if len(tapes) == 0 {
+		return nil
+	}
+	for _, tape := range tapes {
+		if err := run("vhs", tape); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // goFiles returns the Go source files under one repository root.

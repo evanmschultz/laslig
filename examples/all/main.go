@@ -237,6 +237,33 @@ func renderShowcase(printer *laslig.Printer) error {
 				return printer.LogBlock(loggingexample.Block())
 			},
 		},
+		{
+			name: "specialized packages section",
+			render: func() error {
+				return printer.Section("Specialized Packages")
+			},
+		},
+		{
+			name: "gotestout intro",
+			render: func() error {
+				return printer.Paragraph(laslig.Paragraph{
+					Title:  "gotestout",
+					Body:   "Use gotestout for Charm-native go test output when a Mage target or CLI command should keep owning process control.",
+					Footer: "This repository dogfoods that path through mage test and also ships a focused runnable example.",
+				})
+			},
+		},
+		{
+			name: "gotestout usage",
+			render: func() error {
+				return printer.CodeBlock(laslig.CodeBlock{
+					Title:    "Use gotestout with Mage",
+					Language: "bash",
+					Body:     "go run ./examples/gotestout --format human --style always\nmage test",
+					Footer:   "Use the focused example command first, then use mage test to see the same renderer shape in a Mage target.",
+				})
+			},
+		},
 	}
 	for _, step := range steps {
 		if err := step.render(); err != nil {
