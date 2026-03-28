@@ -235,7 +235,7 @@ This repository already dogfoods that pattern in [`magefile.go`](/Users/evanschu
 The tracked all-in-one showcase lives in [examples/all/main.go](/Users/evanschultz/Documents/Code/hylla/laslig/main/examples/all/main.go).
 The focused logging example package that uses `charm.land/log/v2` as a demo-only dependency lives in [examples/logging/logging.go](/Users/evanschultz/Documents/Code/hylla/laslig/main/examples/logging/logging.go) and is imported directly by the main showcase.
 Small verified Go doc examples live in [example_test.go](/Users/evanschultz/Documents/Code/hylla/laslig/main/example_test.go).
-The main showcase groups the library into structured blocks and rich-text blocks so the visual walkthrough stays readable.
+The main showcase is a guided walkthrough: it names each primitive directly and explains what it is for and when to use it.
 
 Run it locally:
 

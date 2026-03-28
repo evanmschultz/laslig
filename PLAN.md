@@ -29,7 +29,7 @@ The gap we are filling:
 - phase 3 has compact/detailed `testjson` rendering, Mage dogfooding, and caller-tunable grouped sections in place
 - phase 4 is in progress
 - phase 4A has shipped `Paragraph`, `StatusLine`, `Markdown`, `CodeBlock`, and explicit `LogBlock` primitives
-- phase 4 docs/demo alignment is expanding the grouped showcase for the newer rich-text blocks
+- phase 4 docs/demo alignment is rewriting the showcase as a guided primitive walkthrough that says what each block is and when to use it
 - structural output review now includes golden snapshots for the demo and `testjson` plain output
 - the layout pass now includes public layout defaults for leading gap, section-owned indentation, and list-marker customization
 - runnable examples now live under `examples/`, including a demo-only `charm/log` transcript example

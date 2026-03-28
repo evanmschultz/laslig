@@ -54,11 +54,11 @@ func runArgs(out io.Writer, args []string) error {
 			render: func() error {
 				return printer.Notice(laslig.Notice{
 					Level: laslig.NoticeInfoLevel,
-					Title: "Readable by default",
-					Body:  "Structured output should look intentional without forcing a framework.",
+					Title: "A guided primitive walkthrough",
+					Body:  "This showcase names Läslig's public primitives directly so you can see what they render and when to reach for them.",
 					Detail: []string{
-						"Use laslig for results and diagnostics.",
-						"Keep logging and CLI orchestration separate.",
+						"Use Läslig for ordinary CLI output, not command parsing or application logging.",
+						"Think of it as the layer between raw Charm styles and your command's result text.",
 					},
 				})
 			},
@@ -66,18 +66,28 @@ func runArgs(out io.Writer, args []string) error {
 		{
 			name: "structured section",
 			render: func() error {
-				return printer.Section("Structured Blocks")
+				return printer.Section("Structured Primitives")
+			},
+		},
+		{
+			name: "structured intro",
+			render: func() error {
+				return printer.Paragraph(laslig.Paragraph{
+					Title:  "When to start here",
+					Body:   "Start with these blocks when your CLI is presenting facts, grouped results, or emphasized callouts.",
+					Footer: "They cover most command summaries without inventing a custom layout.",
+				})
 			},
 		},
 		{
 			name: "record",
 			render: func() error {
 				return printer.Record(laslig.Record{
-					Title: "Project",
+					Title: "Record",
 					Fields: []laslig.Field{
-						{Label: "module", Value: "github.com/evanmschultz/laslig", Identifier: true},
-						{Label: "runtime deps", Value: "Charm + stdlib"},
-						{Label: "task runner", Value: "Mage", Muted: true},
+						{Label: "what", Value: "One object or result rendered as labeled facts."},
+						{Label: "when", Value: "Build metadata, artifact details, environment summaries."},
+						{Label: "example", Value: "module github.com/evanmschultz/laslig", Identifier: true},
 					},
 				})
 			},
@@ -86,8 +96,10 @@ func runArgs(out io.Writer, args []string) error {
 			name: "kv",
 			render: func() error {
 				return printer.KV(laslig.KV{
-					Title: "Policy",
+					Title: "KV",
 					Pairs: []laslig.Field{
+						{Label: "what", Value: "Compact aligned configuration or status."},
+						{Label: "when", Value: "Resolved policy, flags, execution mode."},
 						{Label: "format", Value: string(printer.Mode().Format)},
 						{Label: "styled", Value: fmt.Sprintf("%t", printer.Mode().Styled), Muted: true},
 					},
@@ -98,27 +110,27 @@ func runArgs(out io.Writer, args []string) error {
 			name: "list",
 			render: func() error {
 				return printer.List(laslig.List{
-					Title: "Surfaces",
+					Title: "List",
 					Items: []laslig.ListItem{
 						{
-							Title: "Structured blocks",
-							Badge: "ready",
+							Title: "Grouped items",
+							Badge: "default",
 							Fields: []laslig.Field{
-								{Label: "use", Value: "records, tables, notices, panels"},
+								{Label: "when", Value: "Packages, tasks, phases, or capabilities that scan better than a table."},
 							},
 						},
 						{
-							Title: "Rich text",
+							Title: "Badges stay lightweight",
 							Badge: "ready",
 							Fields: []laslig.Field{
-								{Label: "use", Value: "paragraphs, markdown, code, transcripts"},
+								{Label: "why", Value: "Use a badge when a quick state is enough and a panel would be too heavy."},
 							},
 						},
 						{
-							Title: "testjson",
+							Title: "Detail fields add context",
 							Badge: "live",
 							Fields: []laslig.Field{
-								{Label: "use", Value: "Charm-native go test output", Muted: true},
+								{Label: "what", Value: "Each item can carry labeled facts and still stay list-shaped.", Muted: true},
 							},
 						},
 					},
@@ -129,30 +141,50 @@ func runArgs(out io.Writer, args []string) error {
 			name: "table",
 			render: func() error {
 				return printer.Table(laslig.Table{
-					Title:  "Formats",
-					Header: []string{"format", "goal"},
+					Title:  "Table",
+					Header: []string{"compare", "prefer when"},
 					Rows: [][]string{
-						{"human", "pleasant terminal output"},
-						{"plain", "stable no-ANSI text"},
-						{"json", "machine-readable payloads"},
+						{"Table", "column alignment matters across many rows"},
+						{"List", "items are unordered and short"},
+						{"Record", "you are describing one object"},
 					},
-					Caption: "One policy, three surfaces.",
+					Caption: "Use Table when comparison matters more than prose.",
+				})
+			},
+		},
+		{
+			name: "panel",
+			render: func() error {
+				return printer.Panel(laslig.Panel{
+					Title:  "Panel",
+					Body:   "Use Panel for rationale, next steps, and larger callouts that should stand apart from the rest of the document.",
+					Footer: "Panels are stronger than Paragraph and lighter than inventing a custom layout.",
 				})
 			},
 		},
 		{
 			name: "rich text section",
 			render: func() error {
-				return printer.Section("Rich Text")
+				return printer.Section("Rich Text Primitives")
+			},
+		},
+		{
+			name: "rich text intro",
+			render: func() error {
+				return printer.Paragraph(laslig.Paragraph{
+					Title:  "When prose matters",
+					Body:   "These primitives handle explanation-heavy output: wrapped prose, markdown, code, and captured transcripts.",
+					Footer: "Use them when a CLI needs to teach, explain, or show supporting context.",
+				})
 			},
 		},
 		{
 			name: "paragraph",
 			render: func() error {
 				return printer.Paragraph(laslig.Paragraph{
-					Title:  "Why prose matters",
-					Body:   "Long-form command output should stay readable without forcing every caller to hand-build wrapped Lip Gloss layouts.",
-					Footer: "Use Paragraph when a Notice or Panel would be too heavy.",
+					Title:  "Paragraph",
+					Body:   "Use Paragraph for readable rationale, release context, and longer help text when a Notice or Panel would be too heavy.",
+					Footer: "It is the default long-form text primitive.",
 				})
 			},
 		},
@@ -161,8 +193,18 @@ func runArgs(out io.Writer, args []string) error {
 			render: func() error {
 				return printer.StatusLine(laslig.StatusLine{
 					Level:  laslig.NoticeSuccessLevel,
-					Text:   "Build ready",
-					Detail: "mage check",
+					Text:   "StatusLine keeps one result compact and semantic",
+					Detail: "When: build ready, cache hit, package passed",
+				})
+			},
+		},
+		{
+			name: "markdown intro",
+			render: func() error {
+				return printer.Paragraph(laslig.Paragraph{
+					Title:  "Markdown",
+					Body:   "Use Markdown when your CLI already has release notes, changelog text, or generated help content to show.",
+					Footer: "The block below is real terminal-rendered Markdown.",
 				})
 			},
 		},
@@ -175,13 +217,33 @@ func runArgs(out io.Writer, args []string) error {
 			},
 		},
 		{
+			name: "code block intro",
+			render: func() error {
+				return printer.Paragraph(laslig.Paragraph{
+					Title:  "CodeBlock",
+					Body:   "Use CodeBlock for commands, snippets, generated files, and config examples.",
+					Footer: "The block below shows a Go snippet rendered through Glamour.",
+				})
+			},
+		},
+		{
 			name: "code block",
 			render: func() error {
 				return printer.CodeBlock(laslig.CodeBlock{
-					Title:    "example.go",
+					Title:    "Go snippet",
 					Language: "go",
-					Body:     "fmt.Println(\"hello from laslig\")",
-					Footer:   "Rendered through Glamour in styled human mode.",
+					Body:     "package main\n\nimport \"fmt\"\n\nfunc main() {\n\tfmt.Println(\"hello from laslig\")\n}",
+					Footer:   "Use CodeBlock when code should stay visibly distinct from prose.",
+				})
+			},
+		},
+		{
+			name: "log block intro",
+			render: func() error {
+				return printer.Paragraph(laslig.Paragraph{
+					Title:  "LogBlock",
+					Body:   "Use LogBlock for selected stderr or log excerpts while the application keeps owning logging.",
+					Footer: "The block below captures real charm/log output and renders it through Läslig.",
 				})
 			},
 		},
@@ -192,12 +254,12 @@ func runArgs(out io.Writer, args []string) error {
 			},
 		},
 		{
-			name: "panel",
+			name: "stream note",
 			render: func() error {
 				return printer.Panel(laslig.Panel{
-					Title:  "Why this shape",
-					Body:   "Fang should own help and command errors. Laslig should own ordinary output blocks, rich text, and stream summaries.",
-					Footer: "Next up: theme presets and richer test classification.",
+					Title:  "testjson",
+					Body:   "Use the testjson subpackage when you want Charm-native go test output without giving up caller-owned process control.",
+					Footer: "Next up: theme presets, stronger Section styling, and richer test classification.",
 				})
 			},
 		},

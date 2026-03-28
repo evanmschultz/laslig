@@ -41,8 +41,8 @@ func Transcript() string {
 // Block returns one log block backed by a captured charm/log transcript.
 func Block() laslig.LogBlock {
 	return laslig.LogBlock{
-		Title:  "charm/log transcript",
+		Title:  "Captured charm/log transcript",
 		Body:   Transcript(),
-		Footer: "Produced by charm.land/log/v2 and rendered by Läslig.",
+		Footer: "Use LogBlock for selected transcripts while the application keeps owning the logger.",
 	}
 }

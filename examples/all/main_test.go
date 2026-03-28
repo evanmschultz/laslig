@@ -5,9 +5,12 @@ import (
 	"errors"
 	"io"
 	"os"
+	"regexp"
 	"strings"
 	"testing"
 )
+
+var ansiPattern = regexp.MustCompile(`\x1b\[[0-9;]*m`)
 
 // failWriter is an io.Writer that always fails.
 type failWriter struct{}
@@ -15,6 +18,11 @@ type failWriter struct{}
 // Write implements io.Writer by always returning an error.
 func (failWriter) Write(_ []byte) (int, error) {
 	return 0, errors.New("boom")
+}
+
+// stripANSI removes ANSI escape sequences from one string for stable assertions.
+func stripANSI(value string) string {
+	return ansiPattern.ReplaceAllString(value, "")
 }
 
 // TestRunArgsPlain verifies plain demo rendering through the testable entrypoint.
@@ -29,23 +37,29 @@ func TestRunArgsPlain(t *testing.T) {
 	if !strings.Contains(got, "Läslig demo") {
 		t.Fatalf("runArgs() output missing section:\n%s", got)
 	}
-	if !strings.Contains(got, "Policy") {
-		t.Fatalf("runArgs() output missing kv block:\n%s", got)
+	if !strings.Contains(got, "Structured Primitives") {
+		t.Fatalf("runArgs() output missing structured section:\n%s", got)
 	}
-	if !strings.Contains(got, "Rich Text") {
+	if !strings.Contains(got, "Record") || !strings.Contains(got, "KV") || !strings.Contains(got, "List") {
+		t.Fatalf("runArgs() output missing structured primitive names:\n%s", got)
+	}
+	if !strings.Contains(got, "Rich Text Primitives") {
 		t.Fatalf("runArgs() output missing rich-text section:\n%s", got)
 	}
-	if !strings.Contains(got, "[SUCCESS] Build ready (mage check)") {
+	if !strings.Contains(got, "Paragraph") || !strings.Contains(got, "Markdown") || !strings.Contains(got, "CodeBlock") {
+		t.Fatalf("runArgs() output missing rich-text primitive names:\n%s", got)
+	}
+	if !strings.Contains(got, "[SUCCESS] StatusLine keeps one result compact and semantic") {
 		t.Fatalf("runArgs() output missing status line:\n%s", got)
 	}
-	if !strings.Contains(got, "charm/log transcript") {
+	if !strings.Contains(got, "Captured charm/log transcript") {
 		t.Fatalf("runArgs() output missing log block:\n%s", got)
 	}
 	if !strings.Contains(got, "boot complete") {
 		t.Fatalf("runArgs() output missing captured log transcript:\n%s", got)
 	}
-	if !strings.Contains(got, "testjson [LIVE]") && !strings.Contains(got, "testjson") {
-		t.Fatalf("runArgs() output missing live badge:\n%s", got)
+	if !strings.Contains(got, "testjson") {
+		t.Fatalf("runArgs() output missing stream note:\n%s", got)
 	}
 }
 
@@ -87,7 +101,7 @@ func TestRunArgsHumanStyled(t *testing.T) {
 	if !strings.Contains(got, "\x1b[") {
 		t.Fatalf("runArgs() output missing ANSI styling: %q", got)
 	}
-	if !strings.Contains(got, "Build ready") {
+	if !strings.Contains(stripANSI(got), "StatusLine keeps one result compact and semantic") {
 		t.Fatalf("runArgs() output missing status-line text: %q", got)
 	}
 }

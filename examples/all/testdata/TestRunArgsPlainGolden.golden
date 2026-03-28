@@ -1,49 +1,75 @@
 
 Läslig demo
 
-  [INFO] Readable by default
-    Structured output should look intentional without forcing a framework.
-    Use laslig for results and diagnostics.
-    Keep logging and CLI orchestration separate.
+  [INFO] A guided primitive walkthrough
+    This showcase names Läslig's public primitives directly so you can see what they render and when to reach for them.
+    Use Läslig for ordinary CLI output, not command parsing or application logging.
+    Think of it as the layer between raw Charm styles and your command's result text.
 
 
-Structured Blocks
+Structured Primitives
 
-  Project
-    module: github.com/evanmschultz/laslig
-    runtime deps: Charm + stdlib
-    task runner: Mage
+  When to start here
+  
+  Start with these blocks when your CLI is presenting facts, grouped results, or emphasized callouts.
+  
+  They cover most command summaries without inventing a custom layout.
 
-  Policy
+  Record
+    what: One object or result rendered as labeled facts.
+    when: Build metadata, artifact details, environment summaries.
+    example: module github.com/evanmschultz/laslig
+
+  KV
+    what    Compact aligned configuration or status.
+    when    Resolved policy, flags, execution mode.
     format  plain
     styled  false
 
-  Surfaces
-  - Structured blocks [READY]
-    use: records, tables, notices, panels
-  - Rich text [READY]
-    use: paragraphs, markdown, code, transcripts
-  - testjson [LIVE]
-    use: Charm-native go test output
+  List
+  - Grouped items [DEFAULT]
+    when: Packages, tasks, phases, or capabilities that scan better than a table.
+  - Badges stay lightweight [READY]
+    why: Use a badge when a quick state is enough and a panel would be too heavy.
+  - Detail fields add context [LIVE]
+    what: Each item can carry labeled facts and still stay list-shaped.
 
-  Formats
-  format | goal
-  -------+--------------------------
-  human  | pleasant terminal output
-  plain  | stable no-ANSI text
-  json   | machine-readable payloads
-  One policy, three surfaces.
+  Table
+  compare | prefer when
+  --------+------------------------------------------
+  Table   | column alignment matters across many rows
+  List    | items are unordered and short
+  Record  | you are describing one object
+  Use Table when comparison matters more than prose.
 
-
-Rich Text
-
-  Why prose matters
+  Panel
   
-  Long-form command output should stay readable without forcing every caller to hand-build wrapped Lip Gloss layouts.
+  Use Panel for rationale, next steps, and larger callouts that should stand apart from the rest of the document.
   
-  Use Paragraph when a Notice or Panel would be too heavy.
+  Panels are stronger than Paragraph and lighter than inventing a custom layout.
 
-  [SUCCESS] Build ready (mage check)
+
+Rich Text Primitives
+
+  When prose matters
+  
+  These primitives handle explanation-heavy output: wrapped prose, markdown, code, and captured transcripts.
+  
+  Use them when a CLI needs to teach, explain, or show supporting context.
+
+  Paragraph
+  
+  Use Paragraph for readable rationale, release context, and longer help text when a Notice or Panel would be too heavy.
+  
+  It is the default long-form text primitive.
+
+  [SUCCESS] StatusLine keeps one result compact and semantic (When: build ready, cache hit, package passed)
+
+  Markdown
+  
+  Use Markdown when your CLI already has release notes, changelog text, or generated help content to show.
+  
+  The block below is real terminal-rendered Markdown.
 
   # Release Notes
   
@@ -53,22 +79,40 @@ Rich Text
   - three output surfaces
   - caller-owned logging
 
-  example.go
+  CodeBlock
   
-  fmt.Println("hello from laslig")
+  Use CodeBlock for commands, snippets, generated files, and config examples.
   
-  Rendered through Glamour in styled human mode.
+  The block below shows a Go snippet rendered through Glamour.
 
-  charm/log transcript
+  Go snippet
+  
+  package main
+  
+  import "fmt"
+  
+  func main() {
+  	fmt.Println("hello from laslig")
+  }
+  
+  Use CodeBlock when code should stay visibly distinct from prose.
+
+  LogBlock
+  
+  Use LogBlock for selected stderr or log excerpts while the application keeps owning logging.
+  
+  The block below captures real charm/log output and renders it through Läslig.
+
+  Captured charm/log transcript
   
   INFO demo: boot complete component=cache
   WARN demo: retry scheduled after=3s
   ERRO demo: dependency missing name=git
   
-  Produced by charm.land/log/v2 and rendered by Läslig.
+  Use LogBlock for selected transcripts while the application keeps owning the logger.
 
-  Why this shape
+  testjson
   
-  Fang should own help and command errors. Laslig should own ordinary output blocks, rich text, and stream summaries.
+  Use the testjson subpackage when you want Charm-native go test output without giving up caller-owned process control.
   
-  Next up: theme presets and richer test classification.
+  Next up: theme presets, stronger Section styling, and richer test classification.
