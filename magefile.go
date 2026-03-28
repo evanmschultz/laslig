@@ -11,6 +11,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/evanmschultz/laslig"
 	"github.com/evanmschultz/laslig/gotestout"
@@ -21,6 +22,9 @@ const coverageThreshold = 70.0
 
 // localBuildVCSFlag disables VCS stamping for local bare-worktree commands.
 const localBuildVCSFlag = "-buildvcs=false"
+
+// pacedDemoDelay is the pause between focused example screens in mage demo.
+const pacedDemoDelay = time.Second
 
 // coverageLinePattern extracts package names and percentages from go test coverage output.
 var coverageLinePattern = regexp.MustCompile(`^(?:ok\s+)?(\S+)(?:\s+\S+)?\s+coverage:\s+([0-9.]+)% of statements(?: in ./\.\.\.)?$`)
@@ -226,9 +230,36 @@ func Build() error {
 	return nil
 }
 
-// Demo runs the tracked all-in-one showcase example.
+// Demo clears the screen and walks the focused examples one by one.
 func Demo() error {
-	return run("go", "run", localBuildVCSFlag, "./examples/all")
+	examples := []string{
+		"section",
+		"notice",
+		"record",
+		"kv",
+		"list",
+		"table",
+		"panel",
+		"paragraph",
+		"statusline",
+		"markdown",
+		"codeblock",
+		"logblock",
+		"gotestout",
+		"magecheck",
+	}
+
+	for index, name := range examples {
+		fmt.Fprint(os.Stdout, "\033[H\033[2J")
+		fmt.Fprintf(os.Stdout, "Läslig demo: %s\n\n", name)
+		if err := run("go", "run", localBuildVCSFlag, "./examples/"+name, "--format", "human", "--style", "always"); err != nil {
+			return err
+		}
+		if index < len(examples)-1 {
+			time.Sleep(pacedDemoDelay)
+		}
+	}
+	return nil
 }
 
 // VHS renders tracked terminal demos when tapes exist locally.

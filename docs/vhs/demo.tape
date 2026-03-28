@@ -20,7 +20,7 @@ Hide
 Type "clear"
 Enter
 Sleep 250ms
-Type "zsh docs/vhs/demo.sh"
+Type "mage demo"
 Enter
 Show
-Sleep 20s
+Sleep 30s
