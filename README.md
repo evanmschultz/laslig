@@ -233,7 +233,7 @@ This repository already dogfoods that pattern in [`magefile.go`](/Users/evanschu
 ## Demo
 
 The tracked all-in-one showcase lives in [examples/all/main.go](/Users/evanschultz/Documents/Code/hylla/laslig/main/examples/all/main.go).
-The focused logging example that uses `charm.land/log/v2` as a demo-only dependency lives in [examples/logging/main.go](/Users/evanschultz/Documents/Code/hylla/laslig/main/examples/logging/main.go).
+The focused logging example package that uses `charm.land/log/v2` as a demo-only dependency lives in [examples/logging/logging.go](/Users/evanschultz/Documents/Code/hylla/laslig/main/examples/logging/logging.go) and is imported directly by the main showcase.
 Small verified Go doc examples live in [example_test.go](/Users/evanschultz/Documents/Code/hylla/laslig/main/example_test.go).
 The main showcase groups the library into structured blocks and rich-text blocks so the visual walkthrough stays readable.
 
@@ -241,11 +241,11 @@ Run it locally:
 
 ```bash
 mage demo
-mage demoLogging
 go run ./examples/all --format human --style always
 go run ./examples/all --format json
-cd examples/logging && go run .
 ```
+
+`mage demo` is the normal convenience entrypoint. The `go run` forms above are the same showcase with explicit format/style flags.
 
 The README GIF is generated from [docs/vhs/showcase.tape](/Users/evanschultz/Documents/Code/hylla/laslig/main/docs/vhs/showcase.tape).
 

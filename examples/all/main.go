@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/evanmschultz/laslig"
+	loggingexample "github.com/evanmschultz/laslig/examples/logging"
 )
 
 // main runs the demo command and exits non-zero on failure.
@@ -187,10 +188,7 @@ func runArgs(out io.Writer, args []string) error {
 		{
 			name: "log block",
 			render: func() error {
-				return printer.LogBlock(laslig.LogBlock{
-					Title: "stderr excerpt",
-					Body:  "INFO boot complete\nWARN retry scheduled\nERROR dependency missing",
-				})
+				return printer.LogBlock(loggingexample.Block())
 			},
 		},
 		{

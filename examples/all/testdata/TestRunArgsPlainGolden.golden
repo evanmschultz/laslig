@@ -59,11 +59,13 @@ Rich Text
   
   Rendered through Glamour in styled human mode.
 
-  stderr excerpt
+  charm/log transcript
   
-  INFO boot complete
-  WARN retry scheduled
-  ERROR dependency missing
+  INFO demo: boot complete component=cache
+  WARN demo: retry scheduled after=3s
+  ERRO demo: dependency missing name=git
+  
+  Produced by charm.land/log/v2 and rendered by Läslig.
 
   Why this shape
   

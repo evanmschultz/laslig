@@ -1,11 +1,6 @@
 # Logging Example
 
-This example keeps logging with `charm.land/log/v2` and then renders
+This example package keeps logging with `charm.land/log/v2` and then renders
 the captured human-readable transcript through `laslig.LogBlock`.
 
-Run it with:
-
-```bash
-cd examples/logging
-go run .
-```
+The all-in-one showcase in `examples/all` imports this package directly.

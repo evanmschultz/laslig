@@ -174,7 +174,7 @@ These are the current recommended directions for closing the open questions abov
 
 - move the showcase/demo surface toward `examples/` instead of treating `cmd/laslig-demo` as the long-term home
 - keep one "all primitives" showcase and add focused concept demos beside it
-- allow a nested example module for `charm/log` if we want a true logger-to-`LogBlock` demonstration without adding `charm/log` as a library dependency
+- keep the `charm/log` demo as one focused example package imported by the all-in-one showcase, instead of adding a second primary demo command
 - keep the root package as the public API surface, but move more non-exported implementation into `internal/` over time
 
 ## Agreed Decisions
