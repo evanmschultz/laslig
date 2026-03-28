@@ -1,0 +1,82 @@
+
+gotestout + Mage
+
+  Use gotestout inside Mage or small Go helpers behind make, just, or task when you want caller-owned process control with a readable test stream.
+  
+  The preview below matches this repository's mage check and mage test shape.
+
+
+Build
+
+  [INFO] Building example packages (./examples/...)
+
+  [SUCCESS] Built example packages (./examples/...)
+
+
+Tests
+[PKG PASS] github.com/evanmschultz/laslig (0.00s)
+[PKG PASS] github.com/evanmschultz/laslig/examples/all (0.00s)
+[PKG PASS] github.com/evanmschultz/laslig/examples/codeblock (0.00s)
+[PKG PASS] github.com/evanmschultz/laslig/examples/gotestout (0.00s)
+[PKG PASS] github.com/evanmschultz/laslig/examples/kv (0.00s)
+[PKG PASS] github.com/evanmschultz/laslig/examples/list (0.00s)
+[PKG PASS] github.com/evanmschultz/laslig/examples/logblock (0.00s)
+[PKG PASS] github.com/evanmschultz/laslig/examples/magecheck (0.00s)
+[PKG PASS] github.com/evanmschultz/laslig/examples/markdown (0.00s)
+[PKG PASS] github.com/evanmschultz/laslig/examples/notice (0.00s)
+[PKG PASS] github.com/evanmschultz/laslig/examples/panel (0.00s)
+[PKG PASS] github.com/evanmschultz/laslig/examples/paragraph (0.00s)
+[PKG PASS] github.com/evanmschultz/laslig/examples/record (0.00s)
+[PKG PASS] github.com/evanmschultz/laslig/examples/section (0.00s)
+[PKG PASS] github.com/evanmschultz/laslig/examples/statusline (0.00s)
+[PKG PASS] github.com/evanmschultz/laslig/examples/table (0.00s)
+[PKG PASS] github.com/evanmschultz/laslig/gotestout (0.00s)
+[PKG PASS] github.com/evanmschultz/laslig/internal/examples (0.00s)
+[PKG PASS] github.com/evanmschultz/laslig/internal/exampletestutil (0.00s)
+[PKG PASS] github.com/evanmschultz/laslig/internal/glamrender (0.00s)
+[PKG PASS] github.com/evanmschultz/laslig/internal/layout (0.00s)
+[PKG PASS] github.com/evanmschultz/laslig/internal/table (0.00s)
+
+Test summary
+  tests: 123
+  passed: 123
+  failed: 0
+  skipped: 0
+  packages: 22
+  pkg passed: 22
+  pkg failed: 0
+  pkg skipped: 0
+
+[SUCCESS] All tests passed
+  123 tests passed across 22 packages.
+
+Coverage
+
+  package                                                 | cover
+  --------------------------------------------------------+------
+  github.com/evanmschultz/laslig                          | 71.2%
+  github.com/evanmschultz/laslig/examples/all             | 84.4%
+  github.com/evanmschultz/laslig/examples/codeblock       | 80.0%
+  github.com/evanmschultz/laslig/examples/gotestout       | 86.7%
+  github.com/evanmschultz/laslig/examples/kv              | 80.0%
+  github.com/evanmschultz/laslig/examples/list            | 80.0%
+  github.com/evanmschultz/laslig/examples/logblock        | 75.0%
+  github.com/evanmschultz/laslig/examples/magecheck       | 80.0%
+  github.com/evanmschultz/laslig/examples/markdown        | 80.0%
+  github.com/evanmschultz/laslig/examples/notice          | 80.0%
+  github.com/evanmschultz/laslig/examples/panel           | 80.0%
+  github.com/evanmschultz/laslig/examples/paragraph       | 80.0%
+  github.com/evanmschultz/laslig/examples/record          | 80.0%
+  github.com/evanmschultz/laslig/examples/section         | 80.0%
+  github.com/evanmschultz/laslig/examples/statusline      | 80.0%
+  github.com/evanmschultz/laslig/examples/table           | 80.0%
+  github.com/evanmschultz/laslig/gotestout                | 82.3%
+  github.com/evanmschultz/laslig/internal/examples        | 88.0%
+  github.com/evanmschultz/laslig/internal/exampletestutil | 90.0%
+  github.com/evanmschultz/laslig/internal/glamrender      | 83.3%
+  github.com/evanmschultz/laslig/internal/layout          | 87.5%
+  github.com/evanmschultz/laslig/internal/table           | 96.6%
+  Minimum package coverage: 70.0%.
+
+  [SUCCESS] Coverage threshold met
+    All packages are at or above 70.0% coverage.

@@ -7,7 +7,7 @@ import (
 	"github.com/charmbracelet/x/exp/golden"
 )
 
-// TestRunArgsPlainGolden verifies the focused plain example output structure.
+// TestRunArgsPlainGolden verifies the focused gotestout plain snapshot.
 func TestRunArgsPlainGolden(t *testing.T) {
 	var buf bytes.Buffer
 	if err := runArgs(&buf, []string{"-format", "plain", "-style", "never"}); err != nil {

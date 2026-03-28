@@ -1,0 +1,18 @@
+
+CodeBlock
+
+  Use CodeBlock for commands, snippets, generated files, and config examples.
+  
+  The block below shows a Go snippet rendered through Glamour.
+
+  Go snippet
+  
+  package main
+  
+  import "fmt"
+  
+  func main() {
+  	fmt.Println("hello from laslig")
+  }
+  
+  Use CodeBlock when code should stay visibly distinct from prose.

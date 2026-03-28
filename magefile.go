@@ -193,36 +193,33 @@ func Coverage() error {
 	return nil
 }
 
-// Build compiles the tracked showcase example when it exists.
+// Build compiles the tracked example packages when they exist.
 func Build() error {
 	printer := laslig.New(os.Stdout, laslig.Policy{
 		Format: laslig.FormatAuto,
 		Style:  laslig.StyleAuto,
 	})
 
-	if _, err := os.Stat(filepath.Join("examples", "all")); err != nil {
+	if _, err := os.Stat("examples"); err != nil {
 		if errors.Is(err, os.ErrNotExist) {
 			return nil
 		}
 		return err
 	}
-	if err := os.MkdirAll("bin", 0o755); err != nil {
-		return fmt.Errorf("create bin directory: %w", err)
-	}
 	if err := printer.StatusLine(laslig.StatusLine{
 		Level:  laslig.NoticeInfoLevel,
-		Text:   "Building showcase example",
-		Detail: "./examples/all",
+		Text:   "Building example packages",
+		Detail: "./examples/...",
 	}); err != nil {
 		return fmt.Errorf("write build start: %w", err)
 	}
-	if err := run("go", "build", localBuildVCSFlag, "-o", filepath.Join("bin", "laslig-demo"), "./examples/all"); err != nil {
+	if err := run("go", "build", localBuildVCSFlag, "./examples/..."); err != nil {
 		return err
 	}
 	if err := printer.StatusLine(laslig.StatusLine{
 		Level:  laslig.NoticeSuccessLevel,
-		Text:   "Built showcase example",
-		Detail: filepath.Join("bin", "laslig-demo"),
+		Text:   "Built example packages",
+		Detail: "./examples/...",
 	}); err != nil {
 		return fmt.Errorf("write build success: %w", err)
 	}

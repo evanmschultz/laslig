@@ -10,6 +10,7 @@ import (
 	"testing"
 )
 
+// ansiPattern matches ANSI escape sequences for stable test assertions.
 var ansiPattern = regexp.MustCompile(`\x1b\[[0-9;]*m`)
 
 // failWriter is an io.Writer that always fails.
@@ -25,52 +26,41 @@ func stripANSI(value string) string {
 	return ansiPattern.ReplaceAllString(value, "")
 }
 
-// TestRunArgsPlain verifies plain demo rendering through the testable entrypoint.
+// TestRunArgsPlain verifies plain aggregate showcase rendering.
 func TestRunArgsPlain(t *testing.T) {
 	var buf bytes.Buffer
-	err := runArgs(&buf, []string{"-format", "plain", "-style", "never"})
-	if err != nil {
+	if err := runArgs(&buf, []string{"-format", "plain", "-style", "never"}); err != nil {
 		t.Fatalf("runArgs() error = %v", err)
 	}
 
 	got := buf.String()
-	if !strings.Contains(got, "Läslig demo") {
-		t.Fatalf("runArgs() output missing section:\n%s", got)
-	}
-	if !strings.Contains(got, "Structured Primitives") {
-		t.Fatalf("runArgs() output missing structured section:\n%s", got)
-	}
-	if !strings.Contains(got, "Record") || !strings.Contains(got, "KV") || !strings.Contains(got, "List") {
-		t.Fatalf("runArgs() output missing structured primitive names:\n%s", got)
-	}
-	if !strings.Contains(got, "Rich Text Primitives") {
-		t.Fatalf("runArgs() output missing rich-text section:\n%s", got)
-	}
-	if !strings.Contains(got, "Paragraph") || !strings.Contains(got, "Markdown") || !strings.Contains(got, "CodeBlock") {
-		t.Fatalf("runArgs() output missing rich-text primitive names:\n%s", got)
-	}
-	if !strings.Contains(got, "[SUCCESS] StatusLine keeps one result compact and semantic") {
-		t.Fatalf("runArgs() output missing status line:\n%s", got)
-	}
-	if !strings.Contains(got, "Captured charm/log transcript") {
-		t.Fatalf("runArgs() output missing log block:\n%s", got)
-	}
-	if !strings.Contains(got, "boot complete") {
-		t.Fatalf("runArgs() output missing captured log transcript:\n%s", got)
-	}
-	if !strings.Contains(got, "gotestout") || !strings.Contains(got, "Build") || !strings.Contains(got, "Coverage threshold met") {
-		t.Fatalf("runArgs() output missing gotestout mage-check preview:\n%s", got)
-	}
-	if !strings.Contains(got, "Focused gotestout stream") || !strings.Contains(got, "TestPass") || !strings.Contains(got, "Mage-style integration") {
-		t.Fatalf("runArgs() output missing focused gotestout walkthrough content:\n%s", got)
+	for _, want := range []string{
+		"Läslig demo",
+		"Section",
+		"Notice",
+		"Record",
+		"KV",
+		"List",
+		"Table",
+		"Panel",
+		"Paragraph",
+		"StatusLine",
+		"Markdown",
+		"CodeBlock",
+		"LogBlock",
+		"gotestout",
+		"gotestout + Mage",
+	} {
+		if !strings.Contains(got, want) {
+			t.Fatalf("runArgs() output missing %q:\n%s", want, got)
+		}
 	}
 }
 
-// TestRunArgsJSON verifies JSON demo rendering through the testable entrypoint.
+// TestRunArgsJSON verifies aggregate JSON rendering through the testable entrypoint.
 func TestRunArgsJSON(t *testing.T) {
 	var buf bytes.Buffer
-	err := runArgs(&buf, []string{"-format", "json"})
-	if err != nil {
+	if err := runArgs(&buf, []string{"-format", "json"}); err != nil {
 		t.Fatalf("runArgs() error = %v", err)
 	}
 
@@ -78,25 +68,21 @@ func TestRunArgsJSON(t *testing.T) {
 	if !strings.Contains(got, `"type": "section"`) {
 		t.Fatalf("runArgs() JSON output missing section event:\n%s", got)
 	}
-	if !strings.Contains(got, `"type": "kv"`) {
-		t.Fatalf("runArgs() JSON output missing kv event:\n%s", got)
+	if !strings.Contains(got, `"type": "record"`) {
+		t.Fatalf("runArgs() JSON output missing record event:\n%s", got)
 	}
-	if !strings.Contains(got, `"type": "paragraph"`) {
-		t.Fatalf("runArgs() JSON output missing paragraph event:\n%s", got)
+	if !strings.Contains(got, `"type": "code_block"`) {
+		t.Fatalf("runArgs() JSON output missing code_block event:\n%s", got)
 	}
-	if !strings.Contains(got, `"type": "markdown"`) {
-		t.Fatalf("runArgs() JSON output missing markdown event:\n%s", got)
-	}
-	if !strings.Contains(got, `"type": "log_block"`) {
-		t.Fatalf("runArgs() JSON output missing log_block event:\n%s", got)
+	if !strings.Contains(got, `"Action":"fail"`) {
+		t.Fatalf("runArgs() JSON output missing gotestout events:\n%s", got)
 	}
 }
 
 // TestRunArgsHumanStyled verifies forced human styling output.
 func TestRunArgsHumanStyled(t *testing.T) {
 	var buf bytes.Buffer
-	err := runArgs(&buf, []string{"-format", "human", "-style", "always"})
-	if err != nil {
+	if err := runArgs(&buf, []string{"-format", "human", "-style", "always"}); err != nil {
 		t.Fatalf("runArgs() error = %v", err)
 	}
 
@@ -104,8 +90,12 @@ func TestRunArgsHumanStyled(t *testing.T) {
 	if !strings.Contains(got, "\x1b[") {
 		t.Fatalf("runArgs() output missing ANSI styling: %q", got)
 	}
-	if !strings.Contains(stripANSI(got), "StatusLine keeps one result compact and semantic") {
-		t.Fatalf("runArgs() output missing status-line text: %q", got)
+	plain := stripANSI(got)
+	if !strings.Contains(plain, "Läslig demo") {
+		t.Fatalf("runArgs() output missing intro: %q", plain)
+	}
+	if !strings.Contains(plain, "Use gotestout for Charm-native go test output when your task runner") {
+		t.Fatalf("runArgs() output missing gotestout section: %q", plain)
 	}
 }
 
@@ -120,14 +110,14 @@ func TestRunArgsInvalidFlag(t *testing.T) {
 	}
 }
 
-// TestRunArgsRenderError verifies render failures are wrapped with the step name.
+// TestRunArgsRenderError verifies render failures are wrapped by the shared runner.
 func TestRunArgsRenderError(t *testing.T) {
 	err := runArgs(failWriter{}, []string{"-format", "plain", "-style", "never"})
 	if err == nil {
 		t.Fatal("runArgs() error = nil, want render error")
 	}
-	if !strings.Contains(err.Error(), "render section") {
-		t.Fatalf("runArgs() error = %v, want render section prefix", err)
+	if !strings.Contains(err.Error(), "render laslig-demo example") {
+		t.Fatalf("runArgs() error = %v, want shared runner render prefix", err)
 	}
 }
 
@@ -161,6 +151,6 @@ func TestMain(t *testing.T) {
 	}
 
 	if !strings.Contains(string(data), "Läslig demo") {
-		t.Fatalf("main() output missing section:\n%s", string(data))
+		t.Fatalf("main() output missing intro:\n%s", string(data))
 	}
 }

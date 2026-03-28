@@ -34,8 +34,8 @@ func TestRunArgsPlain(t *testing.T) {
 	}
 
 	got := buf.String()
-	if !strings.Contains(got, "[INFO] Mixed fixture demo") {
-		t.Fatalf("runArgs() output missing explanatory notice:\n%s", got)
+	if !strings.Contains(got, "gotestout") {
+		t.Fatalf("runArgs() output missing example heading:\n%s", got)
 	}
 	if !strings.Contains(got, "[PASS] example/pkg :: TestPass (0.01s)") {
 		t.Fatalf("runArgs() output missing passing test line:\n%s", got)
@@ -79,8 +79,8 @@ func TestRunArgsHumanStyled(t *testing.T) {
 		t.Fatalf("runArgs() output missing ANSI styling: %q", got)
 	}
 	plain := stripANSI(got)
-	if !strings.Contains(plain, "Mixed fixture demo") {
-		t.Fatalf("runArgs() stripped output missing explanatory notice:\n%s", plain)
+	if !strings.Contains(plain, "Use gotestout for Charm-native go test output when your task runner") {
+		t.Fatalf("runArgs() stripped output missing intro paragraph:\n%s", plain)
 	}
 	if !strings.Contains(plain, "Test summary") {
 		t.Fatalf("runArgs() stripped output missing summary:\n%s", plain)
@@ -107,7 +107,7 @@ func TestRunArgsRenderError(t *testing.T) {
 	if err == nil {
 		t.Fatal("runArgs() error = nil, want render error")
 	}
-	if !strings.Contains(err.Error(), "render gotestout example") {
+	if !strings.Contains(err.Error(), "render gotestout-example example") {
 		t.Fatalf("runArgs() error = %v, want render prefix", err)
 	}
 }
@@ -144,7 +144,7 @@ func TestMain(t *testing.T) {
 	if !strings.Contains(string(data), "Test summary") {
 		t.Fatalf("main() output missing summary:\n%s", string(data))
 	}
-	if !strings.Contains(string(data), "Mixed fixture demo") {
-		t.Fatalf("main() output missing explanatory notice:\n%s", string(data))
+	if !strings.Contains(string(data), "gotestout") {
+		t.Fatalf("main() output missing example heading:\n%s", string(data))
 	}
 }

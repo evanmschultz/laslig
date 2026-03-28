@@ -1,0 +1,6 @@
+
+Notice
+
+  [INFO] Use Notice for semantic user-facing diagnostics
+    Notice is the default surface for info, success, warning, and error output that should stand out without turning into logging.
+    When: validation feedback, partial success, next-step guidance, dependency checks, or release milestones.

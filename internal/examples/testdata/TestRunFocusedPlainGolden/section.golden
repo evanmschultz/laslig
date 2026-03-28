@@ -1,0 +1,16 @@
+
+Section
+
+  Use Section to start a new document region. The blocks that follow are indented under that heading until the next section begins.
+  
+  Section is the document-level primitive that gives the rest of the output clear ownership.
+
+  Owned blocks
+    what: Paragraphs, records, lists, tables, and panels inherit the active section indent.
+    why: That default makes CLI output read more like a document than a stream of unrelated prints.
+
+
+Next section
+
+  [INFO] Section boundaries reset ownership
+    Starting another Section makes the boundary visible without requiring callers to manage indentation by hand.

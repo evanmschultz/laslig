@@ -6,14 +6,45 @@ The package and module name stay `laslig`. The product branding is `Läslig`, fr
 
 ## Visual Examples
 
-The main walkthrough shows the core primitives working together:
+Every guided demo item now has its own runnable example under [`examples/`](./examples) and its own focused VHS capture under [`docs/vhs/`](./docs/vhs). `mage demo` combines those same focused examples into one long walkthrough, but the README uses the smaller per-item visuals.
 
-![Läslig demo](docs/vhs/showcase.gif)
+### Structured Primitives
 
-The focused `gotestout` example intentionally uses a mixed pass/skip/fail
-fixture so the README shows Läslig's failure rendering too:
+| Section | Notice | Record |
+| --- | --- | --- |
+| [![Section example](docs/vhs/section.gif)](./examples/section) | [![Notice example](docs/vhs/notice.gif)](./examples/notice) | [![Record example](docs/vhs/record.gif)](./examples/record) |
+| [`examples/section`](./examples/section) | [`examples/notice`](./examples/notice) | [`examples/record`](./examples/record) |
 
-![gotestout example](docs/vhs/gotestout.gif)
+| KV | List | Table |
+| --- | --- | --- |
+| [![KV example](docs/vhs/kv.gif)](./examples/kv) | [![List example](docs/vhs/list.gif)](./examples/list) | [![Table example](docs/vhs/table.gif)](./examples/table) |
+| [`examples/kv`](./examples/kv) | [`examples/list`](./examples/list) | [`examples/table`](./examples/table) |
+
+| Panel |
+| --- |
+| [![Panel example](docs/vhs/panel.gif)](./examples/panel) |
+| [`examples/panel`](./examples/panel) |
+
+### Rich Text Primitives
+
+| Paragraph | StatusLine | Markdown |
+| --- | --- | --- |
+| [![Paragraph example](docs/vhs/paragraph.gif)](./examples/paragraph) | [![StatusLine example](docs/vhs/statusline.gif)](./examples/statusline) | [![Markdown example](docs/vhs/markdown.gif)](./examples/markdown) |
+| [`examples/paragraph`](./examples/paragraph) | [`examples/statusline`](./examples/statusline) | [`examples/markdown`](./examples/markdown) |
+
+| CodeBlock | LogBlock |
+| --- | --- |
+| [![CodeBlock example](docs/vhs/codeblock.gif)](./examples/codeblock) | [![LogBlock example](docs/vhs/logblock.gif)](./examples/logblock) |
+| [`examples/codeblock`](./examples/codeblock) | [`examples/logblock`](./examples/logblock) |
+
+### Specialized Packages
+
+| gotestout | Mage-style integration |
+| --- | --- |
+| [![gotestout example](docs/vhs/gotestout.gif)](./examples/gotestout) | [![Mage-style integration example](docs/vhs/magecheck.gif)](./examples/magecheck) |
+| [`examples/gotestout`](./examples/gotestout) | [`examples/magecheck`](./examples/magecheck) |
+
+The focused `gotestout` example intentionally uses a mixed pass/skip/fail fixture so the README shows Läslig's failure rendering too. The separate Mage-style integration example shows the passing task-runner path.
 
 ## Why
 
@@ -204,8 +235,6 @@ _ = printer.LogBlock(laslig.LogBlock{
 
 The `gotestout` subpackage parses and renders `go test -json` streams without taking over command execution:
 
-![gotestout example](docs/vhs/gotestout.gif)
-
 ```go
 import (
 	"errors"
@@ -262,31 +291,33 @@ mage test
 ```
 
 The focused `gotestout` GIF and example command intentionally include passing,
-skipped, and failing test events plus one package build failure. That keeps the
-README honest about both the success path and the failure path. The focused
-example defaults to a detailed view so passing test lines stay visible.
+skipped, and failing test events plus one package build failure. The separate
+`magecheck` GIF shows the passing task-runner path. That keeps the README
+honest about both the success path and the failure path.
 
 ## Demo
 
-The tracked all-in-one showcase lives in [`examples/all/main.go`](./examples/all/main.go).
-The focused logging example package that uses `charm.land/log/v2` as a demo-only dependency lives in [`examples/logging/logging.go`](./examples/logging/logging.go) and is imported directly by the main showcase.
-The focused `gotestout` example lives in [`examples/gotestout/main.go`](./examples/gotestout/main.go).
+Focused runnable examples now live one-per-item under [`examples/`](./examples): `section`, `notice`, `record`, `kv`, `list`, `table`, `panel`, `paragraph`, `statusline`, `markdown`, `codeblock`, `logblock`, `gotestout`, and `magecheck`.
+The aggregate walkthrough that combines those focused examples lives in [`examples/all/main.go`](./examples/all/main.go).
+The focused `logblock` example captures real `charm.land/log/v2` output internally so the demo still shows an actual Charm log transcript without making `charm/log` a core library dependency.
 Small verified Go doc examples live in [`example_test.go`](./example_test.go).
-The main showcase is a guided walkthrough: it names each primitive directly and explains what it is for and when to use it, then closes with an explicit `gotestout` section that renders a fixture-backed Mage-style Build, Tests, and Coverage preview inline.
+The aggregate walkthrough is a guided composition of those smaller demos. `mage demo` runs `examples/all`, while each focused example can still be run directly.
 
 Run it locally:
 
 ```bash
 mage demo
-go run ./examples/all --format human --style always
-go run ./examples/all --format json
+go run ./examples/section --format human --style always
+go run ./examples/notice --format human --style always
 go run ./examples/gotestout --format human --style always
+go run ./examples/magecheck --format human --style always
+go run ./examples/all --format human --style always
 mage test
 ```
 
-`mage demo` is the normal primitive walkthrough entrypoint. `mage test` is the real Mage-facing `gotestout` dogfood path. The `go run` forms above are the same examples with explicit format/style flags.
+`mage demo` is the normal aggregate walkthrough entrypoint. `mage test` is the real Mage-facing `gotestout` dogfood path. The `go run` forms above show the focused per-item examples directly, and the README GIFs come from those focused commands rather than from one oversized showcase recording.
 
-The README GIF is generated from [`docs/vhs/showcase.tape`](./docs/vhs/showcase.tape), and the focused `gotestout` GIF is generated from [`docs/vhs/gotestout.tape`](./docs/vhs/gotestout.tape).
+The README GIFs are generated from the focused VHS tapes under [`docs/vhs/`](./docs/vhs). `mage vhs` renders all tracked tapes so the README stays aligned with the runnable examples.
 
 ## Planned Next
 
@@ -315,15 +346,16 @@ mage vhs
 
 See [`CONTRIBUTING.md`](./CONTRIBUTING.md) for contributor workflow details and [`SECURITY.md`](./SECURITY.md) for vulnerability reporting guidance.
 
-Structural terminal output is also covered by Charm `x/exp/golden` snapshots in the demo and `gotestout` packages. Update them intentionally with:
+Structural terminal output is also covered by Charm `x/exp/golden` snapshots in the shared example renderer, the aggregate demo, the focused `gotestout` demo, and the `gotestout` package. Update them intentionally with:
 
 ```bash
-go test ./examples/all -run TestRunArgsPlainGolden -args -update
-go test ./examples/gotestout -run TestRunArgsPlainGolden -args -update
+go test ./internal/examples -args -update
+go test ./examples/all -args -update
+go test ./examples/gotestout -args -update
 go test ./gotestout -run 'TestRenderPlainCompactGolden|TestRenderHumanStyledCompactGolden' -args -update
 ```
 
-README examples and terminal GIFs are generated from the tracked demo app and VHS tapes under [`docs/vhs/`](./docs/vhs).
+README examples and terminal GIFs are generated from the focused runnable demos under [`examples/`](./examples) and the tracked VHS tapes under [`docs/vhs/`](./docs/vhs).
 
 ## License
 

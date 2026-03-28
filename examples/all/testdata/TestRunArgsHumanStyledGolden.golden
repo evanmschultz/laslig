@@ -1,0 +1,288 @@
+
+Läslig demo
+
+   INFO  A guided primitive walkthrough
+    This combined demo assembles the same focused examples that live under examples/ so the README GIFs and mage demo stay aligned.
+    Use Läslig for ordinary CLI output, not command parsing or application logging.
+    Run any focused example directly with go run ./examples/<name> --format human --style always, or use mage demo to assemble them all.
+
+
+Section
+
+  Use Section to start a new document region. The blocks that follow are indented under that heading until the next section begins.
+  
+  Section is the document-level primitive that gives the rest of the output clear ownership.
+
+  Owned blocks
+    what: Paragraphs, records, lists, tables, and panels inherit the active section indent.
+    why: That default makes CLI output read more like a document than a stream of unrelated prints.
+
+
+Next section
+
+   INFO  Section boundaries reset ownership
+    Starting another Section makes the boundary visible without requiring callers to manage indentation by hand.
+
+
+Notice
+
+   INFO  Use Notice for semantic user-facing diagnostics
+    Notice is the default surface for info, success, warning, and error output that should stand out without turning into logging.
+    When: validation feedback, partial success, next-step guidance, dependency checks, or release milestones.
+
+
+Record
+
+  Record
+    what: One object or result rendered as labeled facts.
+    when: Build metadata, artifact details, environment summaries.
+    example: module github.com/evanmschultz/laslig
+
+
+KV
+
+  KV
+    what    Compact aligned configuration or status.
+    when    Resolved policy, flags, execution mode.
+    format  human
+    styled  true
+
+
+List
+
+  List
+  - Grouped items  DEFAULT 
+    when: Packages, tasks, phases, or capabilities that scan better than a table.
+  - Badges stay lightweight  READY 
+    why: Use a badge when a quick state is enough and a panel would be too heavy.
+  - Detail fields add context  LIVE 
+    what: Each item can carry labeled facts and still stay list-shaped.
+
+
+Table
+
+  Table
+  ╭─────────────────────────────────────────────────────╮
+  │ compare │ prefer when                               │
+  │ ────────┼────────────────────────────────────────── │
+  │ Table   │ column alignment matters across many rows │
+  │ List    │ items are unordered and short             │
+  │ Record  │ you are describing one object             │
+  ╰─────────────────────────────────────────────────────╯
+  Use Table when comparison matters more than prose.
+
+
+Panel
+
+  ╭───────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+  │                                                                                                                   │
+  │  Panel                                                                                                            │
+  │                                                                                                                   │
+  │  Use Panel for rationale, next steps, and larger callouts that should stand apart from the rest of the document.  │
+  │                                                                                                                   │
+  │  Panels are stronger than Paragraph and lighter than inventing a custom layout.                                   │
+  │                                                                                                                   │
+  ╰───────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+
+
+Paragraph
+
+  Paragraph
+  
+  Use Paragraph for readable rationale, release context, and longer help text when a Notice or Panel would be too heavy.
+  
+  Paragraph is the simplest way to let a CLI explain itself in normal sentence-style text.
+
+
+StatusLine
+
+   SUCCESS  Use StatusLine for one compact semantic result (When: build ready, cache hit, package passed)
+
+
+Markdown
+
+  Use Markdown when your CLI already has release notes, changelog text, or generated help content to show.
+  
+  The block below is real terminal-rendered Markdown.
+
+     Release Notes                                                              
+                                                                                
+    ## Highlights                                                               
+                                                                                
+    • one renderer                                                              
+    • three output surfaces                                                     
+    • caller-owned logging                                                      
+
+
+CodeBlock
+
+  Use CodeBlock for commands, snippets, generated files, and config examples.
+  
+  The block below shows a Go snippet rendered through Glamour.
+
+  ╭──────────────────────────────────────────────────────────────────────────────────────╮
+  │                                                                                      │
+  │  Go snippet                                                                          │
+  │                                                                                      │
+  │                                                                                      │
+  │      package main                                                                    │
+  │                                                                                      │
+  │      import "fmt"                                                                    │
+  │                                                                                      │
+  │      func main() {                                                                   │
+  │          fmt.Println("hello from laslig")                                            │
+  │      }                                                                               │
+  │                                                                                      │
+  │  Use CodeBlock when code should stay visibly distinct from prose.                    │
+  │                                                                                      │
+  ╰──────────────────────────────────────────────────────────────────────────────────────╯
+
+
+LogBlock
+
+  Use LogBlock for selected stderr or log excerpts while the application keeps owning logging.
+  
+  The block below captures real charm/log output and renders it through Läslig.
+
+  ╭────────────────────────────────────────────────────────────────────────────────────────╮
+  │                                                                                        │
+  │  Captured charm/log transcript                                                         │
+  │                                                                                        │
+  │  INFO demo: boot complete component=cache                                              │
+  │  WARN demo: retry scheduled after=3s                                                   │
+  │  ERRO demo: dependency missing name=git                                                │
+  │                                                                                        │
+  │  Use LogBlock for selected transcripts while the application keeps owning the logger.  │
+  │                                                                                        │
+  ╰────────────────────────────────────────────────────────────────────────────────────────╯
+
+
+gotestout
+
+  Use gotestout for Charm-native go test output when your task runner, CLI command, or Go helper behind make/just should keep owning process control.
+  
+  This focused example intentionally mixes passing, skipped, and failing test events plus one package build failure.
+
+   INFO  Mixed fixture demo
+    The example command itself is expected to exit successfully so you can inspect the output shape.
+    Use mage test for the real repository task-runner path.
+ PASS  example/pkg :: TestPass (0.01s)
+  note: useful output
+ SKIP  example/pkg :: TestSkip (0.00s)
+ FAIL  example/pkg :: TestFail (0.02s)
+  main_test.go:42: expected boom
+ PKG FAIL  example/pkg (0.03s)
+
+Test summary
+  tests: 3
+  passed: 1
+  failed: 1
+  skipped: 1
+  packages: 1
+  pkg passed: 0
+  pkg failed: 1
+  pkg skipped: 0
+  build errors: 1
+
+Failed tests
+- TestFail  FAIL 
+  package: example/pkg
+  elapsed: 0.02s
+
+Package errors
+- example/pkg  ERROR 
+  package: example/pkg
+  elapsed: 0.03s
+
+Skipped tests
+- TestSkip  SKIP 
+  package: example/pkg
+  elapsed: 0.00s
+
+ ERROR  Test failures detected
+  1 test failure and 1 build error across 1 package.
+
+
+gotestout + Mage
+
+  Use gotestout inside Mage or small Go helpers behind make, just, or task when you want caller-owned process control with a readable test stream.
+  
+  The preview below matches this repository's mage check and mage test shape.
+
+
+Build
+
+   INFO  Building example packages (./examples/...)
+
+   SUCCESS  Built example packages (./examples/...)
+
+
+Tests
+ PKG PASS  github.com/evanmschultz/laslig (0.00s)
+ PKG PASS  github.com/evanmschultz/laslig/examples/all (0.00s)
+ PKG PASS  github.com/evanmschultz/laslig/examples/codeblock (0.00s)
+ PKG PASS  github.com/evanmschultz/laslig/examples/gotestout (0.00s)
+ PKG PASS  github.com/evanmschultz/laslig/examples/kv (0.00s)
+ PKG PASS  github.com/evanmschultz/laslig/examples/list (0.00s)
+ PKG PASS  github.com/evanmschultz/laslig/examples/logblock (0.00s)
+ PKG PASS  github.com/evanmschultz/laslig/examples/magecheck (0.00s)
+ PKG PASS  github.com/evanmschultz/laslig/examples/markdown (0.00s)
+ PKG PASS  github.com/evanmschultz/laslig/examples/notice (0.00s)
+ PKG PASS  github.com/evanmschultz/laslig/examples/panel (0.00s)
+ PKG PASS  github.com/evanmschultz/laslig/examples/paragraph (0.00s)
+ PKG PASS  github.com/evanmschultz/laslig/examples/record (0.00s)
+ PKG PASS  github.com/evanmschultz/laslig/examples/section (0.00s)
+ PKG PASS  github.com/evanmschultz/laslig/examples/statusline (0.00s)
+ PKG PASS  github.com/evanmschultz/laslig/examples/table (0.00s)
+ PKG PASS  github.com/evanmschultz/laslig/gotestout (0.00s)
+ PKG PASS  github.com/evanmschultz/laslig/internal/examples (0.00s)
+ PKG PASS  github.com/evanmschultz/laslig/internal/exampletestutil (0.00s)
+ PKG PASS  github.com/evanmschultz/laslig/internal/glamrender (0.00s)
+ PKG PASS  github.com/evanmschultz/laslig/internal/layout (0.00s)
+ PKG PASS  github.com/evanmschultz/laslig/internal/table (0.00s)
+
+Test summary
+  tests: 123
+  passed: 123
+  failed: 0
+  skipped: 0
+  packages: 22
+  pkg passed: 22
+  pkg failed: 0
+  pkg skipped: 0
+
+ SUCCESS  All tests passed
+  123 tests passed across 22 packages.
+
+Coverage
+
+  ╭─────────────────────────────────────────────────────────────────╮
+  │ package                                                 │ cover │
+  │ ────────────────────────────────────────────────────────┼────── │
+  │ github.com/evanmschultz/laslig                          │ 71.2% │
+  │ github.com/evanmschultz/laslig/examples/all             │ 84.4% │
+  │ github.com/evanmschultz/laslig/examples/codeblock       │ 80.0% │
+  │ github.com/evanmschultz/laslig/examples/gotestout       │ 86.7% │
+  │ github.com/evanmschultz/laslig/examples/kv              │ 80.0% │
+  │ github.com/evanmschultz/laslig/examples/list            │ 80.0% │
+  │ github.com/evanmschultz/laslig/examples/logblock        │ 75.0% │
+  │ github.com/evanmschultz/laslig/examples/magecheck       │ 80.0% │
+  │ github.com/evanmschultz/laslig/examples/markdown        │ 80.0% │
+  │ github.com/evanmschultz/laslig/examples/notice          │ 80.0% │
+  │ github.com/evanmschultz/laslig/examples/panel           │ 80.0% │
+  │ github.com/evanmschultz/laslig/examples/paragraph       │ 80.0% │
+  │ github.com/evanmschultz/laslig/examples/record          │ 80.0% │
+  │ github.com/evanmschultz/laslig/examples/section         │ 80.0% │
+  │ github.com/evanmschultz/laslig/examples/statusline      │ 80.0% │
+  │ github.com/evanmschultz/laslig/examples/table           │ 80.0% │
+  │ github.com/evanmschultz/laslig/gotestout                │ 82.3% │
+  │ github.com/evanmschultz/laslig/internal/examples        │ 88.0% │
+  │ github.com/evanmschultz/laslig/internal/exampletestutil │ 90.0% │
+  │ github.com/evanmschultz/laslig/internal/glamrender      │ 83.3% │
+  │ github.com/evanmschultz/laslig/internal/layout          │ 87.5% │
+  │ github.com/evanmschultz/laslig/internal/table           │ 96.6% │
+  ╰─────────────────────────────────────────────────────────────────╯
+  Minimum package coverage: 70.0%.
+
+   SUCCESS  Coverage threshold met
+    All packages are at or above 70.0% coverage.

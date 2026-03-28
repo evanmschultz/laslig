@@ -32,8 +32,8 @@ The gap we are filling:
 - the showcase/docs pass is complete enough for API-freeze review:
   - the walkthrough names each exported primitive directly
   - focused runnable examples live under `examples/`
-  - README and VHS assets cover both the all-in-one walkthrough and the focused `gotestout` example
-  - structural output review includes plain and fixed-width human golden snapshots for the showcase plus `gotestout` output
+  - README and VHS assets cover the focused per-item examples plus the aggregate walkthrough
+  - structural output review includes focused-example and aggregate golden snapshots plus `gotestout` output
 - the layout pass is complete:
   - public layout defaults exist for leading gap, section-owned indentation, and list-marker customization
   - section ownership is now a library behavior rather than demo-only output shaping

@@ -1,0 +1,7 @@
+
+Record
+
+  Record
+    what: One object or result rendered as labeled facts.
+    when: Build metadata, artifact details, environment summaries.
+    example: module github.com/evanmschultz/laslig

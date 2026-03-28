@@ -1,0 +1,4 @@
+
+StatusLine
+
+  [SUCCESS] Use StatusLine for one compact semantic result (When: build ready, cache hit, package passed)

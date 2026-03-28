@@ -1,0 +1,8 @@
+
+KV
+
+  KV
+    what    Compact aligned configuration or status.
+    when    Resolved policy, flags, execution mode.
+    format  plain
+    styled  false

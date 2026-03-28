@@ -1,0 +1,10 @@
+
+List
+
+  List
+  - Grouped items [DEFAULT]
+    when: Packages, tasks, phases, or capabilities that scan better than a table.
+  - Badges stay lightweight [READY]
+    why: Use a badge when a quick state is enough and a panel would be too heavy.
+  - Detail fields add context [LIVE]
+    what: Each item can carry labeled facts and still stay list-shaped.

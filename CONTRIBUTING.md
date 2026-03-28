@@ -52,8 +52,9 @@ Structural output is protected by Charm `x/exp/golden` snapshots.
 Update them intentionally, not accidentally:
 
 ```bash
-go test ./examples/all -run 'TestRunArgsPlainGolden|TestRenderShowcaseHumanStyledGolden' -args -update
-go test ./examples/gotestout -run TestRunArgsPlainGolden -args -update
+go test ./internal/examples -args -update
+go test ./examples/all -args -update
+go test ./examples/gotestout -args -update
 go test ./gotestout -run 'TestRenderPlainCompactGolden|TestRenderHumanStyledCompactGolden' -args -update
 ```
 

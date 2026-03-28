@@ -1,0 +1,14 @@
+
+Markdown
+
+  Use Markdown when your CLI already has release notes, changelog text, or generated help content to show.
+  
+  The block below is real terminal-rendered Markdown.
+
+  # Release Notes
+  
+  ## Highlights
+  
+  - one renderer
+  - three output surfaces
+  - caller-owned logging
