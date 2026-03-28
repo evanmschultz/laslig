@@ -263,7 +263,8 @@ mage test
 
 The focused `gotestout` GIF and example command intentionally include passing,
 skipped, and failing test events plus one package build failure. That keeps the
-README honest about both the success path and the failure path.
+README honest about both the success path and the failure path. The focused
+example defaults to a detailed view so passing test lines stay visible.
 
 ## Demo
 

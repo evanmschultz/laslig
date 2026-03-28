@@ -51,7 +51,7 @@ func runArgs(out io.Writer, args []string) error {
 
 	format := flags.String("format", string(laslig.FormatAuto), "output format: auto, human, plain, json")
 	style := flags.String("style", string(laslig.StyleAuto), "style policy: auto, always, never")
-	view := flags.String("view", string(gotestout.ViewCompact), "view: compact, detailed")
+	view := flags.String("view", string(gotestout.ViewDetailed), "view: compact, detailed")
 	if err := flags.Parse(args); err != nil {
 		return fmt.Errorf("parse flags: %w", err)
 	}

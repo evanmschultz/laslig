@@ -139,11 +139,60 @@ Specialized Packages
   CLI command, or Go helper behind make/just should keep owning process
   control.
   
-  Try go run ./examples/gotestout --format human --style always first,
-  or mage test for the real task-runner path. The output below is a   
-  fixture-backed Build, Tests, and Coverage preview shaped like this  
-  repository's mage check output.                                     
+  Try go run ./examples/gotestout --format human --style always first to
+  see the focused mixed pass/skip/fail example, or mage test for the    
+  real task-runner path. The walkthrough below shows both the focused   
+  stream and a Mage-style integration preview.                          
 
+
+Focused gotestout stream
+
+  Detailed mixed fixture
+  
+  This is the same focused example command shown in the README GIF. It
+  keeps passing test lines visible while also showing skipped tests,
+  failures, and package build errors.
+  
+  Use this shape when you want one self-contained preview of gotestout
+  behavior before wiring it into a task runner.                       
+ PASS  example/pkg :: TestPass (0.01s)
+  note: useful output
+ SKIP  example/pkg :: TestSkip (0.00s)
+ FAIL  example/pkg :: TestFail (0.02s)
+  main_test.go:42: expected boom
+ PKG FAIL  example/pkg (0.03s)
+
+Test summary
+  tests: 3
+  passed: 1
+  failed: 1
+  skipped: 1
+  packages: 1
+  pkg passed: 0
+  pkg failed: 1
+  pkg skipped: 0
+  build errors: 1
+
+Failed tests
+- TestFail  FAIL 
+  package: example/pkg
+  elapsed: 0.02s
+
+Package errors
+- example/pkg  ERROR 
+  package: example/pkg
+  elapsed: 0.03s
+
+Skipped tests
+- TestSkip  SKIP 
+  package: example/pkg
+  elapsed: 0.00s
+
+ ERROR  Test failures detected
+  1 test failure and 1 build error across 1 package.
+
+
+Mage-style integration
 
 Build
 

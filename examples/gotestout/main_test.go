@@ -37,6 +37,9 @@ func TestRunArgsPlain(t *testing.T) {
 	if !strings.Contains(got, "[INFO] Mixed fixture demo") {
 		t.Fatalf("runArgs() output missing explanatory notice:\n%s", got)
 	}
+	if !strings.Contains(got, "[PASS] example/pkg :: TestPass (0.01s)") {
+		t.Fatalf("runArgs() output missing passing test line:\n%s", got)
+	}
 	if !strings.Contains(got, "[FAIL] example/pkg :: TestFail (0.02s)") {
 		t.Fatalf("runArgs() output missing failed test line:\n%s", got)
 	}

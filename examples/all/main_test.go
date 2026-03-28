@@ -61,6 +61,9 @@ func TestRunArgsPlain(t *testing.T) {
 	if !strings.Contains(got, "gotestout") || !strings.Contains(got, "Build") || !strings.Contains(got, "Coverage threshold met") {
 		t.Fatalf("runArgs() output missing gotestout mage-check preview:\n%s", got)
 	}
+	if !strings.Contains(got, "Focused gotestout stream") || !strings.Contains(got, "TestPass") || !strings.Contains(got, "Mage-style integration") {
+		t.Fatalf("runArgs() output missing focused gotestout walkthrough content:\n%s", got)
+	}
 }
 
 // TestRunArgsJSON verifies JSON demo rendering through the testable entrypoint.

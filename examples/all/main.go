@@ -251,8 +251,46 @@ func renderShowcase(out io.Writer, printer *laslig.Printer) error {
 				return printer.Paragraph(laslig.Paragraph{
 					Title:  "gotestout",
 					Body:   "Use gotestout for Charm-native go test output when your task runner, CLI command, or Go helper behind make/just should keep owning process control.",
-					Footer: "Try go run ./examples/gotestout --format human --style always first, or mage test for the real task-runner path. The output below is a fixture-backed Build, Tests, and Coverage preview shaped like this repository's mage check output.",
+					Footer: "Try go run ./examples/gotestout --format human --style always first to see the focused mixed pass/skip/fail example, or mage test for the real task-runner path. The walkthrough below shows both the focused stream and a Mage-style integration preview.",
 				})
+			},
+		},
+		{
+			name: "gotestout focused section",
+			render: func() error {
+				return printer.Section("Focused gotestout stream")
+			},
+		},
+		{
+			name: "gotestout focused intro",
+			render: func() error {
+				return printer.Paragraph(laslig.Paragraph{
+					Title:  "Detailed mixed fixture",
+					Body:   "This is the same focused example command shown in the README GIF. It keeps passing test lines visible while also showing skipped tests, failures, and package build errors.",
+					Footer: "Use this shape when you want one self-contained preview of gotestout behavior before wiring it into a task runner.",
+				})
+			},
+		},
+		{
+			name: "gotestout focused output",
+			render: func() error {
+				_, err := gotestout.Render(out, strings.NewReader(focusedGotestoutSampleStream()), gotestout.Options{
+					Policy: laslig.Policy{
+						Format: printer.Mode().Format,
+						Style:  stylePolicyForMode(printer.Mode()),
+					},
+					View: gotestout.ViewDetailed,
+				})
+				if err != nil {
+					return fmt.Errorf("render focused gotestout stream: %w", err)
+				}
+				return nil
+			},
+		},
+		{
+			name: "gotestout mage section",
+			render: func() error {
+				return printer.Section("Mage-style integration")
 			},
 		},
 		{
@@ -268,6 +306,26 @@ func renderShowcase(out io.Writer, printer *laslig.Printer) error {
 		}
 	}
 	return nil
+}
+
+// focusedGotestoutSampleStream mirrors the focused example so the showcase can
+// demonstrate the same pass/skip/fail/build-error stream inline.
+func focusedGotestoutSampleStream() string {
+	return `{"Action":"run","Package":"example/pkg","Test":"TestPass"}
+{"Action":"output","Package":"example/pkg","Test":"TestPass","Output":"=== RUN   TestPass\n"}
+{"Action":"output","Package":"example/pkg","Test":"TestPass","Output":"note: useful output\n"}
+{"Action":"output","Package":"example/pkg","Test":"TestPass","Output":"--- PASS: TestPass (0.01s)\n"}
+{"Action":"pass","Package":"example/pkg","Test":"TestPass","Elapsed":0.01}
+{"Action":"run","Package":"example/pkg","Test":"TestSkip"}
+{"Action":"output","Package":"example/pkg","Test":"TestSkip","Output":"--- SKIP: TestSkip (0.00s)\n"}
+{"Action":"skip","Package":"example/pkg","Test":"TestSkip","Elapsed":0}
+{"Action":"run","Package":"example/pkg","Test":"TestFail"}
+{"Action":"output","Package":"example/pkg","Test":"TestFail","Output":"main_test.go:42: expected boom\n"}
+{"Action":"output","Package":"example/pkg","Test":"TestFail","Output":"--- FAIL: TestFail (0.02s)\n"}
+{"Action":"fail","Package":"example/pkg","Test":"TestFail","Elapsed":0.02}
+{"Action":"output","Package":"example/pkg","Output":"FAIL\texample/pkg [build failed]\n","FailedBuild":"example/pkg"}
+{"Action":"fail","Package":"example/pkg","Elapsed":0.03}
+`
 }
 
 // renderMageCheckShowcase renders one Mage-style flow that uses gotestout for
