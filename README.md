@@ -14,9 +14,6 @@ Every guided demo item now has its own runnable example under [`examples/`](./ex
 | --- | --- | --- |
 | [![Section example](docs/vhs/section.gif)](./examples/section) | [![Notice example](docs/vhs/notice.gif)](./examples/notice) | [![Record example](docs/vhs/record.gif)](./examples/record) |
 | [`examples/section`](./examples/section) | [`examples/notice`](./examples/notice) | [`examples/record`](./examples/record) |
-
-| KV | List | Table |
-| --- | --- | --- |
 | [![KV example](docs/vhs/kv.gif)](./examples/kv) | [![List example](docs/vhs/list.gif)](./examples/list) | [![Table example](docs/vhs/table.gif)](./examples/table) |
 | [`examples/kv`](./examples/kv) | [`examples/list`](./examples/list) | [`examples/table`](./examples/table) |
 
