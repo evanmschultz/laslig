@@ -63,6 +63,7 @@ Rules:
 - use `mage` targets for local verification before offering work back to the user
 - before moving beyond a pushed phase boundary, confirm CI is green with `gh run watch --exit-status`
 - enforce at least 70% statement coverage in every package
+- keep structural terminal-output snapshots current with Charm `x/exp/golden` tests when block layout intentionally changes
 - keep README examples, Go docs, and VHS demos aligned with shipped behavior
 
 ## 5) Go Standards

@@ -36,6 +36,7 @@ func ExampleRender() {
 	//   pkg passed: 1
 	//   pkg failed: 0
 	//   pkg skipped: 0
+	//
 	// [SUCCESS] All tests passed
 	//   1 test passed across 1 package.
 	// tests=1 packages=1 failures=false

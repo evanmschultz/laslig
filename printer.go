@@ -11,10 +11,22 @@ import (
 
 // Printer renders structured output to one writer.
 type Printer struct {
-	out   io.Writer
-	mode  Mode
-	theme Theme
+	out         io.Writer
+	mode        Mode
+	theme       Theme
+	wroteBlocks bool
+	lastBlock   blockKind
 }
+
+// blockKind identifies one top-level rendered block family for spacing rules.
+type blockKind int
+
+const (
+	// blockKindContent identifies an ordinary content block.
+	blockKindContent blockKind = iota
+	// blockKindSection identifies a section heading block.
+	blockKindSection
+)
 
 // New constructs one printer by resolving a writer against the provided policy.
 func New(out io.Writer, policy Policy) *Printer {
@@ -45,6 +57,9 @@ func (p *Printer) Section(title string) error {
 			"title": title,
 		})
 	}
+	if err := p.beginBlock(blockKindSection); err != nil {
+		return fmt.Errorf("prepare section: %w", err)
+	}
 
 	value := title
 	if p.mode.Format == FormatHuman {
@@ -64,6 +79,9 @@ func (p *Printer) Notice(notice Notice) error {
 	}
 	if p.mode.Format == FormatJSON {
 		return p.writeJSON("notice", notice)
+	}
+	if err := p.beginBlock(blockKindContent); err != nil {
+		return fmt.Errorf("prepare notice: %w", err)
 	}
 
 	if p.mode.Format == FormatHuman {
@@ -109,6 +127,9 @@ func (p *Printer) Record(record Record) error {
 	if p.mode.Format == FormatJSON {
 		return p.writeJSON("record", record)
 	}
+	if err := p.beginBlock(blockKindContent); err != nil {
+		return fmt.Errorf("prepare record: %w", err)
+	}
 
 	if _, err := fmt.Fprintln(p.out, p.renderHeading(record.Title)); err != nil {
 		return fmt.Errorf("write record heading: %w", err)
@@ -128,6 +149,9 @@ func (p *Printer) Record(record Record) error {
 func (p *Printer) KV(kv KV) error {
 	if p.mode.Format == FormatJSON {
 		return p.writeJSON("kv", kv)
+	}
+	if err := p.beginBlock(blockKindContent); err != nil {
+		return fmt.Errorf("prepare kv: %w", err)
 	}
 
 	if strings.TrimSpace(kv.Title) != "" {
@@ -169,6 +193,9 @@ func (p *Printer) List(list List) error {
 	if p.mode.Format == FormatJSON {
 		return p.writeJSON("list", list)
 	}
+	if err := p.beginBlock(blockKindContent); err != nil {
+		return fmt.Errorf("prepare list: %w", err)
+	}
 
 	if _, err := fmt.Fprintln(p.out, p.renderHeading(list.Title)); err != nil {
 		return fmt.Errorf("write list heading: %w", err)
@@ -202,9 +229,14 @@ func (p *Printer) Table(table Table) error {
 	if p.mode.Format == FormatJSON {
 		return p.writeJSON("table", table)
 	}
+	if err := p.beginBlock(blockKindContent); err != nil {
+		return fmt.Errorf("prepare table: %w", err)
+	}
 
-	if _, err := fmt.Fprintln(p.out, p.renderHeading(table.Title)); err != nil {
-		return fmt.Errorf("write table heading: %w", err)
+	if strings.TrimSpace(table.Title) != "" {
+		if _, err := fmt.Fprintln(p.out, p.renderHeading(table.Title)); err != nil {
+			return fmt.Errorf("write table heading: %w", err)
+		}
 	}
 	if len(table.Rows) == 0 {
 		empty := table.Empty
@@ -234,6 +266,9 @@ func (p *Printer) Table(table Table) error {
 func (p *Printer) Panel(panel Panel) error {
 	if p.mode.Format == FormatJSON {
 		return p.writeJSON("panel", panel)
+	}
+	if err := p.beginBlock(blockKindContent); err != nil {
+		return fmt.Errorf("prepare panel: %w", err)
 	}
 
 	lines := []string{}
@@ -277,6 +312,38 @@ func (p *Printer) writeJSON(kind string, payload any) error {
 		"payload": payload,
 	}); err != nil {
 		return fmt.Errorf("write %s json: %w", kind, err)
+	}
+	return nil
+}
+
+// beginBlock applies the default flow spacing between consecutive rendered blocks.
+func (p *Printer) beginBlock(kind blockKind) error {
+	if p.mode.Format == FormatJSON {
+		return nil
+	}
+	if !p.wroteBlocks {
+		p.wroteBlocks = true
+		p.lastBlock = kind
+		return nil
+	}
+
+	gapLines := 1
+	if kind == blockKindSection && p.lastBlock != blockKindSection {
+		gapLines = 2
+	}
+	if err := p.writeBlankLines(gapLines); err != nil {
+		return err
+	}
+	p.lastBlock = kind
+	return nil
+}
+
+// writeBlankLines writes one or more empty separator lines to the printer output.
+func (p *Printer) writeBlankLines(count int) error {
+	for range count {
+		if _, err := fmt.Fprintln(p.out); err != nil {
+			return fmt.Errorf("write separator line: %w", err)
+		}
 	}
 	return nil
 }

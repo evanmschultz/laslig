@@ -13,6 +13,9 @@ func (p *Printer) Markdown(block Markdown) error {
 	if p.mode.Format == FormatJSON {
 		return p.writeJSON("markdown", block)
 	}
+	if err := p.beginBlock(blockKindContent); err != nil {
+		return fmt.Errorf("prepare markdown: %w", err)
+	}
 
 	body := strings.TrimRight(block.Body, "\n")
 	if p.mode.Format == FormatHuman && p.mode.Styled {
@@ -50,6 +53,9 @@ func (p *Printer) CodeBlock(block CodeBlock) error {
 	if p.mode.Format == FormatJSON {
 		return p.writeJSON("code_block", block)
 	}
+	if err := p.beginBlock(blockKindContent); err != nil {
+		return fmt.Errorf("prepare code block: %w", err)
+	}
 
 	body := strings.TrimRight(block.Body, "\n")
 	if p.mode.Format == FormatHuman && p.mode.Styled {
@@ -71,8 +77,15 @@ func (p *Printer) LogBlock(block LogBlock) error {
 	if p.mode.Format == FormatJSON {
 		return p.writeJSON("log_block", block)
 	}
+	if err := p.beginBlock(blockKindContent); err != nil {
+		return fmt.Errorf("prepare log block: %w", err)
+	}
 
-	if err := p.writeFramedBlock("log block", block.Title, strings.TrimRight(block.Body, "\n"), block.Footer); err != nil {
+	body := strings.TrimRight(block.Body, "\n")
+	if p.mode.Format == FormatHuman && p.mode.Styled {
+		body = p.renderLogBody(body)
+	}
+	if err := p.writeFramedBlock("log block", block.Title, body, block.Footer); err != nil {
 		return fmt.Errorf("write log block: %w", err)
 	}
 	return nil
@@ -119,8 +132,50 @@ func (p *Printer) renderFramedContent(content string) string {
 
 // renderStyledMarkdown renders one Markdown string through Glamour for ANSI output.
 func (p *Printer) renderStyledMarkdown(markdown string) (string, error) {
+	stringPtr := func(value string) *string {
+		return &value
+	}
+	uintPtr := func(value uint) *uint {
+		return &value
+	}
+	boolPtr := func(value bool) *bool {
+		return &value
+	}
+
+	style := glamour.DarkStyleConfig
+	zero := uint(0)
+	style.Document.Margin = &zero
+	style.Document.BlockPrefix = ""
+	style.Document.BlockSuffix = ""
+	style.Paragraph.Margin = uintPtr(0)
+	style.List.Margin = uintPtr(0)
+	style.CodeBlock.Margin = uintPtr(0)
+	style.Heading.Color = stringPtr("69")
+	style.Heading.Bold = boolPtr(true)
+	style.H1.Color = stringPtr("69")
+	style.H1.Bold = boolPtr(true)
+	style.H1.BackgroundColor = nil
+	style.H1.Prefix = ""
+	style.H1.Suffix = ""
+	style.H1.BlockPrefix = ""
+	style.H1.BlockSuffix = "\n"
+	style.H2.Color = stringPtr("69")
+	style.H2.Bold = boolPtr(true)
+	style.H2.BlockPrefix = ""
+	style.H2.BlockSuffix = "\n"
+	style.H3.Color = stringPtr("69")
+	style.H3.Bold = boolPtr(true)
+	style.H3.BlockPrefix = ""
+	style.H3.BlockSuffix = "\n"
+	style.H4.Color = stringPtr("69")
+	style.H4.Bold = boolPtr(true)
+	style.H5.Color = stringPtr("69")
+	style.H5.Bold = boolPtr(true)
+	style.H6.Color = stringPtr("245")
+	style.H6.Bold = boolPtr(true)
+
 	options := []glamour.TermRendererOption{
-		glamour.WithStandardStyle("dark"),
+		glamour.WithStyles(style),
 	}
 	if width := p.maxCodeWidth(); width > 0 {
 		options = append(options, glamour.WithWordWrap(width))
@@ -135,7 +190,54 @@ func (p *Printer) renderStyledMarkdown(markdown string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("render glamour markdown: %w", err)
 	}
-	return strings.TrimRight(rendered, "\n"), nil
+	return strings.Trim(rendered, "\n"), nil
+}
+
+// renderLogBody applies semantic highlighting to explicit caller-provided log excerpts.
+func (p *Printer) renderLogBody(body string) string {
+	lines := strings.Split(body, "\n")
+	for index, line := range lines {
+		lines[index] = p.renderLogLine(line)
+	}
+	return strings.Join(lines, "\n")
+}
+
+// renderLogLine applies lightweight level styling to one log-like line when it starts with a known level.
+func (p *Printer) renderLogLine(line string) string {
+	trimmedLeft := strings.TrimLeft(line, " \t")
+	indent := line[:len(line)-len(trimmedLeft)]
+	if trimmedLeft == "" {
+		return line
+	}
+
+	for _, level := range []string{"TRACE", "DEBUG", "INFO", "WARN", "WARNING", "ERROR", "FATAL", "SUCCESS"} {
+		bracketed := "[" + level + "]"
+		switch {
+		case strings.HasPrefix(trimmedLeft, level+" "):
+			return indent + p.renderLogLevel(level) + trimmedLeft[len(level):]
+		case strings.HasPrefix(trimmedLeft, bracketed+" "):
+			return indent + "[" + p.renderLogLevel(level) + "]" + trimmedLeft[len(bracketed):]
+		}
+	}
+	return line
+}
+
+// renderLogLevel renders one recognized log level token with a calmer semantic foreground color.
+func (p *Printer) renderLogLevel(level string) string {
+	style := lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("245"))
+	switch level {
+	case "TRACE", "DEBUG":
+		style = style.Foreground(lipgloss.Color("245"))
+	case "INFO":
+		style = style.Foreground(lipgloss.Color("69"))
+	case "WARN", "WARNING":
+		style = style.Foreground(lipgloss.Color("214"))
+	case "ERROR", "FATAL":
+		style = style.Foreground(lipgloss.Color("160"))
+	case "SUCCESS":
+		style = style.Foreground(lipgloss.Color("#04B575"))
+	}
+	return style.Render(level)
 }
 
 // maxCodeWidth returns one readable code-render width when a terminal width is known.

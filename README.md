@@ -241,6 +241,13 @@ mage demo
 mage vhs
 ```
 
+Structural terminal output is also covered by Charm `x/exp/golden` snapshots in the demo and `testjson` packages. Update them intentionally with:
+
+```bash
+go test ./cmd/laslig-demo -run TestRunArgsPlainGolden -args -update
+go test ./testjson -run TestRenderPlainCompactGolden -args -update
+```
+
 README examples and terminal GIFs are generated from the tracked demo app and VHS tapes under [docs/vhs/](/Users/evanschultz/Documents/Code/hylla/laslig/main/docs/vhs).
 
 ## Plan

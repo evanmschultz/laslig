@@ -24,19 +24,30 @@ var coverageLinePattern = regexp.MustCompile(`^(?:ok\s+)?(\S+)(?:\s+\S+)?\s+cove
 
 // Check runs the primary local verification suite.
 func Check() error {
-	if err := VerifyBootstrap(); err != nil {
+	printer := laslig.New(os.Stdout, laslig.Policy{
+		Format: laslig.FormatAuto,
+		Style:  laslig.StyleAuto,
+	})
+	runStage := func(title string, fn func() error) error {
+		if err := printer.Section(title); err != nil {
+			return fmt.Errorf("render %s stage: %w", title, err)
+		}
+		return fn()
+	}
+
+	if err := runStage("Bootstrap", VerifyBootstrap); err != nil {
 		return err
 	}
-	if err := FmtCheck(); err != nil {
+	if err := runStage("Format", FmtCheck); err != nil {
 		return err
 	}
-	if err := Build(); err != nil {
+	if err := runStage("Build", Build); err != nil {
 		return err
 	}
-	if err := Test(); err != nil {
+	if err := runStage("Tests", Test); err != nil {
 		return err
 	}
-	if err := Coverage(); err != nil {
+	if err := runStage("Coverage", Coverage); err != nil {
 		return err
 	}
 	return nil
@@ -137,7 +148,6 @@ func Coverage() error {
 	}
 
 	if err := printer.Table(laslig.Table{
-		Title:   "Coverage",
 		Header:  []string{"package", "cover"},
 		Rows:    rows,
 		Caption: fmt.Sprintf("Minimum package coverage: %.1f%%.", coverageThreshold),
@@ -171,6 +181,11 @@ func Coverage() error {
 
 // Build compiles the demo command when it exists.
 func Build() error {
+	printer := laslig.New(os.Stdout, laslig.Policy{
+		Format: laslig.FormatAuto,
+		Style:  laslig.StyleAuto,
+	})
+
 	if _, err := os.Stat(filepath.Join("cmd", "laslig-demo")); err != nil {
 		if errors.Is(err, os.ErrNotExist) {
 			return nil
@@ -180,7 +195,24 @@ func Build() error {
 	if err := os.MkdirAll("bin", 0o755); err != nil {
 		return fmt.Errorf("create bin directory: %w", err)
 	}
-	return run("go", "build", "-o", filepath.Join("bin", "laslig-demo"), "./cmd/laslig-demo")
+	if err := printer.StatusLine(laslig.StatusLine{
+		Level:  laslig.NoticeInfoLevel,
+		Text:   "Building demo command",
+		Detail: "./cmd/laslig-demo",
+	}); err != nil {
+		return fmt.Errorf("write build start: %w", err)
+	}
+	if err := run("go", "build", "-o", filepath.Join("bin", "laslig-demo"), "./cmd/laslig-demo"); err != nil {
+		return err
+	}
+	if err := printer.StatusLine(laslig.StatusLine{
+		Level:  laslig.NoticeSuccessLevel,
+		Text:   "Built demo command",
+		Detail: filepath.Join("bin", "laslig-demo"),
+	}); err != nil {
+		return fmt.Errorf("write build success: %w", err)
+	}
+	return nil
 }
 
 // Demo runs the tracked demo command.

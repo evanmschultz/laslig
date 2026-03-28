@@ -12,6 +12,9 @@ func (p *Printer) Paragraph(paragraph Paragraph) error {
 	if p.mode.Format == FormatJSON {
 		return p.writeJSON("paragraph", paragraph)
 	}
+	if err := p.beginBlock(blockKindContent); err != nil {
+		return fmt.Errorf("prepare paragraph: %w", err)
+	}
 
 	lines := []string{}
 	if trimmed := strings.TrimSpace(paragraph.Title); trimmed != "" {
@@ -49,6 +52,9 @@ func (p *Printer) StatusLine(line StatusLine) error {
 	if p.mode.Format == FormatJSON {
 		return p.writeJSON("status_line", line)
 	}
+	if err := p.beginBlock(blockKindContent); err != nil {
+		return fmt.Errorf("prepare status line: %w", err)
+	}
 
 	label := strings.TrimSpace(line.Label)
 	if label == "" {
@@ -68,10 +74,11 @@ func (p *Printer) StatusLine(line StatusLine) error {
 
 	parts := []string{
 		p.renderStatusLabel(label, line.Level),
+		" ",
 		p.theme.Value.Render(line.Text),
 	}
 	if detail := strings.TrimSpace(line.Detail); detail != "" {
-		parts = append(parts, p.theme.Muted.Render("("+detail+")"))
+		parts = append(parts, " ", p.theme.Muted.Render("("+detail+")"))
 	}
 	if _, err := fmt.Fprintln(p.out, lipgloss.JoinHorizontal(lipgloss.Top, parts...)); err != nil {
 		return fmt.Errorf("write status line: %w", err)

@@ -30,6 +30,7 @@ The gap we are filling:
 - phase 4 is in progress
 - phase 4A has shipped `Paragraph`, `StatusLine`, `Markdown`, `CodeBlock`, and explicit `LogBlock` primitives
 - phase 4 docs/demo alignment is expanding the grouped showcase for the newer rich-text blocks
+- structural output review now includes golden snapshots for the demo and `testjson` plain output
 
 ## Architecture
 
