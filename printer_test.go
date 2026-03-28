@@ -573,23 +573,3 @@ func TestLogBlockJSON(t *testing.T) {
 		t.Fatalf("LogBlock() output = %q, want title", got)
 	}
 }
-
-// TestBoxHumanNoStyle verifies that Box is an alias for Panel.
-func TestBoxHumanNoStyle(t *testing.T) {
-	var buf bytes.Buffer
-	printer := newTestPrinter(&buf, Mode{Format: FormatHuman, Styled: false})
-
-	err := printer.Box(Panel{
-		Title:  "Alias",
-		Body:   "Box should delegate to Panel.",
-		Footer: "Still plain here.",
-	})
-	if err != nil {
-		t.Fatalf("Box() error = %v", err)
-	}
-
-	want := "Alias\n\nBox should delegate to Panel.\n\nStill plain here.\n"
-	if got := buf.String(); got != want {
-		t.Fatalf("Box() output = %q, want %q", got, want)
-	}
-}

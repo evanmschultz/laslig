@@ -328,11 +328,6 @@ func (p *Printer) Panel(panel Panel) error {
 	return nil
 }
 
-// Box writes one panel-style block.
-func (p *Printer) Box(panel Panel) error {
-	return p.Panel(panel)
-}
-
 func (p *Printer) writeJSON(kind string, payload any) error {
 	encoder := json.NewEncoder(p.out)
 	encoder.SetEscapeHTML(false)

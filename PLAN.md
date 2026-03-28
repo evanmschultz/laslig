@@ -37,7 +37,7 @@ The gap we are filling:
 - the layout pass is complete:
   - public layout defaults exist for leading gap, section-owned indentation, and list-marker customization
   - section ownership is now a library behavior rather than demo-only output shaping
-- the only remaining product-surface decision before API freeze is whether `gotestout` gets an explicit JSONL capture/export helper in `v0.1.0` or that promise is cut
+- explicit `gotestout` JSONL capture/export helpers are deferred until a real caller needs them after `v0.1.0`
 - the release-clean scaffolding is now in the repo:
   - `LICENSE`, `CONTRIBUTING.md`, and `SECURITY.md`
   - issue templates, PR template, Dependabot, and CODEOWNERS
@@ -77,7 +77,7 @@ Structured stream rendering should be isolated in a specialist package:
   - render compact and detailed views
   - produce end-of-run summaries
   - stay clearly distinct from generic JSON display or formatting primitives
-  - optionally add explicit JSONL capture/export helpers later if a real caller needs them
+  - explicit JSONL capture/export helpers are deferred until a real caller needs them after `v0.1.0`
 
 ### Internal Shape
 
@@ -103,7 +103,6 @@ Do not publish internal implementation packages until they have proved stable.
 
 ### Product Surface
 
-- cut the explicit `gotestout` JSONL capture/export helper from `v0.1.0` unless a concrete caller appears during API freeze
 - do not reintroduce stale planned primitives such as `Diagnostic`, `Badge`, or `Box` unless a real post-freeze use case appears
 
 ### Dependency And Automation Policy
@@ -117,7 +116,7 @@ Do not publish internal implementation packages until they have proved stable.
 
 - developer-settable theme/preset flow
 - deeper `gotestout` classification and subtest rollups
-- any future standalone `Badge`/`Header`/capture helper work that survives API freeze review
+- any future standalone `Badge`/`Header`/capture helper work that survives post-`v0.1.0` review
 
 ## Recommended Closures
 
@@ -127,25 +126,23 @@ Do not publish internal implementation packages until they have proved stable.
   - `gotestout` for `go test -json` rendering
 - keep `Notice` as the user-facing diagnostic surface for `v0.1.0`
 - keep badge rendering embedded in list items and fields for `v0.1.0`
-- keep `Panel` as the boxed callout primitive; if `Box` remains in code, treat it as compatibility sugar rather than a separately documented primitive
-- cut the explicit `gotestout` JSONL capture/export helper from `v0.1.0` unless a concrete release-blocking consumer appears during API freeze
+- keep `Panel` as the boxed callout primitive for `v0.1.0`
+- keep explicit `gotestout` JSONL capture/export helpers out of `v0.1.0`
 - keep theme presets/configuration explicitly post-release
 
 ## Execution Order To `v0.1.0`
 
-1. Close the last product-surface decision:
-   - cut the explicit `gotestout` JSONL capture/export helper unless a concrete caller appears immediately
-2. Run the API freeze pass:
+1. Run the API freeze pass:
    - review exported names, fields, defaults, and behavior
    - remove stale promises from docs and plan
    - confirm the `v0.1.0` stable surface
-3. Run the pre-release ship pass:
+2. Run the pre-release ship pass:
    - contributor bootstrap
    - dependency-maintenance policy
    - governance/community files
    - release workflow and GoReleaser
-4. Do the final docs/examples/VHS audit
-5. Tag and publish `v0.1.0`
+3. Do the final docs/examples/VHS audit
+4. Tag and publish `v0.1.0`
 
 ## Phases
 
@@ -239,7 +236,6 @@ Do not publish internal implementation packages until they have proved stable.
 - do the API freeze pass:
   - review exported names, fields, defaults, and behavior
   - rename or trim awkward public surface before release
-  - decide whether the remaining `gotestout` JSONL capture/export helper ships in `v0.1.0` or is explicitly deferred
   - remove any stale plan/docs promises that are cut from `v0.1.0`
   - decide what is considered stable for the first `v0.x` release
 - finish the release-operator checklist:
@@ -281,5 +277,5 @@ The MVP should be considered feature-complete when the repository has:
 - one Glamour-backed rich-text/code-block path
 - one explicit log/transcript rendering path for caller-provided output
 - compact and detailed `gotestout` rendering with caller-tunable summary sections
-- an explicit decision on whether `gotestout` JSONL capture/export ships in `v0.1.0`
+- explicit `gotestout` JSONL capture/export helpers deferred until a real caller needs them
 - README, Go docs, Mage tasks, and VHS demos aligned with shipped behavior
