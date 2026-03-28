@@ -227,8 +227,8 @@ Tests
 [PKG PASS] github.com/evanmschultz/laslig/internal/table (0.00s)
 
 Test summary
-  tests: 123
-  passed: 123
+  tests: 156
+  passed: 156
   failed: 0
   skipped: 0
   packages: 22
@@ -237,31 +237,31 @@ Test summary
   pkg skipped: 0
 
 [SUCCESS] All tests passed
-  123 tests passed across 22 packages.
+  156 tests passed across 22 packages.
 
 Coverage
 
   package                                                 | cover
-  --------------------------------------------------------+------
-  github.com/evanmschultz/laslig                          | 71.2%
-  github.com/evanmschultz/laslig/examples/all             | 84.4%
-  github.com/evanmschultz/laslig/examples/codeblock       | 80.0%
-  github.com/evanmschultz/laslig/examples/gotestout       | 86.7%
-  github.com/evanmschultz/laslig/examples/kv              | 80.0%
-  github.com/evanmschultz/laslig/examples/list            | 80.0%
-  github.com/evanmschultz/laslig/examples/logblock        | 75.0%
-  github.com/evanmschultz/laslig/examples/magecheck       | 80.0%
-  github.com/evanmschultz/laslig/examples/markdown        | 80.0%
-  github.com/evanmschultz/laslig/examples/notice          | 80.0%
-  github.com/evanmschultz/laslig/examples/panel           | 80.0%
-  github.com/evanmschultz/laslig/examples/paragraph       | 80.0%
-  github.com/evanmschultz/laslig/examples/record          | 80.0%
-  github.com/evanmschultz/laslig/examples/section         | 80.0%
-  github.com/evanmschultz/laslig/examples/statusline      | 80.0%
-  github.com/evanmschultz/laslig/examples/table           | 80.0%
-  github.com/evanmschultz/laslig/gotestout                | 82.3%
-  github.com/evanmschultz/laslig/internal/examples        | 88.0%
-  github.com/evanmschultz/laslig/internal/exampletestutil | 90.0%
+  --------------------------------------------------------+-------
+  github.com/evanmschultz/laslig                          | 71.7%
+  github.com/evanmschultz/laslig/examples/all             | 100.0%
+  github.com/evanmschultz/laslig/examples/codeblock       | 100.0%
+  github.com/evanmschultz/laslig/examples/gotestout       | 100.0%
+  github.com/evanmschultz/laslig/examples/kv              | 100.0%
+  github.com/evanmschultz/laslig/examples/list            | 100.0%
+  github.com/evanmschultz/laslig/examples/logblock        | 100.0%
+  github.com/evanmschultz/laslig/examples/magecheck       | 100.0%
+  github.com/evanmschultz/laslig/examples/markdown        | 100.0%
+  github.com/evanmschultz/laslig/examples/notice          | 100.0%
+  github.com/evanmschultz/laslig/examples/panel           | 100.0%
+  github.com/evanmschultz/laslig/examples/paragraph       | 100.0%
+  github.com/evanmschultz/laslig/examples/record          | 100.0%
+  github.com/evanmschultz/laslig/examples/section         | 100.0%
+  github.com/evanmschultz/laslig/examples/statusline      | 100.0%
+  github.com/evanmschultz/laslig/examples/table           | 100.0%
+  github.com/evanmschultz/laslig/gotestout                | 82.0%
+  github.com/evanmschultz/laslig/internal/examples        | 70.5%
+  github.com/evanmschultz/laslig/internal/exampletestutil | 75.5%
   github.com/evanmschultz/laslig/internal/glamrender      | 83.3%
   github.com/evanmschultz/laslig/internal/layout          | 87.5%
   github.com/evanmschultz/laslig/internal/table           | 96.6%
