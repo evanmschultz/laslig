@@ -2,7 +2,7 @@
 
 `laslig` helps Go CLIs print structured, human-readable output with Charm-native styling and Go-idiomatic ergonomics.
 
-The package and module name stay `laslig`. The product branding is `Läslig`, from the Swedish `läslig`, meaning `legible`.
+The package and module name stay `laslig`. The product branding is `Läslig`, from the Swedish `läslig`, meaning `legible`, and is pronounced roughly `LEH-slig`.
 
 ## Visual Examples
 

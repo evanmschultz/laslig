@@ -19,6 +19,9 @@ import (
 // coverageThreshold is the minimum allowed statement coverage for each package.
 const coverageThreshold = 70.0
 
+// localBuildVCSFlag disables VCS stamping for local bare-worktree commands.
+const localBuildVCSFlag = "-buildvcs=false"
+
 // coverageLinePattern extracts package names and percentages from go test coverage output.
 var coverageLinePattern = regexp.MustCompile(`^(?:ok\s+)?(\S+)(?:\s+\S+)?\s+coverage:\s+([0-9.]+)% of statements(?: in ./\.\.\.)?$`)
 
@@ -213,7 +216,7 @@ func Build() error {
 	}); err != nil {
 		return fmt.Errorf("write build start: %w", err)
 	}
-	if err := run("go", "build", "-o", filepath.Join("bin", "laslig-demo"), "./examples/all"); err != nil {
+	if err := run("go", "build", localBuildVCSFlag, "-o", filepath.Join("bin", "laslig-demo"), "./examples/all"); err != nil {
 		return err
 	}
 	if err := printer.StatusLine(laslig.StatusLine{
@@ -228,7 +231,7 @@ func Build() error {
 
 // Demo runs the tracked all-in-one showcase example.
 func Demo() error {
-	return run("go", "run", "./examples/all")
+	return run("go", "run", localBuildVCSFlag, "./examples/all")
 }
 
 // VHS renders tracked terminal demos when tapes exist locally.

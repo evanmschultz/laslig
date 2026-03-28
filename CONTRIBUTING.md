@@ -36,6 +36,10 @@ mage demo
 go test ./...
 ```
 
+In this repository's bare-root worktree layout, prefer the Mage targets for
+local build and demo commands. They already pass `-buildvcs=false` where
+needed so local worktree builds do not fail on VCS stamping.
+
 5. Run VHS only when user-visible terminal output or tracked tapes change:
 
 ```bash
