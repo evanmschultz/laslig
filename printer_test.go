@@ -137,6 +137,38 @@ func TestSectionJSON(t *testing.T) {
 	}
 }
 
+// TestSectionPlainSpacing verifies sections participate in the default flow-spacing rhythm.
+func TestSectionPlainSpacing(t *testing.T) {
+	var buf bytes.Buffer
+	printer := NewWithMode(&buf, Mode{Format: FormatPlain})
+
+	if err := printer.Section("Intro"); err != nil {
+		t.Fatalf("Section() error = %v", err)
+	}
+	if err := printer.Notice(Notice{Title: "Readable"}); err != nil {
+		t.Fatalf("Notice() error = %v", err)
+	}
+	if err := printer.Section("Next"); err != nil {
+		t.Fatalf("Section() error = %v", err)
+	}
+
+	want := "Intro\n\n[INFO] Readable\n\n\nNext\n"
+	if got := buf.String(); got != want {
+		t.Fatalf("flow spacing output = %q, want %q", got, want)
+	}
+}
+
+// TestDefaultThemeHumanStyled verifies the default styled theme renders visible ANSI styling.
+func TestDefaultThemeHumanStyled(t *testing.T) {
+	theme := DefaultTheme(Mode{Format: FormatHuman, Styled: true})
+	if got := theme.Section.Render("Heading"); !strings.Contains(got, "\x1b[") {
+		t.Fatalf("theme.Section.Render() = %q, want ANSI styling", got)
+	}
+	if got := theme.NoticeInfo.Render("INFO"); !strings.Contains(got, "\x1b[") {
+		t.Fatalf("theme.NoticeInfo.Render() = %q, want ANSI styling", got)
+	}
+}
+
 // TestRecordJSON verifies machine-readable record rendering.
 func TestRecordJSON(t *testing.T) {
 	var buf bytes.Buffer

@@ -5,7 +5,8 @@ import (
 	"strings"
 
 	"charm.land/lipgloss/v2"
-	"github.com/charmbracelet/glamour"
+
+	internalglamrender "github.com/evanmschultz/laslig/internal/glamrender"
 )
 
 // Markdown writes one Markdown block.
@@ -59,7 +60,7 @@ func (p *Printer) CodeBlock(block CodeBlock) error {
 
 	body := strings.TrimRight(block.Body, "\n")
 	if p.mode.Format == FormatHuman && p.mode.Styled {
-		rendered, err := p.renderStyledMarkdown(fencedCodeBlock(block.Language, block.Body))
+		rendered, err := p.renderStyledMarkdown(internalglamrender.FencedCodeBlock(block.Language, block.Body))
 		if err != nil {
 			return fmt.Errorf("render code block: %w", err)
 		}
@@ -132,65 +133,7 @@ func (p *Printer) renderFramedContent(content string) string {
 
 // renderStyledMarkdown renders one Markdown string through Glamour for ANSI output.
 func (p *Printer) renderStyledMarkdown(markdown string) (string, error) {
-	stringPtr := func(value string) *string {
-		return &value
-	}
-	uintPtr := func(value uint) *uint {
-		return &value
-	}
-	boolPtr := func(value bool) *bool {
-		return &value
-	}
-
-	style := glamour.DarkStyleConfig
-	zero := uint(0)
-	style.Document.Margin = &zero
-	style.Document.BlockPrefix = ""
-	style.Document.BlockSuffix = ""
-	style.Paragraph.Margin = uintPtr(0)
-	style.List.Margin = uintPtr(0)
-	style.CodeBlock.Margin = uintPtr(0)
-	style.Heading.Color = stringPtr("69")
-	style.Heading.Bold = boolPtr(true)
-	style.H1.Color = stringPtr("69")
-	style.H1.Bold = boolPtr(true)
-	style.H1.BackgroundColor = nil
-	style.H1.Prefix = ""
-	style.H1.Suffix = ""
-	style.H1.BlockPrefix = ""
-	style.H1.BlockSuffix = "\n"
-	style.H2.Color = stringPtr("69")
-	style.H2.Bold = boolPtr(true)
-	style.H2.BlockPrefix = ""
-	style.H2.BlockSuffix = "\n"
-	style.H3.Color = stringPtr("69")
-	style.H3.Bold = boolPtr(true)
-	style.H3.BlockPrefix = ""
-	style.H3.BlockSuffix = "\n"
-	style.H4.Color = stringPtr("69")
-	style.H4.Bold = boolPtr(true)
-	style.H5.Color = stringPtr("69")
-	style.H5.Bold = boolPtr(true)
-	style.H6.Color = stringPtr("245")
-	style.H6.Bold = boolPtr(true)
-
-	options := []glamour.TermRendererOption{
-		glamour.WithStyles(style),
-	}
-	if width := p.maxCodeWidth(); width > 0 {
-		options = append(options, glamour.WithWordWrap(width))
-	}
-
-	renderer, err := glamour.NewTermRenderer(options...)
-	if err != nil {
-		return "", fmt.Errorf("create glamour renderer: %w", err)
-	}
-
-	rendered, err := renderer.Render(markdown)
-	if err != nil {
-		return "", fmt.Errorf("render glamour markdown: %w", err)
-	}
-	return strings.Trim(rendered, "\n"), nil
+	return internalglamrender.Render(markdown, p.maxCodeWidth())
 }
 
 // renderLogBody applies semantic highlighting to explicit caller-provided log excerpts.
@@ -253,13 +196,4 @@ func (p *Printer) maxCodeWidth() int {
 		return 100
 	}
 	return width
-}
-
-// fencedCodeBlock returns one Markdown fenced code block string for Glamour rendering.
-func fencedCodeBlock(language string, body string) string {
-	trimmed := strings.TrimRight(body, "\n")
-	if trimmed == "" {
-		return "```\n```"
-	}
-	return fmt.Sprintf("```%s\n%s\n```", strings.TrimSpace(language), trimmed)
 }

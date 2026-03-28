@@ -179,14 +179,14 @@ func Coverage() error {
 	return nil
 }
 
-// Build compiles the demo command when it exists.
+// Build compiles the tracked showcase example when it exists.
 func Build() error {
 	printer := laslig.New(os.Stdout, laslig.Policy{
 		Format: laslig.FormatAuto,
 		Style:  laslig.StyleAuto,
 	})
 
-	if _, err := os.Stat(filepath.Join("cmd", "laslig-demo")); err != nil {
+	if _, err := os.Stat(filepath.Join("examples", "all")); err != nil {
 		if errors.Is(err, os.ErrNotExist) {
 			return nil
 		}
@@ -197,17 +197,17 @@ func Build() error {
 	}
 	if err := printer.StatusLine(laslig.StatusLine{
 		Level:  laslig.NoticeInfoLevel,
-		Text:   "Building demo command",
-		Detail: "./cmd/laslig-demo",
+		Text:   "Building showcase example",
+		Detail: "./examples/all",
 	}); err != nil {
 		return fmt.Errorf("write build start: %w", err)
 	}
-	if err := run("go", "build", "-o", filepath.Join("bin", "laslig-demo"), "./cmd/laslig-demo"); err != nil {
+	if err := run("go", "build", "-o", filepath.Join("bin", "laslig-demo"), "./examples/all"); err != nil {
 		return err
 	}
 	if err := printer.StatusLine(laslig.StatusLine{
 		Level:  laslig.NoticeSuccessLevel,
-		Text:   "Built demo command",
+		Text:   "Built showcase example",
 		Detail: filepath.Join("bin", "laslig-demo"),
 	}); err != nil {
 		return fmt.Errorf("write build success: %w", err)
@@ -215,9 +215,9 @@ func Build() error {
 	return nil
 }
 
-// Demo runs the tracked demo command.
+// Demo runs the tracked all-in-one showcase example.
 func Demo() error {
-	return run("go", "run", "./cmd/laslig-demo")
+	return run("go", "run", "./examples/all")
 }
 
 // VHS renders tracked terminal demos when tapes exist locally.

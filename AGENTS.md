@@ -100,7 +100,8 @@ Rules:
 
 ## 7) Examples And Visual Coverage
 
-- keep a Charm-style demo application under `cmd/laslig-demo`
+- keep runnable showcase examples under `examples/`
+- keep one all-in-one showcase example that Mage and VHS can drive
 - keep VHS tapes and generated assets for README demos under `docs/vhs/`
 - when user-visible terminal output intentionally changes, update the relevant README examples and VHS assets
 

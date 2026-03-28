@@ -7,6 +7,9 @@ import (
 	"strings"
 
 	"charm.land/lipgloss/v2"
+
+	internallayout "github.com/evanmschultz/laslig/internal/layout"
+	internaltable "github.com/evanmschultz/laslig/internal/table"
 )
 
 // Printer renders structured output to one writer.
@@ -92,10 +95,10 @@ func (p *Printer) Notice(notice Notice) error {
 		lines := []string{headline}
 		textWidth := p.maxTextWidth()
 		if body := strings.TrimSpace(notice.Body); body != "" {
-			lines = append(lines, indentBlock("  ", p.wrapText(body, textWidth)))
+			lines = append(lines, internallayout.IndentBlock("  ", p.wrapText(body, textWidth)))
 		}
 		for _, detail := range notice.Detail {
-			lines = append(lines, indentBlock("  ", p.theme.Muted.Render(p.wrapText(detail, textWidth))))
+			lines = append(lines, internallayout.IndentBlock("  ", p.theme.Muted.Render(p.wrapText(detail, textWidth))))
 		}
 		_, err := fmt.Fprintln(p.out, strings.Join(lines, "\n"))
 		if err != nil {
@@ -246,7 +249,15 @@ func (p *Printer) Table(table Table) error {
 		return p.writeEmpty("  " + empty)
 	}
 
-	rendered := renderTable(table, p.theme, p.mode)
+	rendered := internaltable.Render(table.Header, table.Rows, internaltable.Mode{
+		Human: p.mode.Format == FormatHuman,
+		Width: p.mode.Width,
+	}, internaltable.Styles{
+		Header: p.theme.TableHeader,
+		Rule:   p.theme.TableRule,
+		Even:   lipgloss.NewStyle().Foreground(lipgloss.Color("241")),
+		Odd:    lipgloss.NewStyle().Foreground(lipgloss.Color("245")),
+	})
 	if _, err := fmt.Fprintln(p.out, rendered); err != nil {
 		return fmt.Errorf("write table body: %w", err)
 	}
@@ -483,134 +494,5 @@ func (p *Printer) wrapText(value string, width int) string {
 	if width <= 0 || p.mode.Format != FormatHuman {
 		return value
 	}
-	paragraphs := strings.Split(value, "\n")
-	for index, paragraph := range paragraphs {
-		paragraphs[index] = wrapWords(paragraph, width)
-	}
-	return strings.Join(paragraphs, "\n")
-}
-
-func indentBlock(prefix string, value string) string {
-	lines := strings.Split(value, "\n")
-	for index, line := range lines {
-		lines[index] = prefix + line
-	}
-	return strings.Join(lines, "\n")
-}
-
-func wrapWords(value string, width int) string {
-	if width <= 0 || lipgloss.Width(value) <= width {
-		return value
-	}
-
-	words := strings.Fields(value)
-	if len(words) == 0 {
-		return ""
-	}
-
-	lines := []string{words[0]}
-	for _, word := range words[1:] {
-		current := lines[len(lines)-1]
-		candidate := current + " " + word
-		if lipgloss.Width(candidate) <= width {
-			lines[len(lines)-1] = candidate
-			continue
-		}
-		lines = append(lines, word)
-	}
-	return strings.Join(lines, "\n")
-}
-
-func renderTable(table Table, theme Theme, mode Mode) string {
-	rows := make([][]string, 0, len(table.Rows)+1)
-	if len(table.Header) > 0 {
-		rows = append(rows, table.Header)
-	}
-	rows = append(rows, table.Rows...)
-
-	widths := make([]int, 0)
-	for _, row := range rows {
-		for index, cell := range row {
-			width := lipgloss.Width(cell)
-			if len(widths) <= index {
-				widths = append(widths, width)
-				continue
-			}
-			if width > widths[index] {
-				widths[index] = width
-			}
-		}
-	}
-
-	joinRow := func(row []string, style lipgloss.Style) string {
-		cells := make([]string, 0, len(widths))
-		for index, width := range widths {
-			value := ""
-			if index < len(row) {
-				value = row[index]
-			}
-			cell := value
-			if mode.Format == FormatHuman {
-				cell = lipgloss.NewStyle().Width(width).Render(value)
-				cell = style.Render(cell)
-			} else if index < len(widths)-1 {
-				cell = fmt.Sprintf("%-*s", width, value)
-			}
-			cells = append(cells, cell)
-		}
-		separator := " | "
-		if mode.Format == FormatHuman {
-			separator = theme.TableRule.Render(" │ ")
-		}
-		return strings.Join(cells, separator)
-	}
-
-	lines := []string{}
-	if len(table.Header) > 0 {
-		lines = append(lines, joinRow(table.Header, theme.TableHeader))
-		ruleParts := make([]string, 0, len(widths))
-		for _, width := range widths {
-			ruleParts = append(ruleParts, strings.Repeat("─", width))
-		}
-		ruleSeparator := "─┼─"
-		if mode.Format != FormatHuman {
-			ruleSeparator = "-+-"
-			for index, width := range widths {
-				ruleParts[index] = strings.Repeat("-", width)
-			}
-		} else {
-			ruleSeparator = theme.TableRule.Render("─┼─")
-			for index, width := range widths {
-				ruleParts[index] = theme.TableRule.Render(strings.Repeat("─", width))
-			}
-		}
-		lines = append(lines, strings.Join(ruleParts, ruleSeparator))
-	}
-	for _, row := range table.Rows {
-		rowStyle := theme.Value
-		if mode.Format == FormatHuman {
-			if len(lines)%2 == 0 {
-				rowStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("241"))
-			} else {
-				rowStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("245"))
-			}
-		}
-		lines = append(lines, joinRow(row, rowStyle))
-	}
-
-	rendered := strings.Join(lines, "\n")
-	if mode.Format == FormatHuman {
-		style := lipgloss.NewStyle().
-			Border(lipgloss.RoundedBorder()).
-			BorderForeground(lipgloss.Color("63")).
-			Padding(0, 1)
-		if mode.Width > 0 {
-			maxWidth := mode.Width - 4
-			if maxWidth > 0 {
-				style = style.MaxWidth(maxWidth)
-			}
-		}
-		return style.Render(rendered)
-	}
-	return rendered
+	return internallayout.WrapText(value, width)
 }

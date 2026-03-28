@@ -207,16 +207,16 @@ This repository already dogfoods that pattern in [`magefile.go`](/Users/evanschu
 
 ## Demo
 
-The tracked demo command lives in [cmd/laslig-demo/main.go](/Users/evanschultz/Documents/Code/hylla/laslig/main/cmd/laslig-demo/main.go).
+The tracked all-in-one showcase lives in [examples/all/main.go](/Users/evanschultz/Documents/Code/hylla/laslig/main/examples/all/main.go).
 Small verified Go doc examples live in [example_test.go](/Users/evanschultz/Documents/Code/hylla/laslig/main/example_test.go).
-The main demo groups the library into structured blocks and rich-text blocks so the visual showcase stays readable.
+The main showcase groups the library into structured blocks and rich-text blocks so the visual walkthrough stays readable.
 
 Run it locally:
 
 ```bash
 mage demo
-go run ./cmd/laslig-demo --format human --style always
-go run ./cmd/laslig-demo --format json
+go run ./examples/all --format human --style always
+go run ./examples/all --format json
 ```
 
 The README GIF is generated from [docs/vhs/showcase.tape](/Users/evanschultz/Documents/Code/hylla/laslig/main/docs/vhs/showcase.tape).
@@ -243,7 +243,7 @@ mage vhs
 Structural terminal output is also covered by Charm `x/exp/golden` snapshots in the demo and `testjson` packages. Update them intentionally with:
 
 ```bash
-go test ./cmd/laslig-demo -run TestRunArgsPlainGolden -args -update
+go test ./examples/all -run TestRunArgsPlainGolden -args -update
 go test ./testjson -run TestRenderPlainCompactGolden -args -update
 ```
 

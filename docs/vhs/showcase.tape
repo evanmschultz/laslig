@@ -22,6 +22,6 @@ Enter
 Sleep 250ms
 Show
 
-Type "go run ./cmd/laslig-demo --format human --style always"
+Type "go run ./examples/all --format human --style always"
 Enter
 Sleep 4s
