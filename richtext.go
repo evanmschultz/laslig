@@ -126,7 +126,7 @@ func (p *Printer) renderFramedContent(content string) string {
 		BorderForeground(lipgloss.Color("63")).
 		Padding(1, 2)
 	if maxWidth := p.maxPanelWidth(); maxWidth > 0 {
-		style = style.MaxWidth(maxWidth)
+		style = p.constrainStyledBlockWidth(style, maxWidth)
 	}
 	return style.Render(content)
 }

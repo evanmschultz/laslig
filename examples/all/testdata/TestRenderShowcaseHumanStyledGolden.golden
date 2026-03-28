@@ -1,0 +1,159 @@
+
+Läslig demo
+
+   INFO  A guided primitive walkthrough
+    This showcase names Läslig's public primitives directly so you can see
+    what they render and when to reach for them.
+    Use Läslig for ordinary CLI output, not command parsing or application
+    logging.                                                              
+    Think of it as the layer between raw Charm styles and your command's
+    result text.                                                        
+
+
+Structured Primitives
+
+  When to start here
+  
+  Start with these blocks when your CLI is presenting facts, grouped
+  results, or emphasized callouts.
+  
+  They cover most command summaries without inventing a custom layout.
+
+  Record
+    what: One object or result rendered as labeled facts.
+    when: Build metadata, artifact details, environment summaries.
+    example: module github.com/evanmschultz/laslig
+
+  KV
+    what    Compact aligned configuration or status.
+    when    Resolved policy, flags, execution mode.
+    format  human
+    styled  true
+
+  List
+  - Grouped items  DEFAULT 
+    when: Packages, tasks, phases, or capabilities that scan better than a table.
+  - Badges stay lightweight  READY 
+    why: Use a badge when a quick state is enough and a panel would be too heavy.
+  - Detail fields add context  LIVE 
+    what: Each item can carry labeled facts and still stay list-shaped.
+
+  Table
+  ╭─────────────────────────────────────────────────────╮
+  │ compare │ prefer when                               │
+  │ ────────┼────────────────────────────────────────── │
+  │ Table   │ column alignment matters across many rows │
+  │ List    │ items are unordered and short             │
+  │ Record  │ you are describing one object             │
+  ╰─────────────────────────────────────────────────────╯
+  Use Table when comparison matters more than prose.
+
+  ╭──────────────────────────────────────────────────────────────────╮
+  │                                                                  │
+  │  Panel                                                           │
+  │                                                                  │
+  │  Use Panel for rationale, next steps, and larger callouts that   │
+  │  should                                                          │
+  │  stand apart from the rest of the document.                      │
+  │                                                                  │
+  │  Panels are stronger than Paragraph and lighter than inventing   │
+  │  a custom                                                        │
+  │  layout.                                                         │
+  │                                                                  │
+  ╰──────────────────────────────────────────────────────────────────╯
+
+
+Rich Text Primitives
+
+  When prose matters
+  
+  These primitives handle explanation-heavy output: wrapped prose,
+  markdown, code, and captured transcripts.
+  
+  Use them when a CLI needs to teach, explain, or show supporting
+  context.                                                       
+
+  Paragraph
+  
+  Use Paragraph for readable rationale, release context, and longer help
+  text when a Notice or Panel would be too heavy.
+  
+  It is the default long-form text primitive.
+
+   SUCCESS  StatusLine keeps one result compact and semantic (When: build ready, cache hit, package passed)
+
+  Markdown
+  
+  Use Markdown when your CLI already has release notes, changelog text,
+  or generated help content to show.
+  
+  The block below is real terminal-rendered Markdown.
+
+     Release Notes                                                  
+                                                                    
+    ## Highlights                                                   
+                                                                    
+    • one renderer                                                  
+    • three output surfaces                                         
+    • caller-owned logging                                          
+
+  CodeBlock
+  
+  Use CodeBlock for commands, snippets, generated files, and config
+  examples.
+  
+  The block below shows a Go snippet rendered through Glamour.
+
+  ╭─────────────────────────────────────────────────────────────────────────╮
+  │                                                                         │
+  │  Go snippet                                                             │
+  │                                                                         │
+  │                                                                         │
+  │      package main                                                       │
+  │                                                                         │
+  │      import "fmt"                                                       │
+  │                                                                         │
+  │      func main() {                                                      │
+  │          fmt.Println("hello from laslig")                               │
+  │      }                                                                  │
+  │                                                                         │
+  │  Use CodeBlock when code should stay visibly distinct from              │
+  │  prose.                                                                 │
+  │                                                                         │
+  ╰─────────────────────────────────────────────────────────────────────────╯
+
+  LogBlock
+  
+  Use LogBlock for selected stderr or log excerpts while the application
+  keeps owning logging.
+  
+  The block below captures real charm/log output and renders it through
+  Läslig.                                                              
+
+  ╭──────────────────────────────────────────────────────────────────╮
+  │                                                                  │
+  │  Captured charm/log transcript                                   │
+  │                                                                  │
+  │  INFO demo: boot complete component=cache                        │
+  │  WARN demo: retry scheduled after=3s                             │
+  │  ERRO demo: dependency missing name=git                          │
+  │                                                                  │
+  │  Use LogBlock for selected transcripts while the application     │
+  │  keeps                                                           │
+  │  owning the logger.                                              │
+  │                                                                  │
+  ╰──────────────────────────────────────────────────────────────────╯
+
+  ╭──────────────────────────────────────────────────────────────────╮
+  │                                                                  │
+  │  testjson                                                        │
+  │                                                                  │
+  │  Use the testjson subpackage when you want Charm-native go test  │
+  │  output                                                          │
+  │  without giving up caller-owned process control.                 │
+  │                                                                  │
+  │  Next up: theme presets, stronger Section styling, and richer    │
+  │  test                                                            │
+  │  classification.                                                 │
+  │                                                                  │
+  ╰──────────────────────────────────────────────────────────────────╯

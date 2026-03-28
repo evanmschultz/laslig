@@ -317,7 +317,7 @@ func (p *Printer) Panel(panel Panel) error {
 	content := strings.Join(lines, "\n\n")
 	if p.mode.Format == FormatHuman {
 		if maxWidth := p.maxPanelWidth(); maxWidth > 0 && p.mode.Styled {
-			content = p.theme.Panel.MaxWidth(maxWidth).Render(content)
+			content = p.constrainStyledBlockWidth(p.theme.Panel, maxWidth).Render(content)
 		} else if p.mode.Styled {
 			content = p.theme.Panel.Render(content)
 		}
@@ -512,6 +512,20 @@ func (p *Printer) wrapText(value string, width int) string {
 		return value
 	}
 	return internallayout.WrapText(value, width)
+}
+
+// constrainStyledBlockWidth keeps bordered/padded blocks within one total width
+// without truncating the right border rune.
+func (p *Printer) constrainStyledBlockWidth(style lipgloss.Style, maxWidth int) lipgloss.Style {
+	if maxWidth <= 0 {
+		return style
+	}
+	frameX, _ := style.GetFrameSize()
+	contentWidth := maxWidth - frameX
+	if contentWidth <= 0 {
+		return style
+	}
+	return style.Width(contentWidth)
 }
 
 // availableWidth returns the terminal width remaining after section indentation.

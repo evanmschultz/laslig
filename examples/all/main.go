@@ -38,7 +38,11 @@ func runArgs(out io.Writer, args []string) error {
 		Format: laslig.Format(*format),
 		Style:  laslig.StylePolicy(*style),
 	})
+	return renderShowcase(printer)
+}
 
+// renderShowcase renders the all-in-one Läslig walkthrough with one prepared printer.
+func renderShowcase(printer *laslig.Printer) error {
 	steps := []struct {
 		name   string
 		render func() error
