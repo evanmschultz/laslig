@@ -313,13 +313,26 @@ Current recommendation:
 ### Pre-Release Ship Pass
 
 - add `LICENSE` with `Apache-2.0`
+- add `CONTRIBUTING.md` with setup, coding, test, snapshot, and release expectations
+- add `SECURITY.md` with reporting guidance and support boundaries
+- add `.github/ISSUE_TEMPLATE/` coverage for bug reports and feature requests
+- add `.github/pull_request_template.md` for release-note and validation hygiene
+- decide whether to add `CODEOWNERS` and `.github/dependabot.yml` in `v0.1.0` or immediately after
 - do a full Go-doc and exported-surface comment audit
 - do a full README/docs/example audit for accuracy and consistency
+- do the GitHub workflow pass:
+  - keep `ci.yml` minimal and stable
+  - add tag-driven release workflow wiring for GoReleaser
+  - confirm required checks/branch protection expectations outside the repo
+- do the community/release-management pass:
+  - define issue-triage expectations and label strategy
+  - define PR-review expectations and merge policy
+  - decide whether changelog generation is manual or release-driven in `v0.1.0`
 - do the API freeze pass:
   - review exported names, fields, defaults, and behavior
   - rename or trim awkward public surface before release
   - decide what is considered stable for the first `v0.x` release
-- only after the docs/license/API pass, finish `goreleaser` setup and release workflow wiring
+- only after the docs/license/API pass, finish `.goreleaser.yaml`, release artifacts, checksums, and GitHub release workflow wiring
 
 ### Later Theme Pass
 
