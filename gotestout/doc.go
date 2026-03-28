@@ -6,7 +6,9 @@
 // exec.Command, Mage, or another runner to an io.Reader that yields go test
 // events. Options allow compact or detailed views and let callers disable
 // grouped failed-test, skipped-test, package-error, or captured-output
-// sections when they want a tighter summary. This makes the package a good fit
-// for Mage targets such as `mage test`, ordinary Go CLI commands, and small Go
+// sections when they want a tighter summary. In JSON mode, Render re-emits the
+// raw go test events while still returning summary counts, and it skips the
+// grouped human/plain summary blocks. This makes the package a good fit for
+// Mage targets such as `mage test`, ordinary Go CLI commands, and small Go
 // helpers invoked from tools such as `make`, `just`, or `task`.
 package gotestout

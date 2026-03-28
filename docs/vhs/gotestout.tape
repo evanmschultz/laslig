@@ -17,7 +17,7 @@ Set Margin 20
 Set MarginFill "#0b1c26"
 
 Hide
-Type "cd /Users/evanschultz/Documents/Code/hylla/laslig/main && clear"
+Type "clear"
 Enter
 Sleep 250ms
 Show

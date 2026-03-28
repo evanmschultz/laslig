@@ -35,16 +35,21 @@ const (
 
 // New constructs one printer by resolving a writer against the provided policy.
 func New(out io.Writer, policy Policy) *Printer {
-	return newPrinter(out, ResolveMode(out, policy), resolveLayout(policy))
+	mode := ResolveMode(out, policy)
+	return newPrinter(out, mode, resolveLayout(policy), resolveTheme(policy, mode))
 }
 
 // NewWithMode constructs one printer using an already-resolved output mode.
+//
+// NewWithMode is a convenience for callers that already resolved the output
+// mode and are happy with the default Layout and Theme for that mode.
 func NewWithMode(out io.Writer, mode Mode) *Printer {
-	return newPrinter(out, mode, DefaultLayout())
+	return newPrinter(out, mode, DefaultLayout(), DefaultTheme(mode))
 }
 
-// newPrinter constructs one printer from already-resolved mode and layout inputs.
-func newPrinter(out io.Writer, mode Mode, layout Layout) *Printer {
+// newPrinter constructs one printer from already-resolved mode, layout, and
+// theme inputs.
+func newPrinter(out io.Writer, mode Mode, layout Layout, theme Theme) *Printer {
 	if out == nil {
 		out = io.Discard
 	}
@@ -52,7 +57,7 @@ func newPrinter(out io.Writer, mode Mode, layout Layout) *Printer {
 		out:    out,
 		mode:   mode,
 		layout: layout,
-		theme:  DefaultTheme(mode),
+		theme:  theme,
 	}
 }
 
@@ -61,7 +66,8 @@ func (p *Printer) Mode() Mode {
 	return p.mode
 }
 
-// Section writes one section heading.
+// Section writes one section heading and opens section-owned indentation for
+// following content blocks until the next section heading.
 func (p *Printer) Section(title string) error {
 	if p.mode.Format == FormatJSON {
 		return p.writeJSON("section", map[string]any{

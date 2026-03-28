@@ -5,13 +5,15 @@ import (
 	"io"
 	"strings"
 	"testing"
+
+	"charm.land/lipgloss/v2"
 )
 
 // newTestPrinter constructs one printer with the default leading gap disabled so
 // primitive formatting tests can focus on block content.
 func newTestPrinter(out io.Writer, mode Mode) *Printer {
 	layout := DefaultLayout().WithLeadingGap(0)
-	return newPrinter(out, mode, layout)
+	return newPrinter(out, mode, layout, DefaultTheme(mode))
 }
 
 // TestResolveModePlainForBuffer verifies that non-terminal writers resolve to plain output by default.
@@ -33,6 +35,28 @@ func TestResolveModeHumanStyleAlways(t *testing.T) {
 	}
 	if !mode.Styled {
 		t.Fatal("ResolveMode().Styled = false, want true")
+	}
+}
+
+// TestNewUsesCustomTheme verifies callers can swap the default theme through Policy.
+func TestNewUsesCustomTheme(t *testing.T) {
+	var buf bytes.Buffer
+	layout := DefaultLayout().WithLeadingGap(0)
+	theme := DefaultTheme(Mode{Format: FormatHuman, Styled: true})
+	theme.Section = lipgloss.NewStyle()
+
+	printer := New(&buf, Policy{
+		Format: FormatHuman,
+		Style:  StyleAlways,
+		Layout: &layout,
+		Theme:  &theme,
+	})
+	if err := printer.Section("Deploy"); err != nil {
+		t.Fatalf("Section() error = %v", err)
+	}
+
+	if got := buf.String(); got != "Deploy\n" {
+		t.Fatalf("Section() with custom theme = %q, want %q", got, "Deploy\n")
 	}
 }
 

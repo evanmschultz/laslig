@@ -12,7 +12,7 @@ This scope includes the Go module, the `gotestout` subpackage, repository automa
 ## Reporting A Vulnerability
 
 Use GitHub private vulnerability reporting for this repository if that option is available to you.
-If private reporting is unavailable, contact the maintainer privately before opening any public issue or pull request.
+If private reporting is unavailable, contact the maintainer privately through the repository owner's GitHub profile at <https://github.com/evanmschultz> before opening any public issue or pull request.
 
 Please include:
 

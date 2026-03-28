@@ -19,7 +19,7 @@ For routine development, Go and Mage are the only required local tools.
 
 ## Daily Workflow
 
-1. Work from the tracked `main/` worktree.
+1. Work from the repository root.
 2. Keep changes focused and keep docs/tests aligned with behavior.
 3. Use the normal local gate before you hand work back:
 

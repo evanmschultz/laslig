@@ -1,10 +1,18 @@
-# laslig
+# Läslig
 
 `laslig` helps Go CLIs print structured, human-readable output with Charm-native styling and Go-idiomatic ergonomics.
 
 The package and module name stay `laslig`. The product branding is `Läslig`, from the Swedish `läslig`, meaning `legible`.
 
+## Visual Examples
+
+The main walkthrough shows the core primitives working together:
+
 ![Läslig demo](docs/vhs/showcase.gif)
+
+The focused `gotestout` example shows Charm-native `go test -json` rendering:
+
+![gotestout example](docs/vhs/gotestout.gif)
 
 ## Why
 
@@ -38,14 +46,14 @@ The first core wave is live. Today the package includes:
 - compact and detailed `gotestout` rendering for `go test -json`
 - caller-tunable `gotestout` summary and output sections
 
-The next wave is focused on theme configuration, deeper `gotestout` classification, and tightening the docs/examples further.
+The next wave is focused on theme presets and higher-level theme configuration, deeper `gotestout` classification, and tightening the docs/examples further.
 
 ## Principles
 
 - small, composable helpers instead of a framework
 - writers in, errors out
 - no hidden process control
-- Charm-native output without depending on Fang or `charm/log`
+- Charm-native output without requiring Fang or `charm/log` as core library dependencies
 - easy adoption in Fang, Cobra, Mage, and plain Go commands
 - explicit rendering of caller-provided log excerpts without becoming a logger
 
@@ -138,6 +146,10 @@ printer := laslig.New(os.Stdout, laslig.Policy{
 	Layout: &layout,
 })
 ```
+
+`Policy` can also carry a raw `Theme` override when one command wants to swap
+the default styles directly. Higher-level theme presets are still deferred
+until after `v0.1.0`.
 
 ## JSON Mode
 
@@ -238,8 +250,8 @@ if summary.HasFailures() {
 
 That shape works well in ordinary Go CLIs, Mage targets, Cobra/Fang commands, and small Go helpers invoked from tools like `make`, `just`, or `task`. `laslig` stays responsible for rendering, while the caller stays responsible for process control. Callers can also disable grouped failed-test, skipped-test, package-error, or captured-output sections when they want a tighter stream.
 
-This repository already dogfoods that pattern in [`magefile.go`](/Users/evanschultz/Documents/Code/hylla/laslig/main/magefile.go): `mage test` runs `go test -json ./...`, renders compact package and failure output through `gotestout`, and still returns a normal Mage error on failure.
-The focused runnable example for that package lives in [examples/gotestout/main.go](/Users/evanschultz/Documents/Code/hylla/laslig/main/examples/gotestout/main.go).
+This repository already dogfoods that pattern in [`magefile.go`](./magefile.go): `mage test` runs `go test -json ./...`, renders compact package and failure output through `gotestout`, and still returns a normal Mage error on failure.
+The focused runnable example for that package lives in [`examples/gotestout/main.go`](./examples/gotestout/main.go).
 
 Common ways to try that surface locally:
 
@@ -250,11 +262,11 @@ mage test
 
 ## Demo
 
-The tracked all-in-one showcase lives in [examples/all/main.go](/Users/evanschultz/Documents/Code/hylla/laslig/main/examples/all/main.go).
-The focused logging example package that uses `charm.land/log/v2` as a demo-only dependency lives in [examples/logging/logging.go](/Users/evanschultz/Documents/Code/hylla/laslig/main/examples/logging/logging.go) and is imported directly by the main showcase.
-The focused `gotestout` example lives in [examples/gotestout/main.go](/Users/evanschultz/Documents/Code/hylla/laslig/main/examples/gotestout/main.go).
-Small verified Go doc examples live in [example_test.go](/Users/evanschultz/Documents/Code/hylla/laslig/main/example_test.go).
-The main showcase is a guided walkthrough: it names each primitive directly and explains what it is for and when to use it, then closes with an explicit `gotestout` section that renders a real Mage-style Build, Tests, and Coverage preview inline.
+The tracked all-in-one showcase lives in [`examples/all/main.go`](./examples/all/main.go).
+The focused logging example package that uses `charm.land/log/v2` as a demo-only dependency lives in [`examples/logging/logging.go`](./examples/logging/logging.go) and is imported directly by the main showcase.
+The focused `gotestout` example lives in [`examples/gotestout/main.go`](./examples/gotestout/main.go).
+Small verified Go doc examples live in [`example_test.go`](./example_test.go).
+The main showcase is a guided walkthrough: it names each primitive directly and explains what it is for and when to use it, then closes with an explicit `gotestout` section that renders a fixture-backed Mage-style Build, Tests, and Coverage preview inline.
 
 Run it locally:
 
@@ -268,11 +280,11 @@ mage test
 
 `mage demo` is the normal primitive walkthrough entrypoint. `mage test` is the real Mage-facing `gotestout` dogfood path. The `go run` forms above are the same examples with explicit format/style flags.
 
-The README GIF is generated from [docs/vhs/showcase.tape](/Users/evanschultz/Documents/Code/hylla/laslig/main/docs/vhs/showcase.tape).
+The README GIF is generated from [`docs/vhs/showcase.tape`](./docs/vhs/showcase.tape), and the focused `gotestout` GIF is generated from [`docs/vhs/gotestout.tape`](./docs/vhs/gotestout.tape).
 
 ## Planned Next
 
-- theme configuration and preset flow
+- theme presets and higher-level theme configuration
 - richer `gotestout` failure classification and subtest rollups
 - compact prefix-style helpers beyond `StatusLine`
 - more README visuals and side-by-side comparisons
@@ -295,7 +307,7 @@ mage demo
 mage vhs
 ```
 
-See [CONTRIBUTING.md](/Users/evanschultz/Documents/Code/hylla/laslig/main/CONTRIBUTING.md) for contributor workflow details and [SECURITY.md](/Users/evanschultz/Documents/Code/hylla/laslig/main/SECURITY.md) for vulnerability reporting guidance.
+See [`CONTRIBUTING.md`](./CONTRIBUTING.md) for contributor workflow details and [`SECURITY.md`](./SECURITY.md) for vulnerability reporting guidance.
 
 Structural terminal output is also covered by Charm `x/exp/golden` snapshots in the demo and `gotestout` packages. Update them intentionally with:
 
@@ -305,12 +317,12 @@ go test ./examples/gotestout -run TestRunArgsPlainGolden -args -update
 go test ./gotestout -run 'TestRenderPlainCompactGolden|TestRenderHumanStyledCompactGolden' -args -update
 ```
 
-README examples and terminal GIFs are generated from the tracked demo app and VHS tapes under [docs/vhs/](/Users/evanschultz/Documents/Code/hylla/laslig/main/docs/vhs).
+README examples and terminal GIFs are generated from the tracked demo app and VHS tapes under [`docs/vhs/`](./docs/vhs).
 
 ## License
 
-`laslig` is licensed under [Apache-2.0](/Users/evanschultz/Documents/Code/hylla/laslig/main/LICENSE).
+`laslig` is licensed under [Apache-2.0](./LICENSE).
 
 ## Plan
 
-The tracked execution plan lives in [PLAN.md](/Users/evanschultz/Documents/Code/hylla/laslig/main/PLAN.md).
+The tracked execution plan lives in [`PLAN.md`](./PLAN.md).

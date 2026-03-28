@@ -37,6 +37,7 @@ type Policy struct {
 	Format Format
 	Style  StylePolicy
 	Layout *Layout
+	Theme  *Theme
 }
 
 // ListMarker identifies the marker shape used for unordered and ordered list output.
@@ -173,6 +174,14 @@ func resolveLayout(policy Policy) Layout {
 	layout.sectionGap = clampNonNegative(layout.sectionGap)
 	layout.sectionIndent = clampNonNegative(layout.sectionIndent)
 	return layout
+}
+
+// resolveTheme resolves the requested theme policy into one concrete theme.
+func resolveTheme(policy Policy, mode Mode) Theme {
+	if policy.Theme == nil {
+		return DefaultTheme(mode)
+	}
+	return *policy.Theme
 }
 
 // clampNonNegative keeps layout counts at zero or above.

@@ -44,11 +44,12 @@ func NewRenderer(out io.Writer, options Options) *Renderer {
 	renderer := &Renderer{
 		out:   out,
 		mode:  mode,
-		theme: laslig.DefaultTheme(mode),
+		theme: resolveTheme(options.Policy, mode),
 		printer: laslig.New(out, laslig.Policy{
 			Format: options.Policy.Format,
 			Style:  options.Policy.Style,
 			Layout: &layout,
+			Theme:  options.Policy.Theme,
 		}),
 		options:     options,
 		outputs:     make(map[outputKey][]string),
@@ -212,6 +213,14 @@ func withDefaults(options Options) Options {
 		options.View = ViewCompact
 	}
 	return options
+}
+
+// resolveTheme returns one concrete theme for the renderer and nested printer.
+func resolveTheme(policy laslig.Policy, mode laslig.Mode) laslig.Theme {
+	if policy.Theme == nil {
+		return laslig.DefaultTheme(mode)
+	}
+	return *policy.Theme
 }
 
 // sectionEnabled reports whether one optional rendered section is enabled.

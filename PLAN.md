@@ -83,11 +83,9 @@ Structured stream rendering should be isolated in a specialist package:
 
 Keep internal packages small and implementation-oriented:
 
-- `internal/policy`
-- `internal/theme`
-- `internal/render`
+- `internal/glamrender`
 - `internal/layout`
-- `internal/gotestout`
+- `internal/table`
 
 Do not publish internal implementation packages until they have proved stable.
 
@@ -96,7 +94,7 @@ Do not publish internal implementation packages until they have proved stable.
 - `laslig` should render caller-provided content, not own logging policy or command-framework behavior
 - `fang` remains an application-level choice for help, usage, and command-boundary errors
 - application logging stays with the caller's logger such as `log/slog`, `charm/log`, or Zap
-- `laslig` may render selected log excerpts, transcripts, stderr captures, or diagnostics in structured blocks
+- `laslig` may render selected log excerpts, transcripts, stderr captures, or notices in structured blocks
 - `laslig` itself should not intercept global logs, install sinks, or emit operational logs
 
 ## Remaining Decisions Before `v0.1.0`
@@ -164,10 +162,10 @@ Do not publish internal implementation packages until they have proved stable.
 ### Phase 2: Static Output Primitives
 
 - sections
-- notices and diagnostics
-- records and lists
+- notices
+- records, KV blocks, and lists
 - tables
-- boxes and panels
+- panels
 - demo program and README examples
 
 ### Phase 3: Structured Test Output

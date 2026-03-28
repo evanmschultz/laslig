@@ -51,7 +51,7 @@ Rules:
 
 - tracked work happens from this worktree, not from the bare root
 - local research and progress logs stay under the bare-root `worklogs/`
-- use [`PLAN.md`](/Users/evanschultz/Documents/Code/hylla/laslig/main/PLAN.md) as the tracked source-of-truth for architecture and execution
+- use [`PLAN.md`](./PLAN.md) as the tracked source-of-truth for architecture and execution
 
 ## 4) Build, Test, And Release Flow
 
@@ -84,7 +84,6 @@ Rules:
 
 - sections
 - notices
-- diagnostics
 - records
 - lists
 - tables

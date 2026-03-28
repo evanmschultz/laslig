@@ -41,3 +41,24 @@ func ExampleRender() {
 	//   1 test passed across 1 package.
 	// tests=1 packages=1 failures=false
 }
+
+// ExampleRender_json shows that JSON mode re-emits raw go test events while
+// still returning summary counts to the caller.
+func ExampleRender_json() {
+	stream := strings.NewReader(`{"Action":"pass","Package":"example/pkg","Test":"TestRender","Elapsed":0.01}
+{"Action":"pass","Package":"example/pkg","Elapsed":0.01}
+`)
+
+	summary, _ := gotestout.Render(os.Stdout, stream, gotestout.Options{
+		Policy: laslig.Policy{
+			Format: laslig.FormatJSON,
+		},
+	})
+
+	fmt.Printf("tests=%d packages=%d failures=%t\n", summary.TotalTests(), summary.TotalPackages(), summary.HasFailures())
+
+	// Output:
+	// {"Action":"pass","Package":"example/pkg","Test":"TestRender","Elapsed":0.01}
+	// {"Action":"pass","Package":"example/pkg","Elapsed":0.01}
+	// tests=1 packages=1 failures=false
+}

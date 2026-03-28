@@ -1,6 +1,7 @@
 package gotestout
 
 import (
+	"encoding/json"
 	"time"
 
 	"github.com/evanmschultz/laslig"
@@ -55,6 +56,39 @@ type Event struct {
 	FailedBuild string    `json:"FailedBuild,omitempty"`
 	Key         string    `json:"Key,omitempty"`
 	Value       string    `json:"Value,omitempty"`
+}
+
+// MarshalJSON preserves the go test -json event shape by omitting zero-valued
+// timestamps instead of serializing them as the zero time.
+func (e Event) MarshalJSON() ([]byte, error) {
+	type encodedEvent struct {
+		Time        *time.Time `json:"Time,omitempty"`
+		Action      Action     `json:"Action"`
+		Package     string     `json:"Package,omitempty"`
+		Test        string     `json:"Test,omitempty"`
+		Elapsed     float64    `json:"Elapsed,omitempty"`
+		Output      string     `json:"Output,omitempty"`
+		FailedBuild string     `json:"FailedBuild,omitempty"`
+		Key         string     `json:"Key,omitempty"`
+		Value       string     `json:"Value,omitempty"`
+	}
+
+	var eventTime *time.Time
+	if !e.Time.IsZero() {
+		eventTime = &e.Time
+	}
+
+	return json.Marshal(encodedEvent{
+		Time:        eventTime,
+		Action:      e.Action,
+		Package:     e.Package,
+		Test:        e.Test,
+		Elapsed:     e.Elapsed,
+		Output:      e.Output,
+		FailedBuild: e.FailedBuild,
+		Key:         e.Key,
+		Value:       e.Value,
+	})
 }
 
 // PackageEvent reports whether the event applies to an entire package.
