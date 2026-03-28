@@ -4,13 +4,14 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/charmbracelet/glamour"
+	glamour "charm.land/glamour/v2"
+	"charm.land/glamour/v2/styles"
 )
 
 // Render renders Markdown using Glamour's standard dark style with optional word wrapping.
 func Render(markdown string, width int) (string, error) {
 	options := []glamour.TermRendererOption{
-		glamour.WithStandardStyle(glamour.DarkStyle),
+		glamour.WithStandardStyle(styles.DarkStyle),
 	}
 	if width > 0 {
 		options = append(options, glamour.WithWordWrap(width))
