@@ -1,4 +1,4 @@
-laslig demo
+Läslig demo
 
 [INFO] Readable by default
   Structured output should look intentional without forcing a framework.
@@ -44,7 +44,7 @@ Use Paragraph when a Notice or Panel would be too heavy.
 
 [SUCCESS] Build ready (mage check)
 
-Release notes
+# Release Notes
 
 ## Highlights
 

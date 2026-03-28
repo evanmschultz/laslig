@@ -2,9 +2,9 @@
 
 `laslig` helps Go CLIs print structured, human-readable output with Charm-native styling and Go-idiomatic ergonomics.
 
-The name comes from the Swedish `läslig`, meaning `legible`.
+The package and module name stay `laslig`. The product branding is `Läslig`, from the Swedish `läslig`, meaning `legible`.
 
-![laslig demo](docs/vhs/showcase.gif)
+![Läslig demo](docs/vhs/showcase.gif)
 
 ## Why
 
@@ -145,8 +145,7 @@ _ = printer.StatusLine(laslig.StatusLine{
 })
 
 _ = printer.Markdown(laslig.Markdown{
-	Title: "Release notes",
-	Body:  "## Highlights\n\n- one renderer\n- three output surfaces",
+	Body: "# Release Notes\n\n## Highlights\n\n- one renderer\n- three output surfaces",
 })
 
 _ = printer.CodeBlock(laslig.CodeBlock{

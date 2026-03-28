@@ -45,7 +45,7 @@ func runArgs(out io.Writer, args []string) error {
 		{
 			name: "section",
 			render: func() error {
-				return printer.Section("laslig demo")
+				return printer.Section("Läslig demo")
 			},
 		},
 		{
@@ -169,8 +169,7 @@ func runArgs(out io.Writer, args []string) error {
 			name: "markdown",
 			render: func() error {
 				return printer.Markdown(laslig.Markdown{
-					Title: "Release notes",
-					Body:  "## Highlights\n\n- one renderer\n- three output surfaces\n- caller-owned logging",
+					Body: "# Release Notes\n\n## Highlights\n\n- one renderer\n- three output surfaces\n- caller-owned logging",
 				})
 			},
 		},

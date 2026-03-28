@@ -26,7 +26,7 @@ func TestRunArgsPlain(t *testing.T) {
 	}
 
 	got := buf.String()
-	if !strings.Contains(got, "laslig demo") {
+	if !strings.Contains(got, "Läslig demo") {
 		t.Fatalf("runArgs() output missing section:\n%s", got)
 	}
 	if !strings.Contains(got, "Policy") {
@@ -140,7 +140,7 @@ func TestMain(t *testing.T) {
 		t.Fatalf("reader.Close() error = %v", err)
 	}
 
-	if !strings.Contains(string(data), "laslig demo") {
+	if !strings.Contains(string(data), "Läslig demo") {
 		t.Fatalf("main() output missing section:\n%s", string(data))
 	}
 }

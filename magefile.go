@@ -35,10 +35,10 @@ func Check() error {
 		return fn()
 	}
 
-	if err := runStage("Bootstrap", VerifyBootstrap); err != nil {
+	if err := VerifyBootstrap(); err != nil {
 		return err
 	}
-	if err := runStage("Format", FmtCheck); err != nil {
+	if err := FmtCheck(); err != nil {
 		return err
 	}
 	if err := runStage("Build", Build); err != nil {
