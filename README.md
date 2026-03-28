@@ -237,7 +237,7 @@ if summary.HasFailures() {
 }
 ```
 
-That shape works well in ordinary CLIs and in Mage targets. `laslig` stays responsible for rendering, while the caller stays responsible for process control. Callers can also disable grouped failed-test, skipped-test, package-error, or captured-output sections when they want a tighter stream.
+That shape works well in ordinary Go CLIs, Mage targets, Cobra/Fang commands, and small Go helpers invoked from tools like `make`, `just`, or `task`. `laslig` stays responsible for rendering, while the caller stays responsible for process control. Callers can also disable grouped failed-test, skipped-test, package-error, or captured-output sections when they want a tighter stream.
 
 This repository already dogfoods that pattern in [`magefile.go`](/Users/evanschultz/Documents/Code/hylla/laslig/main/magefile.go): `mage test` runs `go test -json ./...`, renders compact package and failure output through `gotestout`, and still returns a normal Mage error on failure.
 The focused runnable example for that package lives in [examples/gotestout/main.go](/Users/evanschultz/Documents/Code/hylla/laslig/main/examples/gotestout/main.go).

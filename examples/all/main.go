@@ -250,8 +250,8 @@ func renderShowcase(out io.Writer, printer *laslig.Printer) error {
 			render: func() error {
 				return printer.Paragraph(laslig.Paragraph{
 					Title:  "gotestout",
-					Body:   "Use gotestout for Charm-native go test output when a Mage target or CLI command should keep owning process control.",
-					Footer: "The output below shows the same Build, Tests, and Coverage shape this repository prints through mage check.",
+					Body:   "Use gotestout for Charm-native go test output when your task runner, CLI command, or Go helper behind make/just should keep owning process control.",
+					Footer: "Try go run ./examples/gotestout --format human --style always first, or mage test for the real task-runner path. The output below shows the same Build, Tests, and Coverage shape this repository prints through mage check.",
 				})
 			},
 		},
