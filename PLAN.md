@@ -29,6 +29,7 @@ The gap we are filling:
 - phase 3 has compact/detailed `testjson` rendering, Mage dogfooding, and caller-tunable grouped sections in place
 - phase 4 is in progress
 - phase 4A has shipped `Paragraph`, `StatusLine`, `Markdown`, `CodeBlock`, and explicit `LogBlock` primitives
+- phase 4 docs/demo alignment is expanding the grouped showcase for the newer rich-text blocks
 
 ## Architecture
 

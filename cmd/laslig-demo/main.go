@@ -63,6 +63,12 @@ func runArgs(out io.Writer, args []string) error {
 			},
 		},
 		{
+			name: "structured section",
+			render: func() error {
+				return printer.Section("Structured Blocks")
+			},
+		},
+		{
 			name: "record",
 			render: func() error {
 				return printer.Record(laslig.Record{
@@ -91,20 +97,20 @@ func runArgs(out io.Writer, args []string) error {
 			name: "list",
 			render: func() error {
 				return printer.List(laslig.List{
-					Title: "Primitives",
+					Title: "Surfaces",
 					Items: []laslig.ListItem{
 						{
-							Title: "Notice",
+							Title: "Structured blocks",
 							Badge: "ready",
 							Fields: []laslig.Field{
-								{Label: "use", Value: "warnings, successes, errors"},
+								{Label: "use", Value: "records, tables, notices, panels"},
 							},
 						},
 						{
-							Title: "Table",
+							Title: "Rich text",
 							Badge: "ready",
 							Fields: []laslig.Field{
-								{Label: "use", Value: "human summaries and reports"},
+								{Label: "use", Value: "paragraphs, markdown, code, transcripts"},
 							},
 						},
 						{
@@ -134,12 +140,67 @@ func runArgs(out io.Writer, args []string) error {
 			},
 		},
 		{
+			name: "rich text section",
+			render: func() error {
+				return printer.Section("Rich Text")
+			},
+		},
+		{
+			name: "paragraph",
+			render: func() error {
+				return printer.Paragraph(laslig.Paragraph{
+					Title:  "Why prose matters",
+					Body:   "Long-form command output should stay readable without forcing every caller to hand-build wrapped Lip Gloss layouts.",
+					Footer: "Use Paragraph when a Notice or Panel would be too heavy.",
+				})
+			},
+		},
+		{
+			name: "status line",
+			render: func() error {
+				return printer.StatusLine(laslig.StatusLine{
+					Level:  laslig.NoticeSuccessLevel,
+					Text:   "Build ready",
+					Detail: "mage check",
+				})
+			},
+		},
+		{
+			name: "markdown",
+			render: func() error {
+				return printer.Markdown(laslig.Markdown{
+					Title: "Release notes",
+					Body:  "## Highlights\n\n- one renderer\n- three output surfaces\n- caller-owned logging",
+				})
+			},
+		},
+		{
+			name: "code block",
+			render: func() error {
+				return printer.CodeBlock(laslig.CodeBlock{
+					Title:    "example.go",
+					Language: "go",
+					Body:     "fmt.Println(\"hello from laslig\")",
+					Footer:   "Rendered through Glamour in styled human mode.",
+				})
+			},
+		},
+		{
+			name: "log block",
+			render: func() error {
+				return printer.LogBlock(laslig.LogBlock{
+					Title: "stderr excerpt",
+					Body:  "INFO boot complete\nWARN retry scheduled\nERROR dependency missing",
+				})
+			},
+		},
+		{
 			name: "panel",
 			render: func() error {
 				return printer.Panel(laslig.Panel{
 					Title:  "Why this shape",
-					Body:   "Fang should own help and command errors. Laslig should own ordinary output blocks and summaries.",
-					Footer: "Next up: richer test summaries and more small helpers.",
+					Body:   "Fang should own help and command errors. Laslig should own ordinary output blocks, rich text, and stream summaries.",
+					Footer: "Next up: theme presets and richer test classification.",
 				})
 			},
 		},

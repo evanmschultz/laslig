@@ -6,7 +6,7 @@ Set Shell "zsh"
 Set FontFamily "IosevkaTerm NFM"
 Set FontSize 16
 Set Width 1400
-Set Height 820
+Set Height 1180
 Set Padding 24
 Set Theme "Catppuccin Mocha"
 Set TypingSpeed 20ms
@@ -24,4 +24,4 @@ Show
 
 Type "go run ./cmd/laslig-demo --format human --style always"
 Enter
-Sleep 3s
+Sleep 4s

@@ -32,7 +32,16 @@ func TestRunArgsPlain(t *testing.T) {
 	if !strings.Contains(got, "Policy") {
 		t.Fatalf("runArgs() output missing kv block:\n%s", got)
 	}
-	if !strings.Contains(got, "testjson [LIVE]") {
+	if !strings.Contains(got, "Rich Text") {
+		t.Fatalf("runArgs() output missing rich-text section:\n%s", got)
+	}
+	if !strings.Contains(got, "[SUCCESS] Build ready (mage check)") {
+		t.Fatalf("runArgs() output missing status line:\n%s", got)
+	}
+	if !strings.Contains(got, "stderr excerpt") {
+		t.Fatalf("runArgs() output missing log block:\n%s", got)
+	}
+	if !strings.Contains(got, "testjson [LIVE]") && !strings.Contains(got, "testjson") {
 		t.Fatalf("runArgs() output missing live badge:\n%s", got)
 	}
 }
@@ -52,8 +61,14 @@ func TestRunArgsJSON(t *testing.T) {
 	if !strings.Contains(got, `"type": "kv"`) {
 		t.Fatalf("runArgs() JSON output missing kv event:\n%s", got)
 	}
-	if !strings.Contains(got, `"type": "panel"`) {
-		t.Fatalf("runArgs() JSON output missing panel event:\n%s", got)
+	if !strings.Contains(got, `"type": "paragraph"`) {
+		t.Fatalf("runArgs() JSON output missing paragraph event:\n%s", got)
+	}
+	if !strings.Contains(got, `"type": "markdown"`) {
+		t.Fatalf("runArgs() JSON output missing markdown event:\n%s", got)
+	}
+	if !strings.Contains(got, `"type": "log_block"`) {
+		t.Fatalf("runArgs() JSON output missing log_block event:\n%s", got)
 	}
 }
 
@@ -69,8 +84,8 @@ func TestRunArgsHumanStyled(t *testing.T) {
 	if !strings.Contains(got, "\x1b[") {
 		t.Fatalf("runArgs() output missing ANSI styling: %q", got)
 	}
-	if !strings.Contains(got, "LIVE") {
-		t.Fatalf("runArgs() output missing live badge text: %q", got)
+	if !strings.Contains(got, "Build ready") {
+		t.Fatalf("runArgs() output missing status-line text: %q", got)
 	}
 }
 

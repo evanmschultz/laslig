@@ -209,6 +209,8 @@ This repository already dogfoods that pattern in [`magefile.go`](/Users/evanschu
 ## Demo
 
 The tracked demo command lives in [cmd/laslig-demo/main.go](/Users/evanschultz/Documents/Code/hylla/laslig/main/cmd/laslig-demo/main.go).
+Small verified Go doc examples live in [example_test.go](/Users/evanschultz/Documents/Code/hylla/laslig/main/example_test.go).
+The main demo groups the library into structured blocks and rich-text blocks so the visual showcase stays readable.
 
 Run it locally:
 
