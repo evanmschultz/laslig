@@ -6,7 +6,11 @@ The package and module name stay `laslig`. The product branding is `Läslig`, fr
 
 ## Visual Examples
 
-Every guided demo item now has its own runnable example under [`examples/`](./examples) and its own focused VHS capture under [`docs/vhs/`](./docs/vhs). `mage demo` combines those same focused examples into one long walkthrough, but the README uses the smaller per-item visuals.
+Every guided demo item now has its own runnable example under [`examples/`](./examples) and its own focused VHS capture under [`docs/vhs/`](./docs/vhs). `mage demo` combines those same focused examples into one long walkthrough. The hero GIF below is a paced VHS capture of that walkthrough surface, while the smaller GIFs underneath stay focused one primitive at a time.
+
+[![Läslig full demo walkthrough](docs/vhs/demo.gif)](./examples/all)
+
+Run `mage demo` for the normal aggregate walkthrough in a real terminal. The GIF above keeps the pacing in VHS only so the shipped CLI stays fast and non-blocking.
 
 ### Structured Primitives
 
