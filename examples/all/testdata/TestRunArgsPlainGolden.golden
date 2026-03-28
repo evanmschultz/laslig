@@ -9,12 +9,6 @@ Läslig demo
 
 Structured Primitives
 
-  When to start here
-  
-  Start with these blocks when your CLI is presenting facts, grouped results, or emphasized callouts.
-  
-  They cover most command summaries without inventing a custom layout.
-
   Record
     what: One object or result rendered as labeled facts.
     when: Build metadata, artifact details, environment summaries.
@@ -51,17 +45,11 @@ Structured Primitives
 
 Rich Text Primitives
 
-  When prose matters
-  
-  These primitives handle explanation-heavy output: wrapped prose, markdown, code, and captured transcripts.
-  
-  Use them when a CLI needs to teach, explain, or show supporting context.
-
   Paragraph
   
   Use Paragraph for readable rationale, release context, and longer help text when a Notice or Panel would be too heavy.
   
-  It is the default long-form text primitive.
+  Start the rich-text surface here when your CLI needs to explain, teach, or provide context.
 
   [SUCCESS] StatusLine keeps one result compact and semantic (When: build ready, cache hit, package passed)
 

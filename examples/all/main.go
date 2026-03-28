@@ -74,16 +74,6 @@ func renderShowcase(printer *laslig.Printer) error {
 			},
 		},
 		{
-			name: "structured intro",
-			render: func() error {
-				return printer.Paragraph(laslig.Paragraph{
-					Title:  "When to start here",
-					Body:   "Start with these blocks when your CLI is presenting facts, grouped results, or emphasized callouts.",
-					Footer: "They cover most command summaries without inventing a custom layout.",
-				})
-			},
-		},
-		{
 			name: "record",
 			render: func() error {
 				return printer.Record(laslig.Record{
@@ -173,22 +163,12 @@ func renderShowcase(printer *laslig.Printer) error {
 			},
 		},
 		{
-			name: "rich text intro",
-			render: func() error {
-				return printer.Paragraph(laslig.Paragraph{
-					Title:  "When prose matters",
-					Body:   "These primitives handle explanation-heavy output: wrapped prose, markdown, code, and captured transcripts.",
-					Footer: "Use them when a CLI needs to teach, explain, or show supporting context.",
-				})
-			},
-		},
-		{
 			name: "paragraph",
 			render: func() error {
 				return printer.Paragraph(laslig.Paragraph{
 					Title:  "Paragraph",
 					Body:   "Use Paragraph for readable rationale, release context, and longer help text when a Notice or Panel would be too heavy.",
-					Footer: "It is the default long-form text primitive.",
+					Footer: "Start the rich-text surface here when your CLI needs to explain, teach, or provide context.",
 				})
 			},
 		},
