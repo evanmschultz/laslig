@@ -120,6 +120,74 @@ func TestRenderPlainDetailed(t *testing.T) {
 	}
 }
 
+// TestRenderPlainDetailedDisabledSections verifies callers can trim live output and grouped sections.
+func TestRenderPlainDetailedDisabledSections(t *testing.T) {
+	var buf bytes.Buffer
+	_, err := Render(&buf, strings.NewReader(sampleStream), Options{
+		Policy: laslig.Policy{
+			Format: laslig.FormatPlain,
+			Style:  laslig.StyleNever,
+		},
+		View: ViewDetailed,
+		DisabledSections: []Section{
+			SectionFailedTests,
+			SectionSkippedTests,
+			SectionPackageErrors,
+			SectionOutput,
+		},
+	})
+	if err != nil {
+		t.Fatalf("Render() error = %v", err)
+	}
+
+	got := buf.String()
+	if !strings.Contains(got, "[PASS] example/pkg :: TestPass (0.01s)") {
+		t.Fatalf("Render() detailed output missing pass line:\n%s", got)
+	}
+	if strings.Contains(got, "note: useful output") {
+		t.Fatalf("Render() output unexpectedly included captured output:\n%s", got)
+	}
+	if strings.Contains(got, "renderer_test.go:42: expected boom") {
+		t.Fatalf("Render() output unexpectedly included failure detail:\n%s", got)
+	}
+	if strings.Contains(got, "Failed tests") {
+		t.Fatalf("Render() output unexpectedly included failed tests section:\n%s", got)
+	}
+	if strings.Contains(got, "Package errors") {
+		t.Fatalf("Render() output unexpectedly included package errors section:\n%s", got)
+	}
+	if strings.Contains(got, "Skipped tests") {
+		t.Fatalf("Render() output unexpectedly included skipped tests section:\n%s", got)
+	}
+}
+
+// TestRenderPlainCompactDisabledOutput verifies grouped sections remain while captured output is suppressed.
+func TestRenderPlainCompactDisabledOutput(t *testing.T) {
+	var buf bytes.Buffer
+	_, err := Render(&buf, strings.NewReader(sampleStream), Options{
+		Policy: laslig.Policy{
+			Format: laslig.FormatPlain,
+			Style:  laslig.StyleNever,
+		},
+		View:             ViewCompact,
+		DisabledSections: []Section{SectionOutput},
+	})
+	if err != nil {
+		t.Fatalf("Render() error = %v", err)
+	}
+
+	got := buf.String()
+	if !strings.Contains(got, "Package errors") {
+		t.Fatalf("Render() output missing package errors section:\n%s", got)
+	}
+	if strings.Contains(got, "detail:") {
+		t.Fatalf("Render() output unexpectedly included grouped detail field:\n%s", got)
+	}
+	if strings.Contains(got, "renderer_test.go:42: expected boom") {
+		t.Fatalf("Render() output unexpectedly included failure output:\n%s", got)
+	}
+}
+
 // TestRenderJSON verifies that JSON mode re-emits events while still returning summary counts.
 func TestRenderJSON(t *testing.T) {
 	var buf bytes.Buffer

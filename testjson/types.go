@@ -72,10 +72,25 @@ const (
 	ViewDetailed View = "detailed"
 )
 
+// Section identifies one optional rendered test-output section.
+type Section string
+
+const (
+	// SectionFailedTests identifies the grouped failed-tests summary section.
+	SectionFailedTests Section = "failed-tests"
+	// SectionSkippedTests identifies the grouped skipped-tests summary section.
+	SectionSkippedTests Section = "skipped-tests"
+	// SectionPackageErrors identifies the grouped package-errors summary section.
+	SectionPackageErrors Section = "package-errors"
+	// SectionOutput identifies captured event output lines in detailed views and summaries.
+	SectionOutput Section = "output"
+)
+
 // Options controls how a stream is rendered.
 type Options struct {
-	Policy laslig.Policy
-	View   View
+	Policy           laslig.Policy
+	View             View
+	DisabledSections []Section
 }
 
 // Summary records the terminal outcomes seen in one stream.

@@ -44,6 +44,13 @@ type KV struct {
 	Empty string  `json:"empty,omitempty"`
 }
 
+// Paragraph describes one wrapped long-form text block.
+type Paragraph struct {
+	Title  string `json:"title,omitempty"`
+	Body   string `json:"body"`
+	Footer string `json:"footer,omitempty"`
+}
+
 // ListItem describes one item in a rendered list.
 type ListItem struct {
 	Title  string  `json:"title"`
@@ -69,6 +76,21 @@ type Table struct {
 
 // Panel describes one titled boxed block.
 type Panel struct {
+	Title  string `json:"title,omitempty"`
+	Body   string `json:"body"`
+	Footer string `json:"footer,omitempty"`
+}
+
+// StatusLine describes one compact semantic status row.
+type StatusLine struct {
+	Level  NoticeLevel `json:"level,omitempty"`
+	Label  string      `json:"label,omitempty"`
+	Text   string      `json:"text"`
+	Detail string      `json:"detail,omitempty"`
+}
+
+// Markdown describes one Markdown block rendered for terminal output.
+type Markdown struct {
 	Title  string `json:"title,omitempty"`
 	Body   string `json:"body"`
 	Footer string `json:"footer,omitempty"`

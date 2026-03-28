@@ -26,9 +26,9 @@ The gap we are filling:
 - phase 0 is complete
 - phase 1 is complete
 - phase 2 is complete
-- phase 3 has compact/detailed `testjson` rendering and Mage dogfooding in place
+- phase 3 has compact/detailed `testjson` rendering, Mage dogfooding, and caller-tunable grouped sections in place
 - phase 4 is in progress
-- phase 4A has shipped `CodeBlock` and explicit `LogBlock` primitives; Glamour-backed Markdown is next
+- phase 4A has shipped `Paragraph`, `StatusLine`, `Markdown`, `CodeBlock`, and explicit `LogBlock` primitives
 
 ## Architecture
 

@@ -8,6 +8,43 @@ import (
 	"github.com/charmbracelet/glamour"
 )
 
+// Markdown writes one Markdown block.
+func (p *Printer) Markdown(block Markdown) error {
+	if p.mode.Format == FormatJSON {
+		return p.writeJSON("markdown", block)
+	}
+
+	body := strings.TrimRight(block.Body, "\n")
+	if p.mode.Format == FormatHuman && p.mode.Styled {
+		rendered, err := p.renderStyledMarkdown(block.Body)
+		if err != nil {
+			return fmt.Errorf("render markdown: %w", err)
+		}
+		body = rendered
+	}
+
+	lines := []string{}
+	if trimmed := strings.TrimSpace(block.Title); trimmed != "" {
+		lines = append(lines, p.renderHeading(p.wrapText(trimmed, p.maxTextWidth())))
+	}
+	if strings.TrimSpace(body) != "" {
+		lines = append(lines, body)
+	}
+	if trimmed := strings.TrimSpace(block.Footer); trimmed != "" {
+		rendered := trimmed
+		if p.mode.Format == FormatHuman {
+			rendered = p.wrapText(trimmed, p.maxTextWidth())
+			rendered = p.theme.Muted.Render(rendered)
+		}
+		lines = append(lines, rendered)
+	}
+
+	if _, err := fmt.Fprintln(p.out, strings.Join(lines, "\n\n")); err != nil {
+		return fmt.Errorf("write markdown: %w", err)
+	}
+	return nil
+}
+
 // CodeBlock writes one titled code-style block.
 func (p *Printer) CodeBlock(block CodeBlock) error {
 	if p.mode.Format == FormatJSON {
@@ -16,7 +53,7 @@ func (p *Printer) CodeBlock(block CodeBlock) error {
 
 	body := strings.TrimRight(block.Body, "\n")
 	if p.mode.Format == FormatHuman && p.mode.Styled {
-		rendered, err := p.renderStyledCodeBlock(block)
+		rendered, err := p.renderStyledMarkdown(fencedCodeBlock(block.Language, block.Body))
 		if err != nil {
 			return fmt.Errorf("render code block: %w", err)
 		}
@@ -80,8 +117,8 @@ func (p *Printer) renderFramedContent(content string) string {
 	return style.Render(content)
 }
 
-// renderStyledCodeBlock renders one fenced code block through Glamour for ANSI output.
-func (p *Printer) renderStyledCodeBlock(block CodeBlock) (string, error) {
+// renderStyledMarkdown renders one Markdown string through Glamour for ANSI output.
+func (p *Printer) renderStyledMarkdown(markdown string) (string, error) {
 	options := []glamour.TermRendererOption{
 		glamour.WithStandardStyle("dark"),
 	}
@@ -94,7 +131,6 @@ func (p *Printer) renderStyledCodeBlock(block CodeBlock) (string, error) {
 		return "", fmt.Errorf("create glamour renderer: %w", err)
 	}
 
-	markdown := fencedCodeBlock(block.Language, block.Body)
 	rendered, err := renderer.Render(markdown)
 	if err != nil {
 		return "", fmt.Errorf("render glamour markdown: %w", err)

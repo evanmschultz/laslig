@@ -100,6 +100,62 @@ func ExamplePrinter_Table() {
 	// One policy, three surfaces.
 }
 
+// ExamplePrinter_Paragraph shows one wrapped long-form text block in plain mode.
+func ExamplePrinter_Paragraph() {
+	printer := laslig.New(os.Stdout, laslig.Policy{
+		Format: laslig.FormatPlain,
+		Style:  laslig.StyleNever,
+	})
+
+	_ = printer.Paragraph(laslig.Paragraph{
+		Title:  "Why",
+		Body:   "Laslig keeps ordinary command output readable without forcing a framework.",
+		Footer: "Writers in, errors out.",
+	})
+
+	// Output:
+	// Why
+	//
+	// Laslig keeps ordinary command output readable without forcing a framework.
+	//
+	// Writers in, errors out.
+}
+
+// ExamplePrinter_StatusLine shows one compact status row in plain mode.
+func ExamplePrinter_StatusLine() {
+	printer := laslig.New(os.Stdout, laslig.Policy{
+		Format: laslig.FormatPlain,
+		Style:  laslig.StyleNever,
+	})
+
+	_ = printer.StatusLine(laslig.StatusLine{
+		Level:  laslig.NoticeSuccessLevel,
+		Text:   "Build ready",
+		Detail: "mage check",
+	})
+
+	// Output:
+	// [SUCCESS] Build ready (mage check)
+}
+
+// ExamplePrinter_Markdown shows one Markdown block rendered as source in plain mode.
+func ExamplePrinter_Markdown() {
+	printer := laslig.New(os.Stdout, laslig.Policy{
+		Format: laslig.FormatPlain,
+		Style:  laslig.StyleNever,
+	})
+
+	_ = printer.Markdown(laslig.Markdown{
+		Body: "# Notes\n\n- first\n- second",
+	})
+
+	// Output:
+	// # Notes
+	//
+	// - first
+	// - second
+}
+
 // ExamplePrinter_LogBlock shows one plain boxed-log surface without owning logging.
 func ExamplePrinter_LogBlock() {
 	printer := laslig.New(os.Stdout, laslig.Policy{

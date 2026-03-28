@@ -322,6 +322,130 @@ func TestPanelHumanWrap(t *testing.T) {
 	}
 }
 
+// TestParagraphPlain verifies plain paragraph rendering preserves structure.
+func TestParagraphPlain(t *testing.T) {
+	var buf bytes.Buffer
+	printer := NewWithMode(&buf, Mode{Format: FormatPlain})
+
+	err := printer.Paragraph(Paragraph{
+		Title:  "Why",
+		Body:   "Laslig keeps ordinary command output readable.",
+		Footer: "Writers in, errors out.",
+	})
+	if err != nil {
+		t.Fatalf("Paragraph() error = %v", err)
+	}
+
+	want := "Why\n\nLaslig keeps ordinary command output readable.\n\nWriters in, errors out.\n"
+	if got := buf.String(); got != want {
+		t.Fatalf("Paragraph() output = %q, want %q", got, want)
+	}
+}
+
+// TestParagraphHumanWrap verifies paragraph bodies wrap for narrower human widths.
+func TestParagraphHumanWrap(t *testing.T) {
+	var buf bytes.Buffer
+	printer := NewWithMode(&buf, Mode{Format: FormatHuman, Styled: false, Width: 48})
+
+	err := printer.Paragraph(Paragraph{
+		Title: "Why",
+		Body:  "Paragraph helpers should wrap body text to a readable width by default.",
+	})
+	if err != nil {
+		t.Fatalf("Paragraph() error = %v", err)
+	}
+
+	if got := buf.String(); !strings.Contains(got, "wrap body text\nto a readable width by default.") {
+		t.Fatalf("Paragraph() output did not wrap as expected:\n%s", got)
+	}
+}
+
+// TestStatusLinePlain verifies plain status-line rendering is compact and stable.
+func TestStatusLinePlain(t *testing.T) {
+	var buf bytes.Buffer
+	printer := NewWithMode(&buf, Mode{Format: FormatPlain})
+
+	err := printer.StatusLine(StatusLine{
+		Level:  NoticeSuccessLevel,
+		Text:   "Build ready",
+		Detail: "mage check",
+	})
+	if err != nil {
+		t.Fatalf("StatusLine() error = %v", err)
+	}
+
+	want := "[SUCCESS] Build ready (mage check)\n"
+	if got := buf.String(); got != want {
+		t.Fatalf("StatusLine() output = %q, want %q", got, want)
+	}
+}
+
+// TestStatusLineJSON verifies machine-readable status-line rendering.
+func TestStatusLineJSON(t *testing.T) {
+	var buf bytes.Buffer
+	printer := NewWithMode(&buf, Mode{Format: FormatJSON})
+
+	err := printer.StatusLine(StatusLine{
+		Level: NoticeWarningLevel,
+		Text:  "Coverage dipped",
+	})
+	if err != nil {
+		t.Fatalf("StatusLine() error = %v", err)
+	}
+
+	got := buf.String()
+	if !strings.Contains(got, `"type": "status_line"`) {
+		t.Fatalf("StatusLine() output = %q, want status_line type", got)
+	}
+	if !strings.Contains(got, `"text": "Coverage dipped"`) {
+		t.Fatalf("StatusLine() output = %q, want text field", got)
+	}
+}
+
+// TestMarkdownPlain verifies plain Markdown rendering preserves the source text.
+func TestMarkdownPlain(t *testing.T) {
+	var buf bytes.Buffer
+	printer := NewWithMode(&buf, Mode{Format: FormatPlain})
+
+	err := printer.Markdown(Markdown{
+		Title:  "Notes",
+		Body:   "# Heading\n\n- first\n- second",
+		Footer: "Rendered as source in plain mode.",
+	})
+	if err != nil {
+		t.Fatalf("Markdown() error = %v", err)
+	}
+
+	want := "Notes\n\n# Heading\n\n- first\n- second\n\nRendered as source in plain mode.\n"
+	if got := buf.String(); got != want {
+		t.Fatalf("Markdown() output = %q, want %q", got, want)
+	}
+}
+
+// TestMarkdownHumanStyled verifies styled Markdown rendering flows through Glamour.
+func TestMarkdownHumanStyled(t *testing.T) {
+	var buf bytes.Buffer
+	printer := NewWithMode(&buf, Mode{Format: FormatHuman, Styled: true, Width: 80})
+
+	err := printer.Markdown(Markdown{
+		Body: "# Heading\n\n- first item\n- second item",
+	})
+	if err != nil {
+		t.Fatalf("Markdown() error = %v", err)
+	}
+
+	got := buf.String()
+	if !strings.Contains(got, "Heading") {
+		t.Fatalf("Markdown() output missing heading:\n%s", got)
+	}
+	if !strings.Contains(got, "first") || !strings.Contains(got, "second") {
+		t.Fatalf("Markdown() output missing list items:\n%s", got)
+	}
+	if !strings.Contains(got, "\x1b[") {
+		t.Fatalf("Markdown() output missing ANSI styling: %q", got)
+	}
+}
+
 // TestCodeBlockPlain verifies plain code-block rendering preserves content.
 func TestCodeBlockPlain(t *testing.T) {
 	var buf bytes.Buffer

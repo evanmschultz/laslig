@@ -27,13 +27,17 @@ The first core wave is live. Today the package includes:
 - notices and diagnostics
 - records and lists
 - aligned key-value blocks
+- paragraph blocks
+- compact status lines
 - tables
 - panels and boxes
+- Glamour-backed Markdown blocks
 - Glamour-backed code blocks
 - boxed log/transcript blocks for caller-provided output
 - compact and detailed `testjson` rendering for `go test -json`
+- caller-tunable `testjson` summary and output sections
 
-The next wave is broadening `testjson`, adding more semantic blocks, and tightening the docs/examples further.
+The next wave is focused on theme configuration, deeper `testjson` classification, and tightening the docs/examples further.
 
 ## Principles
 
@@ -99,9 +103,12 @@ printer.Notice(laslig.Notice{Level: laslig.NoticeWarningLevel, Title: "Partial s
 printer.Record(laslig.Record{Title: "Build"})
 printer.KV(laslig.KV{Title: "Config"})
 printer.List(laslig.List{Title: "Packages"})
+printer.Paragraph(laslig.Paragraph{Title: "Why", Body: "Readable defaults matter."})
+printer.StatusLine(laslig.StatusLine{Level: laslig.NoticeSuccessLevel, Text: "Build ready"})
 printer.Table(laslig.Table{Title: "Results"})
 printer.Panel(laslig.Panel{Title: "Next step", Body: "Run mage check."})
 printer.Box(laslig.Panel{Body: "Box is an alias for Panel."})
+printer.Markdown(laslig.Markdown{Body: "# Notes\n\n- first\n- second"})
 printer.CodeBlock(laslig.CodeBlock{Title: "Example", Language: "go", Body: `fmt.Println("hi")`})
 printer.LogBlock(laslig.LogBlock{Title: "stderr excerpt", Body: "INFO boot complete\nWARN retry scheduled"})
 ```
@@ -120,11 +127,28 @@ printer := laslig.New(os.Stdout, laslig.Policy{
 
 That makes it practical to keep one semantic output path while exposing human, plain, and JSON surfaces from the same command.
 
-## Code And Log Blocks
+## Rich Text, Code, And Logs
 
-`laslig` can now render caller-provided code or log excerpts without taking over logging itself:
+`laslig` can now render wrapped prose, Markdown, code, and caller-provided log excerpts without taking over logging itself:
 
 ```go
+_ = printer.Paragraph(laslig.Paragraph{
+	Title:  "Why",
+	Body:   "Readable long-form CLI output should not require a hand-built Lip Gloss layout every time.",
+	Footer: "Writers in, errors out.",
+})
+
+_ = printer.StatusLine(laslig.StatusLine{
+	Level:  laslig.NoticeSuccessLevel,
+	Text:   "Build ready",
+	Detail: "mage check",
+})
+
+_ = printer.Markdown(laslig.Markdown{
+	Title: "Release notes",
+	Body:  "## Highlights\n\n- one renderer\n- three output surfaces",
+})
+
 _ = printer.CodeBlock(laslig.CodeBlock{
 	Title:    "example.go",
 	Language: "go",
@@ -138,7 +162,7 @@ _ = printer.LogBlock(laslig.LogBlock{
 })
 ```
 
-`CodeBlock` uses Glamour for rich terminal rendering when styled human output is active. `LogBlock` is for explicit caller-provided excerpts, transcripts, and stderr captures. `laslig` still does not replace the application's logger.
+`Markdown` and `CodeBlock` use Glamour for rich terminal rendering when styled human output is active. `LogBlock` is for explicit caller-provided excerpts, transcripts, and stderr captures. `laslig` still does not replace the application's logger.
 
 ## Structured Test Output
 
@@ -162,6 +186,9 @@ summary, err := testjson.Render(os.Stdout, stdout, testjson.Options{
 		Style:  laslig.StyleAuto,
 	},
 	View: testjson.ViewCompact,
+	DisabledSections: []testjson.Section{
+		testjson.SectionSkippedTests,
+	},
 })
 if err != nil {
 	return err
@@ -175,7 +202,7 @@ if summary.HasFailures() {
 }
 ```
 
-That shape works well in ordinary CLIs and in Mage targets. `laslig` stays responsible for rendering, while the caller stays responsible for process control.
+That shape works well in ordinary CLIs and in Mage targets. `laslig` stays responsible for rendering, while the caller stays responsible for process control. Callers can also disable grouped failed-test, skipped-test, package-error, or captured-output sections when they want a tighter stream.
 
 This repository already dogfoods that pattern in [`magefile.go`](/Users/evanschultz/Documents/Code/hylla/laslig/main/magefile.go): `mage test` runs `go test -json ./...`, renders compact package and failure output through `testjson`, and still returns a normal Mage error on failure.
 
@@ -195,9 +222,9 @@ The README GIF is generated from [docs/vhs/showcase.tape](/Users/evanschultz/Doc
 
 ## Planned Next
 
-- Markdown blocks on top of the same Glamour path
-- paragraph and prefix-style helpers
-- broader `testjson` summaries with caller-tunable sections
+- theme configuration and preset flow
+- richer `testjson` failure classification and subtest rollups
+- compact prefix-style helpers beyond `StatusLine`
 - more README visuals and side-by-side comparisons
 
 ## Development

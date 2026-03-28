@@ -117,17 +117,17 @@ func (r *Renderer) Finish() error {
 	if err := r.printer.Record(record); err != nil {
 		return fmt.Errorf("write summary record: %w", err)
 	}
-	if len(r.failedTests) > 0 {
+	if r.sectionEnabled(SectionFailedTests) && len(r.failedTests) > 0 {
 		if err := r.printer.List(r.outcomeList("Failed tests", "fail", r.failedTests, false)); err != nil {
 			return fmt.Errorf("write failed tests list: %w", err)
 		}
 	}
-	if len(r.packageError) > 0 {
+	if r.sectionEnabled(SectionPackageErrors) && len(r.packageError) > 0 {
 		if err := r.printer.List(r.outcomeList("Package errors", "error", r.packageError, true)); err != nil {
 			return fmt.Errorf("write package errors list: %w", err)
 		}
 	}
-	if len(r.skippedTests) > 0 {
+	if r.sectionEnabled(SectionSkippedTests) && len(r.skippedTests) > 0 {
 		if err := r.printer.List(r.outcomeList("Skipped tests", "skip", r.skippedTests, false)); err != nil {
 			return fmt.Errorf("write skipped tests list: %w", err)
 		}
@@ -209,6 +209,16 @@ func withDefaults(options Options) Options {
 	return options
 }
 
+// sectionEnabled reports whether one optional rendered section is enabled.
+func (r *Renderer) sectionEnabled(section Section) bool {
+	for _, disabled := range r.options.DisabledSections {
+		if disabled == section {
+			return false
+		}
+	}
+	return true
+}
+
 func (r *Renderer) recordOutput(event Event) {
 	key := outputKey{pkg: event.Package, test: event.Test}
 	r.outputs[key] = append(r.outputs[key], event.Output)
@@ -273,7 +283,7 @@ func (r *Renderer) renderTerminal(event Event) error {
 		if err := r.writeLine(r.renderPackageLine(event)); err != nil {
 			return err
 		}
-		if event.Action == ActionFail || r.options.View == ViewDetailed {
+		if r.sectionEnabled(SectionOutput) && (event.Action == ActionFail || r.options.View == ViewDetailed) {
 			if err := r.writeOutputLines(outputKey{pkg: event.Package}); err != nil {
 				return err
 			}
@@ -287,7 +297,7 @@ func (r *Renderer) renderTerminal(event Event) error {
 	if err := r.writeLine(r.renderTestLine(event)); err != nil {
 		return err
 	}
-	if event.Action == ActionFail || r.options.View == ViewDetailed {
+	if r.sectionEnabled(SectionOutput) && (event.Action == ActionFail || r.options.View == ViewDetailed) {
 		if err := r.writeOutputLines(outputKey{pkg: event.Package, test: event.Test}); err != nil {
 			return err
 		}
@@ -307,7 +317,7 @@ func (r *Renderer) outcomeList(title string, badge string, outcomes []outcome, i
 			{Label: "package", Value: item.Package, Identifier: true},
 			{Label: "elapsed", Value: fmt.Sprintf("%.2fs", item.Elapsed), Muted: true},
 		}
-		if includeOutput && len(item.Output) > 0 {
+		if includeOutput && r.sectionEnabled(SectionOutput) && len(item.Output) > 0 {
 			fields = append(fields, laslig.Field{
 				Label: "detail",
 				Value: item.Output[0],
