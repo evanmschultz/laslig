@@ -8,6 +8,8 @@ The package and module name stay `laslig`. The product branding is `Läslig`, fr
 
 Every guided demo item now has its own runnable example under [`examples/`](./examples) and its own focused VHS capture under [`docs/vhs/`](./docs/vhs). `mage demo` now prints those focused examples one after another as one accumulating walkthrough. The hero GIF below is a direct capture of that real `mage demo` flow, while the smaller GIFs underneath stay focused one primitive at a time.
 
+The hero demo is intentionally slowed down between sections for README display. Läslig itself does not add runtime delays to your commands by default.
+
 [![Läslig full demo walkthrough](docs/vhs/demo.gif)](./examples)
 
 Run `mage demo` for the paced aggregate walkthrough in a real terminal, or run any focused example directly with `go run ./examples/<name> --format human --style always`.

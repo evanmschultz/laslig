@@ -259,6 +259,25 @@ func Demo() error {
 			time.Sleep(pacedDemoDelay)
 		}
 	}
+
+	printer := laslig.New(os.Stdout, laslig.Policy{
+		Format: laslig.FormatHuman,
+		Style:  laslig.StyleAlways,
+	})
+	if err := printer.Section("Display note"); err != nil {
+		return fmt.Errorf("write demo display note section: %w", err)
+	}
+	if err := printer.Notice(laslig.Notice{
+		Level: laslig.NoticeInfoLevel,
+		Title: "Slowed down for human-readable display",
+		Body:  "This walkthrough intentionally pauses between examples so humans can see each rendered block in sequence.",
+		Detail: []string{
+			"Läslig does not add delays to your commands by default.",
+			"The pacing here is only for the demo and README capture.",
+		},
+	}); err != nil {
+		return fmt.Errorf("write demo display note: %w", err)
+	}
 	return nil
 }
 
