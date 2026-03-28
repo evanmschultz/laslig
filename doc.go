@@ -1,5 +1,5 @@
-// Package laslig provides Charm-native helpers for structured, human-readable
-// CLI output in Go programs.
+// Package laslig provides helpers for attractive, structured terminal output
+// in Go CLI tools.
 //
 // Laslig is designed to sit above low-level styling and layout primitives and
 // below command frameworks. It focuses on ordinary command output such as

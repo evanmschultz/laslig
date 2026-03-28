@@ -1,6 +1,6 @@
 # Läslig
 
-`laslig` helps Go CLIs print structured, human-readable output with Charm-native styling and Go-idiomatic ergonomics.
+`laslig` helps Go CLI tools render attractive, structured terminal output with readable defaults and Go-idiomatic ergonomics.
 
 The package and module name stay `laslig`. The product branding is `Läslig`, from the Swedish `läslig`, meaning `legible`, and is pronounced roughly `LEH-slig`.
 
@@ -283,7 +283,7 @@ if summary.HasFailures() {
 
 That shape works well in ordinary Go CLIs, Mage targets, Cobra/Fang commands, and small Go helpers invoked from tools like `make`, `just`, or `task`. `laslig` stays responsible for rendering, while the caller stays responsible for process control. Callers can also disable grouped failed-test, skipped-test, package-error, or captured-output sections when they want a tighter stream.
 
-This repository already dogfoods that pattern in [`magefile.go`](./magefile.go): `mage test` runs `go test -json ./...`, renders compact package and failure output through `gotestout`, and still returns a normal Mage error on failure.
+This repository dogfoods that pattern in [`magefile.go`](./magefile.go): `mage test` runs `go test -json ./...`, renders compact package and failure output through `gotestout`, and still returns a normal Mage error on failure.
 The focused runnable example for that package lives in [`examples/gotestout/main.go`](./examples/gotestout/main.go).
 
 Common ways to try that surface locally:
