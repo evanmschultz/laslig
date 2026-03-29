@@ -103,6 +103,10 @@ These are intentionally not blocking the first release:
 - any future standalone `Badge` or `Header` primitives:
   - `Badge` would be a first-class inline status chip instead of only embedded badge behavior
   - `Header` would only be added if a real use case appears for headings distinct from `Section`
+- isolate the real `charm.land/log/v2` transcript demo into its own nested example module:
+  - keep shared example rendering helpers in `internal/examples`
+  - move the actual `charm/log` dependency out of the root module graph
+  - keep `mage demo`, focused examples, and README/VHS behavior the same from the user's point of view
 
 ## Release Checklist
 
