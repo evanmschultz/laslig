@@ -48,6 +48,26 @@ func TestResolveLayout(t *testing.T) {
 	}
 }
 
+// TestGlamourStyleValidation verifies supported styles validate and invalid
+// values fall back to the default preset.
+func TestGlamourStyleValidation(t *testing.T) {
+	if got := DefaultGlamourStyle(); got != GlamourStyleDracula {
+		t.Fatalf("DefaultGlamourStyle() = %q, want %q", got, GlamourStyleDracula)
+	}
+	if !GlamourStyleDracula.Valid() {
+		t.Fatal("GlamourStyleDracula.Valid() = false, want true")
+	}
+	if GlamourStyle("bogus").Valid() {
+		t.Fatal("GlamourStyle(\"bogus\").Valid() = true, want false")
+	}
+	if got := resolveGlamourStyle(Policy{GlamourStyle: GlamourStyle("bogus")}); got != GlamourStyleDracula {
+		t.Fatalf("resolveGlamourStyle(invalid) = %q, want %q", got, GlamourStyleDracula)
+	}
+	if got := resolveGlamourStyle(Policy{GlamourStyle: GlamourStyleTokyoNight}); got != GlamourStyleTokyoNight {
+		t.Fatalf("resolveGlamourStyle(valid) = %q, want %q", got, GlamourStyleTokyoNight)
+	}
+}
+
 // TestCustomListMarker verifies list-marker customization affects rendered output.
 func TestCustomListMarker(t *testing.T) {
 	var buf bytes.Buffer

@@ -7,7 +7,7 @@ import (
 
 // TestRender verifies Glamour-backed rendering preserves markdown semantics and emits ANSI output.
 func TestRender(t *testing.T) {
-	rendered, err := Render("# Heading\n\n- first\n- second", 80)
+	rendered, err := Render("# Heading\n\n- first\n- second", 80, "dark")
 	if err != nil {
 		t.Fatalf("Render() error = %v", err)
 	}
@@ -19,6 +19,18 @@ func TestRender(t *testing.T) {
 	}
 	if !strings.Contains(rendered, "\x1b[") {
 		t.Fatalf("Render() = %q, want ANSI styling", rendered)
+	}
+}
+
+// TestRenderInvalidStyleFallsBack verifies unknown style names still render via
+// Glamour's default fallback preset.
+func TestRenderInvalidStyleFallsBack(t *testing.T) {
+	rendered, err := Render("# Heading", 80, "not-a-style")
+	if err != nil {
+		t.Fatalf("Render() error = %v", err)
+	}
+	if !strings.Contains(rendered, "Heading") {
+		t.Fatalf("Render() = %q, want heading text", rendered)
 	}
 }
 

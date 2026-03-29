@@ -67,6 +67,18 @@ func TestRunInvalidFlag(t *testing.T) {
 	}
 }
 
+// TestRunInvalidGlamourStyle verifies the shared runner rejects unsupported
+// built-in Glamour style names.
+func TestRunInvalidGlamourStyle(t *testing.T) {
+	err := Run(&bytes.Buffer{}, []string{"-glamour-style", "bogus"}, "markdown", RenderMarkdown)
+	if err == nil {
+		t.Fatal("Run() error = nil, want glamour style error")
+	}
+	if !strings.Contains(err.Error(), `invalid glamour style "bogus"`) {
+		t.Fatalf("Run() error = %v, want invalid glamour style message", err)
+	}
+}
+
 // TestRunRenderError verifies the shared runner wraps renderer failures.
 func TestRunRenderError(t *testing.T) {
 	err := Run(&bytes.Buffer{}, []string{"-format", "plain", "-style", "never"}, "boom", func(io.Writer, *laslig.Printer) error {

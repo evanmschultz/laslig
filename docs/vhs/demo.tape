@@ -23,4 +23,4 @@ Sleep 250ms
 Type "mage demo"
 Enter
 Show
-Sleep 5s
+Sleep 23s

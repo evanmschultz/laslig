@@ -249,9 +249,17 @@ func Demo() error {
 		"magecheck",
 	}
 
-	fmt.Fprintln(os.Stdout, "Läslig demo")
+	printer := laslig.New(os.Stdout, laslig.Policy{
+		Format: laslig.FormatHuman,
+		Style:  laslig.StyleAlways,
+	})
+	if err := printer.Section("Läslig demo"); err != nil {
+		return fmt.Errorf("write demo heading: %w", err)
+	}
 	for index, name := range examples {
-		fmt.Fprintf(os.Stdout, "\nExample: %s\n", name)
+		if err := printer.Section("Example: " + name); err != nil {
+			return fmt.Errorf("write example heading %q: %w", name, err)
+		}
 		if err := run("go", "run", localBuildVCSFlag, "./examples/"+name, "--format", "human", "--style", "always"); err != nil {
 			return err
 		}
@@ -260,10 +268,6 @@ func Demo() error {
 		}
 	}
 
-	printer := laslig.New(os.Stdout, laslig.Policy{
-		Format: laslig.FormatHuman,
-		Style:  laslig.StyleAlways,
-	})
 	if err := printer.Section("Display note"); err != nil {
 		return fmt.Errorf("write demo display note section: %w", err)
 	}

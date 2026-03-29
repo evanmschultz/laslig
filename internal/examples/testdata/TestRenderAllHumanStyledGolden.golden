@@ -120,7 +120,7 @@ Markdown
   
   The block below is real terminal-rendered Markdown.
 
-     Release Notes                                                  
+    # Release Notes                                                 
                                                                     
     ## Highlights                                                   
                                                                     

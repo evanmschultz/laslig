@@ -20,13 +20,20 @@ func Run(out io.Writer, args []string, name string, render Renderer) error {
 
 	format := flags.String("format", string(laslig.FormatAuto), "output format: auto, human, plain, json")
 	style := flags.String("style", string(laslig.StyleAuto), "style policy: auto, always, never")
+	glamourStyle := flags.String("glamour-style", string(laslig.DefaultGlamourStyle()), "glamour markdown style: dark, light, pink, dracula, tokyo-night, ascii, notty")
 	if err := flags.Parse(args); err != nil {
 		return fmt.Errorf("parse flags: %w", err)
 	}
 
+	resolvedGlamourStyle := laslig.GlamourStyle(strings.ToLower(*glamourStyle))
+	if !resolvedGlamourStyle.Valid() {
+		return fmt.Errorf("parse flags: invalid glamour style %q", *glamourStyle)
+	}
+
 	printer := laslig.New(out, laslig.Policy{
-		Format: laslig.Format(strings.ToLower(*format)),
-		Style:  laslig.StylePolicy(strings.ToLower(*style)),
+		Format:       laslig.Format(strings.ToLower(*format)),
+		Style:        laslig.StylePolicy(strings.ToLower(*style)),
+		GlamourStyle: resolvedGlamourStyle,
 	})
 	if err := render(out, printer); err != nil {
 		return fmt.Errorf("render %s example: %w", name, err)

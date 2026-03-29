@@ -133,7 +133,7 @@ func (p *Printer) renderFramedContent(content string) string {
 
 // renderStyledMarkdown renders one Markdown string through Glamour for ANSI output.
 func (p *Printer) renderStyledMarkdown(markdown string) (string, error) {
-	return internalglamrender.Render(markdown, p.maxCodeWidth())
+	return internalglamrender.Render(markdown, p.maxCodeWidth(), string(p.glamourStyle))
 }
 
 // renderLogBody applies semantic highlighting to explicit caller-provided log excerpts.

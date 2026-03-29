@@ -55,7 +55,7 @@ func DefaultTheme(mode Mode) Theme {
 	warningText := lipgloss.Color("232")
 
 	return Theme{
-		Section:       lipgloss.NewStyle().Bold(true).Foreground(heading),
+		Section:       lipgloss.NewStyle().Bold(true).Underline(true).Foreground(heading),
 		Label:         lipgloss.NewStyle().Bold(true).Foreground(label),
 		Value:         lipgloss.NewStyle().Foreground(text),
 		Identifier:    lipgloss.NewStyle().Bold(true).Foreground(identifier),

@@ -32,12 +32,61 @@ const (
 	StyleNever StylePolicy = "never"
 )
 
-// Policy describes the requested output behavior before writer capabilities are resolved.
+// Policy describes the requested output behavior before writer capabilities are
+// resolved.
 type Policy struct {
+	// Format selects the overall render format.
 	Format Format
-	Style  StylePolicy
+	// Style controls ANSI styling for human output.
+	Style StylePolicy
+	// Layout overrides the default document spacing and indentation rules.
 	Layout *Layout
-	Theme  *Theme
+	// Theme overrides the printer-wide lipgloss style roles.
+	Theme *Theme
+	// GlamourStyle selects the built-in Glamour preset used for Markdown and
+	// code-block rendering. Supported values are dark, light, pink, dracula,
+	// tokyo-night, ascii, and notty. The default is dracula.
+	GlamourStyle GlamourStyle
+}
+
+// GlamourStyle identifies one supported built-in Glamour style preset.
+//
+// Supported built-ins are dark, light, pink, dracula, tokyo-night, ascii, and
+// notty.
+type GlamourStyle string
+
+const (
+	// GlamourStyleDark renders Markdown with Glamour's dark preset.
+	GlamourStyleDark GlamourStyle = "dark"
+	// GlamourStyleLight renders Markdown with Glamour's light preset.
+	GlamourStyleLight GlamourStyle = "light"
+	// GlamourStylePink renders Markdown with Glamour's pink preset.
+	GlamourStylePink GlamourStyle = "pink"
+	// GlamourStyleDracula renders Markdown with Glamour's Dracula preset.
+	GlamourStyleDracula GlamourStyle = "dracula"
+	// GlamourStyleTokyoNight renders Markdown with Glamour's Tokyo Night preset.
+	GlamourStyleTokyoNight GlamourStyle = "tokyo-night"
+	// GlamourStyleASCII renders Markdown with Glamour's ASCII preset.
+	GlamourStyleASCII GlamourStyle = "ascii"
+	// GlamourStyleNoTTY renders Markdown with Glamour's no-TTY preset.
+	GlamourStyleNoTTY GlamourStyle = "notty"
+)
+
+// DefaultGlamourStyle returns the default built-in Glamour style used by
+// laslig, which is dracula.
+func DefaultGlamourStyle() GlamourStyle {
+	return GlamourStyleDracula
+}
+
+// Valid reports whether the style matches one of laslig's supported built-in
+// Glamour presets.
+func (s GlamourStyle) Valid() bool {
+	switch s {
+	case GlamourStyleDark, GlamourStyleLight, GlamourStylePink, GlamourStyleDracula, GlamourStyleTokyoNight, GlamourStyleASCII, GlamourStyleNoTTY:
+		return true
+	default:
+		return false
+	}
 }
 
 // ListMarker identifies the marker shape used for unordered and ordered list output.
@@ -182,6 +231,15 @@ func resolveTheme(policy Policy, mode Mode) Theme {
 		return DefaultTheme(mode)
 	}
 	return *policy.Theme
+}
+
+// resolveGlamourStyle resolves the requested Glamour style to one supported
+// built-in preset, falling back to the library default when unset or invalid.
+func resolveGlamourStyle(policy Policy) GlamourStyle {
+	if !policy.GlamourStyle.Valid() {
+		return DefaultGlamourStyle()
+	}
+	return policy.GlamourStyle
 }
 
 // clampNonNegative keeps layout counts at zero or above.

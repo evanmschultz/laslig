@@ -186,6 +186,9 @@ printer := laslig.New(os.Stdout, laslig.Policy{
 the default styles directly. Higher-level theme presets are still deferred
 until after `v0.1.0`.
 
+Markdown and code blocks render through Glamour and now default to its
+`dracula` preset. Commands can override that with `Policy.GlamourStyle`.
+
 ## JSON Mode
 
 The same primitives can render machine-readable payloads:
