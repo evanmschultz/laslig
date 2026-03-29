@@ -280,7 +280,7 @@ func RenderGotestout(out io.Writer, printer *laslig.Printer) error {
 			return fmt.Errorf("render gotestout section: %w", err)
 		}
 		if err := printer.Paragraph(laslig.Paragraph{
-			Body:   "Use gotestout for Charm-native go test output when your task runner, CLI command, or Go helper behind make/just should keep owning process control.",
+			Body:   "Use gotestout for attractive, structured go test output when your task runner, CLI command, or Go helper behind make/just should keep owning process control.",
 			Footer: "This focused example intentionally mixes passing, skipped, and failing test events plus one package build failure.",
 		}); err != nil {
 			return fmt.Errorf("render gotestout intro: %w", err)

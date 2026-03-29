@@ -1,54 +1,20 @@
-# Laslig Plan
+# Läslig Plan
 
-## Thesis
+## Purpose
 
-`laslig` should provide a small, Charm-native, Go-idiomatic layer for beautiful CLI output that sits between low-level styling primitives and full command frameworks.
+`laslig` should stay a small, readable Go library for attractive, structured terminal output.
+It sits between low-level styling/layout primitives and full command frameworks.
 
-The gap we are filling:
+The package should feel:
 
-- Lip Gloss is flexible but low-level
-- Fang handles help and errors, not ordinary command results
-- `pterm` covers many nice static output affordances, but with a broader non-Charm surface than we want
-- `gotestsum` proves that structured stream rendering for `go test -json` is valuable, but we want a Charm-native approach and a reusable library surface
+- Go-idiomatic
+- easy to adopt incrementally
+- pleasant by default
+- customizable without becoming a framework
 
-## Product Rules
+## Shipped Surface
 
-- runtime/library dependencies should be Charm packages plus the standard library
-- `laslig` should not require `fang`
-- `laslig` should not require `charm/log`
-- `glamour` should back Markdown and fenced code-block rendering when those primitives land
-- Mage is the repository task runner
-- VHS is used for README/demo assets
-- examples and docs are first-class deliverables, not afterthoughts
-
-## Current Status
-
-- phase 0 is complete
-- phase 1 is complete
-- phase 2 is complete
-- phase 3 has compact/detailed `gotestout` rendering, Mage dogfooding, and caller-tunable grouped sections in place
-- phase 4 is functionally complete for the main primitive surface
-- phase 4A has shipped `Paragraph`, `StatusLine`, `Markdown`, `CodeBlock`, and explicit `LogBlock` primitives
-- the showcase/docs pass is complete enough for API-freeze review:
-  - the walkthrough names each exported primitive directly
-  - focused runnable examples live under `examples/`
-  - README and VHS assets cover the focused per-item examples plus the aggregate walkthrough
-  - structural output review includes focused-example and aggregate golden snapshots plus `gotestout` output
-- the layout pass is complete:
-  - public layout defaults exist for leading gap, section-owned indentation, and list-marker customization
-  - section ownership is now a library behavior rather than demo-only output shaping
-- explicit `gotestout` JSONL capture/export helpers are deferred until a real caller needs them after `v0.1.0`
-- the release-clean scaffolding is now in the repo:
-  - `LICENSE`, `CONTRIBUTING.md`, and `SECURITY.md`
-  - issue templates, PR template, Dependabot, and CODEOWNERS
-  - `.goreleaser.yaml` and a tag-driven `release.yml`
-- theme preset/config flow is intentionally deferred until after `v0.1.0`
-
-## Architecture
-
-### Core Surface
-
-The main package should own:
+The current `v0.1.0` candidate surface is:
 
 - `Policy`
 - `Mode`
@@ -67,213 +33,100 @@ The main package should own:
 - `Markdown`
 - `CodeBlock`
 - `LogBlock`
-
-### Stream Surface
-
-Structured stream rendering should be isolated in a specialist package:
-
 - `gotestout`
-  - parse `go test -json`
-  - render compact and detailed views
-  - produce end-of-run summaries
-  - stay clearly distinct from generic JSON display or formatting primitives
-  - explicit JSONL capture/export helpers are deferred until a real caller needs them after `v0.1.0`
 
-### Internal Shape
+## Boundaries
 
-Keep internal packages small and implementation-oriented:
+`laslig` owns:
 
-- `internal/glamrender`
-- `internal/layout`
-- `internal/table`
+- human-facing CLI rendering
+- structured blocks and document rhythm
+- plain-text fallbacks
+- JSON output for the same semantic blocks
+- `gotestout` rendering for `go test -json`
 
-Do not publish internal implementation packages until they have proved stable.
+`laslig` does not own:
 
-## Integration Boundaries
+- application logging
+- command parsing or framework behavior
+- process lifecycle
+- interactive prompt widgets
 
-- `laslig` should render caller-provided content, not own logging policy or command-framework behavior
-- `fang` remains an application-level choice for help, usage, and command-boundary errors
-- application logging stays with the caller's logger such as `log/slog`, `charm/log`, or Zap
-- `laslig` may render selected log excerpts, transcripts, stderr captures, or notices in structured blocks
-- `laslig` itself should not intercept global logs, install sinks, or emit operational logs
+Applications may render caller-provided log excerpts through `LogBlock`, but
+logging policy stays with the application.
 
-## Remaining Decisions Before `v0.1.0`
+## Repository Rules
 
-### Product Surface
+- Mage is the task runner
+- VHS assets under `docs/vhs/` are part of the product surface
+- focused runnable examples under `examples/` are part of the product surface
+- README, Go docs, examples, goldens, and VHS assets should move together when behavior changes
+- keep runtime dependencies narrow and standard-library-first where possible
 
-- do not reintroduce stale planned primitives such as `Diagnostic`, `Badge`, or `Box` unless a real post-freeze use case appears
+## Release State
 
-### Dependency And Automation Policy
+The repository is in release-candidate shape for `v0.1.0`.
 
-- include `.github/dependabot.yml` in `v0.1.0` for `gomod` and GitHub Actions on a conservative cadence
-- include a minimal `CODEOWNERS` file that names the primary maintainer
-- keep `v0.1.0` release notes curated and manual
-- require green `ci` on `main` before release tags are cut
+Implemented and aligned:
 
-### Post-`v0.1.0`
+- printer-wide format/style/mode resolution
+- layout defaults with leading gap, section ownership, indentation, and list-marker control
+- printer-wide theme overrides
+- printer-wide Glamour style selection, defaulting to `dracula`
+- focused runnable examples for each public primitive
+- aggregate `mage demo` walkthrough
+- `gotestout` focused example and Mage integration path
+- golden coverage for shared rendering, the aggregate walkthrough, and `gotestout`
+- README GIF gallery and tracked VHS tapes
+- governance and release scaffolding:
+  - `LICENSE`
+  - `CONTRIBUTING.md`
+  - `SECURITY.md`
+  - issue templates
+  - PR template
+  - Dependabot
+  - CODEOWNERS
+  - GoReleaser
+  - CI and release workflows
 
-- developer-settable theme/preset flow
-- deeper `gotestout` classification and subtest rollups
-- any future standalone `Badge`/`Header`/capture helper work that survives post-`v0.1.0` review
+## Deferred After `v0.1.0`
 
-## Recommended Closures
+These are intentionally not blocking the first release:
 
-- treat the currently shipped surface as the `v0.1.0` candidate API:
-  - `Section`, `Notice`, `Record`, `KV`, `Paragraph`, `List`, `Table`, `Panel`, `StatusLine`, `Markdown`, `CodeBlock`, `LogBlock`
-  - `Policy`, `Mode`, `Layout`, `Theme`, and `Printer`
-  - `gotestout` for `go test -json` rendering
-- keep `Notice` as the user-facing diagnostic surface for `v0.1.0`
-- keep badge rendering embedded in list items and fields for `v0.1.0`
-- keep `Panel` as the boxed callout primitive for `v0.1.0`
-- keep explicit `gotestout` JSONL capture/export helpers out of `v0.1.0`
-- keep theme presets/configuration explicitly post-release
+- higher-level theme presets/configuration flow:
+  - named presets on top of the shipped raw `Theme` override surface
+  - more ergonomic partial overrides such as "start from default, then change notices"
+- deeper `gotestout` failure classification and rollups:
+  - clearer buckets for test failures, package/build failures, panics, and timeouts
+  - subtest-aware rollups and tighter summaries for noisy captured output
+- explicit `gotestout` JSONL capture/export helpers
+- any future standalone `Badge` or `Header` primitives:
+  - `Badge` would be a first-class inline status chip instead of only embedded badge behavior
+  - `Header` would only be added if a real use case appears for headings distinct from `Section`
 
-## Execution Order To `v0.1.0`
+## Release Checklist
 
-1. Run the API freeze pass:
-   - review exported names, fields, defaults, and behavior
-   - remove stale promises from docs and plan
-   - confirm the `v0.1.0` stable surface
-2. Run the pre-release ship pass:
-   - contributor bootstrap
-   - dependency-maintenance policy
-   - governance/community files
-   - release workflow and GoReleaser
-3. Do the final docs/examples/VHS audit
-4. Tag and publish `v0.1.0`
+Before tagging `v0.1.0`:
 
-## Phases
+1. Confirm the worktree is clean.
+2. Run:
+   - `go mod tidy`
+   - `mage test`
+   - `mage check`
+   - `mage vhs` when visual output changed
+3. Review:
+   - `README.md`
+   - package docs
+   - focused examples under `examples/`
+   - GIFs under `docs/vhs/`
+4. Confirm GitHub Actions is green on `main`.
+5. Tag from green `main`.
+6. Let the tag-driven release workflow publish the release artifacts.
 
-### Phase 0: Bootstrap
+## Maintenance Rules
 
-- create the bare-root + `main/` worktree layout
-- seed governance files, README, plan, CI, Mage, and module bootstrap
-- create the initial `init` commit
-- create the GitHub repo with `gh`
-- push and confirm CI passes before moving on
-
-### Phase 1: Shared Foundations
-
-- output policy and TTY/style resolution
-- default theme tokens
-- base renderer helpers
-- initial public package docs
-
-### Phase 2: Static Output Primitives
-
-- sections
-- notices
-- records, KV blocks, and lists
-- tables
-- panels
-- demo program and README examples
-
-### Phase 3: Structured Test Output
-
-- `go test -json` parsing
-- compact and detailed renderers
-- summaries for failures, skips, and errors
-- Mage integration examples
-
-### Phase 4: Documentation And Visual Polish
-
-- README walkthrough
-- package examples
-- VHS tapes and generated GIFs
-- release polish and API trimming
-
-### Phase 4A: Rich Text And Transcript Primitives
-
-- `Paragraph` for wrapped long-form body text
-- `StatusLine` for compact semantic single-line output
-- `CodeBlock` for preformatted or syntax-highlighted terminal blocks
-- explicit log/transcript helper built on top of boxed block rendering
-- `Markdown` powered by `glamour`
-
-### Pre-Release Ship Pass
-
-- keep `LICENSE` as `Apache-2.0`
-- audit `CONTRIBUTING.md` for setup, coding, test, snapshot, and release expectations
-- keep contributor bootstrap explicit in `CONTRIBUTING.md`:
-  - required Go version follows `go.mod`
-  - install Mage with the pinned project version used in CI:
-    - `go install github.com/magefile/mage@v1.17.0`
-  - document when `vhs` is optional versus required
-  - document when `gh` is optional versus required
-  - document the normal local flow: `mage check`, `mage test`, `mage demo`, and `mage vhs` when visual output changes
-  - document how to update golden snapshots intentionally
-  - document when contributors only need Go + Mage versus when maintainers need the release toolchain too
-- audit `SECURITY.md` for reporting guidance and support boundaries
-- keep `.github/ISSUE_TEMPLATE/` coverage for bug reports and feature requests
-- keep `.github/pull_request_template.md` focused on validation and release-note hygiene
-- keep `CODEOWNERS` and `.github/dependabot.yml` aligned with the actual maintainer/review model
-- do a full Go-doc and exported-surface comment audit
-- do a full README/docs/example audit for accuracy and consistency
-- do the dependency-maintenance pass:
-  - document the boundary between core runtime deps, demo-only deps, test-only deps, and tooling deps
-  - document how Charm-family upgrades are evaluated before landing
-  - decide whether dependency updates are manual, Dependabot-driven, or both
-  - prefer patch/minor updates by default and require explicit review for major upgrades
-  - require release-note and compatibility review before upgrading Charm, Glamour, or `x/*` dependencies
-  - keep the Mage version pinned in CI and contributor docs so local and CI automation stay aligned
-  - add an explicit update path for toolchain dependencies such as Mage, VHS, GitHub Actions, and GoReleaser
-  - require `go mod tidy`, `mage check`, and output/golden/VHS refresh when dependency bumps intentionally change rendering
-- do the GitHub workflow pass:
-  - keep `ci.yml` minimal and stable
-  - keep tag-driven release workflow wiring for GoReleaser aligned:
-    - tag-triggered workflow
-    - checkout with full history
-    - Go from `go.mod`
-    - `goreleaser release --clean`
-    - `GITHUB_TOKEN` with `contents: write`
-  - confirm required checks/branch protection expectations outside the repo
-- do the community/release-management pass:
-  - define issue-triage expectations and label strategy
-  - define PR-review expectations and merge policy
-  - decide whether changelog generation is manual or release-driven in `v0.1.0`
-- do the API freeze pass:
-  - review exported names, fields, defaults, and behavior
-  - rename or trim awkward public surface before release
-  - remove any stale plan/docs promises that are cut from `v0.1.0`
-  - decide what is considered stable for the first `v0.x` release
-- finish the release-operator checklist:
-  - release only from green `main`
-  - verify the worktree is clean and docs/examples/goldens are current
-  - run `mage ci`
-  - run `mage vhs` when visual output changed during the release train
-  - tag with the intended semver release tag
-  - run tag-driven GoReleaser publishing through GitHub Actions
-  - publish checksums alongside release artifacts
-  - edit the draft GitHub release with curated release notes
-  - watch the release workflow to completion
-  - verify the GitHub release contents before publishing the draft
-- only after the docs/license/API pass, finalize `.goreleaser.yaml`, release artifacts, checksums, and GitHub release workflow wiring
-
-### Later Theme Pass
-
-- developer-settable themes
-- default palette refresh toward more classic Charm colors
-- theme docs and examples
-
-## Parallel Lane Strategy
-
-Use at most three active implementation lanes per phase:
-
-1. shared policy/theme/render contracts
-2. user-facing primitives and examples
-3. stream/test rendering
-
-Avoid overlapping write scopes between lanes whenever possible.
-
-## MVP Finish Line
-
-The MVP should be considered feature-complete when the repository has:
-
-- stable core primitives for sections, notices, records, KV, lists, tables, panels, and log/transcript blocks
-- one wrapped long-form text primitive
-- one compact status-line primitive
-- one Glamour-backed rich-text/code-block path
-- one explicit log/transcript rendering path for caller-provided output
-- compact and detailed `gotestout` rendering with caller-tunable summary sections
-- explicit `gotestout` JSONL capture/export helpers deferred until a real caller needs them
-- README, Go docs, Mage tasks, and VHS demos aligned with shipped behavior
+- prefer patch and minor dependency updates by default
+- treat major dependency upgrades as design changes
+- review upstream release notes before upgrading Charm-family libraries, Glamour, or `x/*`
+- after dependency changes, run `go mod tidy` and `mage check`
+- when rendering changes intentionally, refresh goldens and VHS assets in the same change

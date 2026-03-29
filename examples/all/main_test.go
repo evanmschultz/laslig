@@ -94,7 +94,7 @@ func TestRunArgsHumanStyled(t *testing.T) {
 	if !strings.Contains(plain, "Läslig demo") {
 		t.Fatalf("runArgs() output missing intro: %q", plain)
 	}
-	if !strings.Contains(plain, "Use gotestout for Charm-native go test output when your task runner") {
+	if !strings.Contains(plain, "Use gotestout for attractive, structured go test output when your task runner") {
 		t.Fatalf("runArgs() output missing gotestout section: %q", plain)
 	}
 }

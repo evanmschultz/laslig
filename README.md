@@ -62,7 +62,7 @@ What is still missing is a narrow, reusable layer for ordinary command output: r
 
 ## Status
 
-The first core wave is live. Today the package includes:
+Today the package includes:
 
 - output policy and mode resolution
 - document-layout defaults with caller-tunable spacing, section indentation, and list markers
@@ -81,14 +81,19 @@ The first core wave is live. Today the package includes:
 - compact and detailed `gotestout` rendering for `go test -json`
 - caller-tunable `gotestout` summary and output sections
 
-The next wave is focused on theme presets and higher-level theme configuration, deeper `gotestout` classification, and tightening the docs/examples further.
+Deferred until after `v0.1.0`:
+
+- named theme presets and more ergonomic theme overrides on top of the shipped raw `Theme` surface
+- deeper `gotestout` classification and subtest rollups
+- explicit `gotestout` JSONL capture/export helpers
+- any future standalone `Badge` or `Header` primitives if real use cases appear
 
 ## Principles
 
 - small, composable helpers instead of a framework
 - writers in, errors out
 - no hidden process control
-- Charm-native output without requiring Fang or `charm/log` as core library dependencies
+- attractive output without requiring Fang or `charm/log` as core library dependencies
 - easy adoption in Fang, Cobra, Mage, and plain Go commands
 - explicit rendering of caller-provided log excerpts without becoming a logger
 
@@ -186,8 +191,8 @@ printer := laslig.New(os.Stdout, laslig.Policy{
 the default styles directly. Higher-level theme presets are still deferred
 until after `v0.1.0`.
 
-Markdown and code blocks render through Glamour and now default to its
-`dracula` preset. Commands can override that with `Policy.GlamourStyle`.
+Markdown and code blocks render through Glamour and default to its `dracula`
+preset. Commands can override that with `Policy.GlamourStyle`.
 
 ## JSON Mode
 
@@ -301,13 +306,17 @@ skipped, and failing test events plus one package build failure. The separate
 `magecheck` GIF shows the passing task-runner path. That keeps the README
 honest about both the success path and the failure path.
 
+Post-`v0.1.0` work in `gotestout` is about smarter summaries, not basic
+functionality: clearer buckets for test failures vs package/build failures,
+subtest-aware rollups, and better handling for noisy captured output.
+
 ## Demo
 
 Focused runnable examples now live one-per-item under [`examples/`](./examples): `section`, `notice`, `record`, `kv`, `list`, `table`, `panel`, `paragraph`, `statusline`, `markdown`, `codeblock`, `logblock`, `gotestout`, and `magecheck`.
-The aggregate walkthrough that combines those focused examples lives in [`examples/all/main.go`](./examples/all/main.go).
+The aggregate walkthrough renderer also lives in [`examples/all/main.go`](./examples/all/main.go).
 The focused `logblock` example captures real `charm.land/log/v2` output internally so the demo still shows an actual Charm log transcript without making `charm/log` a core library dependency.
 Small verified Go doc examples live in [`example_test.go`](./example_test.go).
-The aggregate walkthrough is a guided composition of those smaller demos. `mage demo` runs `examples/all`, while each focused example can still be run directly.
+`mage demo` is the paced walkthrough entrypoint. It renders the focused examples one after another as one accumulating document. `examples/all` remains the aggregate renderer for direct example runs and tests.
 
 Run it locally:
 
@@ -321,16 +330,15 @@ go run ./examples/all --format human --style always
 mage test
 ```
 
-`mage demo` is the normal aggregate walkthrough entrypoint. `mage test` is the real Mage-facing `gotestout` dogfood path. The `go run` forms above show the focused per-item examples directly, and the README GIFs come from those focused commands rather than from one oversized showcase recording.
+`mage demo` is the normal paced walkthrough entrypoint. `mage test` is the real Mage-facing `gotestout` dogfood path. The `go run` forms above show the focused per-item examples directly, while `go run ./examples/all` renders the aggregate example without the paced demo wrapper.
 
 The README GIFs are generated from the focused VHS tapes under [`docs/vhs/`](./docs/vhs). `mage vhs` renders all tracked tapes so the README stays aligned with the runnable examples.
 
-## Planned Next
+## Deferred After `v0.1.0`
 
 - theme presets and higher-level theme configuration
 - richer `gotestout` failure classification and subtest rollups
-- compact prefix-style helpers beyond `StatusLine`
-- more README visuals and side-by-side comparisons
+- explicit `gotestout` JSONL capture/export helpers
 
 ## Development
 

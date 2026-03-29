@@ -1,5 +1,5 @@
 // Package gotestout renders go test -json streams using laslig output
-// primitives and Charm-native styling.
+// primitives and the library's normal terminal styling behavior.
 //
 // The package focuses on parsing and rendering the event stream itself. It does
 // not execute commands or own process lifecycle. Callers are expected to wire

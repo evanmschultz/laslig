@@ -79,7 +79,7 @@ func TestRunArgsHumanStyled(t *testing.T) {
 		t.Fatalf("runArgs() output missing ANSI styling: %q", got)
 	}
 	plain := stripANSI(got)
-	if !strings.Contains(plain, "Use gotestout for Charm-native go test output when your task runner") {
+	if !strings.Contains(plain, "Use gotestout for attractive, structured go test output when your task runner") {
 		t.Fatalf("runArgs() stripped output missing intro paragraph:\n%s", plain)
 	}
 	if !strings.Contains(plain, "Test summary") {

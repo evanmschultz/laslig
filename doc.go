@@ -21,7 +21,7 @@
 //   - plain text for non-terminal writers
 //   - JSON payloads for machine-readable consumers
 //
-// A specialist gotestout package provides Charm-native rendering for go test
+// A specialist gotestout package provides structured rendering for go test
 // -json streams in Mage targets, ordinary Go CLI commands, and small Go
 // helpers invoked from tools such as make or just.
 package laslig

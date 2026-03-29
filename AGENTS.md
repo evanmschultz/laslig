@@ -1,116 +1,57 @@
-# Laslig Agent Guide
+# Läslig Agent Guide
 
-This file defines required behavior for coding agents working in the tracked `laslig` project.
-Scope: this worktree and every child path beneath it.
+Scope: this tracked worktree and every child path beneath it.
 
-## 1) Product Direction
+## Product Paradigm
 
-`laslig` exists to help Go CLIs produce human-readable, structured, attractive terminal output with Charm-native primitives and minimal friction.
-
-The library should feel:
+`laslig` is a small Go library for attractive, structured terminal output.
+It should stay:
 
 - Go-idiomatic
+- data-first
 - easy to adopt incrementally
 - pleasant by default
-- customizable without forcing users into a framework
+- customizable without becoming a framework
 
-Primary use-cases:
+## Boundaries
 
-- command results and summaries
-- notices, warnings, successes, and errors
-- tables, sections, records, panels, and boxed callouts
-- Charm-native rendering of structured streams such as `go test -json`
-- CLI tooling, Mage tasks, and ordinary Go commands
+`laslig` owns rendering primitives and document rhythm.
 
-## 2) Dependency Policy
-
-Runtime and library dependencies should stay narrow:
-
-- standard library first
-- Charm libraries only when they materially help
-
-Current dependency direction:
-
-- `charm.land/lipgloss/v2` is expected for styling/layout
-- other Charm packages are allowed only when they solve a real problem cleanly
-- do not make `fang` a core dependency
-- do not make `charm.land/log/v2` a core dependency
-
-`laslig` is a rendering library, not a logging framework and not a CLI framework.
-
-Allowed tooling dependencies:
-
-- Mage for repository automation
-- VHS for README/demo capture
-
-## 3) Repository Workflow
-
-This tracked project lives in a bare-root workflow.
-
-Rules:
-
-- tracked work happens from this worktree, not from the bare root
-- local research and progress logs stay under the bare-root `worklogs/`
-- use [`PLAN.md`](./PLAN.md) as the tracked source-of-truth for architecture and execution
-
-## 4) Build, Test, And Release Flow
-
-- use Mage instead of Just
-- keep Mage tasks readable and standard-library-first where practical
-- default to local commits plus local Mage validation; do not push after every commit
-- push only when the user explicitly asks or when the user agrees a named checkpoint should be published
-- before planning, implementation, QA, or fixing failed tests, use Context7 for relevant libraries when available
-- use `mage` targets for local verification before offering work back to the user
-- before moving beyond a pushed phase boundary, confirm CI is green with `gh run watch --exit-status`
-- enforce at least 70% statement coverage in every package
-- keep structural terminal-output snapshots current with Charm `x/exp/golden` tests when block layout intentionally changes
-- keep README examples, Go docs, and VHS demos aligned with shipped behavior
-
-## 5) Go Standards
-
-- write clear, idiomatic Go
-- keep public APIs small and composable
-- prefer data-first render APIs over hidden global state
-- accept `io.Writer` where output is emitted
-- return errors instead of logging or exiting
-- keep interfaces near consumers and avoid speculative abstractions
-- write strong, idiomatic doc comments for every top-level declaration in production and test code
-- keep comments and docstrings current when behavior changes
-- add concise comments for non-obvious logic blocks
-
-## 6) Output Philosophy
-
-`laslig` should own human-facing rendering concerns such as:
-
-- sections
-- notices
-- records
-- lists
-- tables
-- panels
-- stream summaries
-
-`laslig` should not own:
+It does not own:
 
 - application logging
-- command parsing/framework behavior
-- interactive prompt widgets in v1
-- unrelated TUI components
+- command parsing
+- process lifecycle
+- unrelated TUI widgets
 
-## 7) Examples And Visual Coverage
+Caller-provided log excerpts are fine. Logging policy is not.
 
-- keep runnable focused showcase examples under `examples/`, ideally one directory per demo item or specialized integration
-- keep one all-in-one showcase example under `examples/all` that Mage can drive by composing the focused examples
-- keep the all-in-one showcase aligned with the focused examples instead of inventing separate demo-only content
-- present specialized public subpackages through focused examples with real output
-- in guided showcase demos, title blocks with the exact exported primitive or package name being demonstrated
-- in guided showcase demos, follow primitive titles with explicit `Use <Name> for...` wording
-- only add category-intro text when it contributes information not immediately repeated by the next primitive demo
-- keep one VHS tape and generated asset per README demo under `docs/vhs/`
-- when user-visible terminal output intentionally changes, update the relevant README examples and VHS assets
+## Engineering Style
 
-## 8) Commit Style
+- keep public APIs small and composable
+- prefer explicit data types plus printer methods over hidden global state
+- accept `io.Writer` where output is emitted
+- return errors instead of logging or exiting
+- keep interfaces near consumers
+- avoid speculative abstractions
 
-- commit small and often
-- after the initial repository bootstrap commit, use Conventional Commits
-- prefer lowercase summaries unless required literals need uppercase
+## Dependencies
+
+- standard library first
+- add external dependencies only when they clearly improve the library
+- do not make command frameworks or logging libraries core dependencies
+
+## Docs And Demos
+
+- keep README, Go docs, examples, goldens, and VHS assets aligned with shipped behavior
+- keep focused runnable demos under `examples/`
+- keep guided demos explicit about what primitive or package is being shown
+- when output changes intentionally, update the relevant snapshots and GIFs in the same change
+
+## Workflow
+
+- use Mage for repository automation
+- validate with `mage` targets before handing work back
+- keep coverage at or above 70% in every package
+- use `PLAN.md` as the tracked release/source-of-truth document
+- use conventional commits after bootstrap

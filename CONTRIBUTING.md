@@ -1,6 +1,6 @@
 # Contributing to Läslig
 
-Läslig is a Go library for structured, Charm-native CLI output.
+Läslig is a Go library for attractive, structured CLI output.
 Contributions should keep the library small, readable, and easy to adopt.
 
 ## Prerequisites
@@ -19,7 +19,7 @@ For routine development, Go and Mage are the only required local tools.
 
 ## Daily Workflow
 
-1. Work from the repository root.
+1. Work from the tracked worktree root (`main/` in this repository).
 2. Keep changes focused and keep docs/tests aligned with behavior.
 3. Use the normal local gate before you hand work back:
 
