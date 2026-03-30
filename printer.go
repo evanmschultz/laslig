@@ -442,7 +442,7 @@ func (p *Printer) renderValue(value string) string {
 
 func (p *Printer) renderBadge(value string) string {
 	trimmed := strings.ToUpper(strings.TrimSpace(value))
-	if p.mode.Format != FormatHuman {
+	if p.mode.Format != FormatHuman || !p.mode.Styled {
 		return "[" + trimmed + "]"
 	}
 
@@ -465,7 +465,7 @@ func (p *Printer) renderBadge(value string) string {
 
 func (p *Printer) noticeBadge(level NoticeLevel) string {
 	plain := "[" + strings.ToUpper(string(level)) + "]"
-	if p.mode.Format != FormatHuman {
+	if p.mode.Format != FormatHuman || !p.mode.Styled {
 		return plain
 	}
 	switch level {
