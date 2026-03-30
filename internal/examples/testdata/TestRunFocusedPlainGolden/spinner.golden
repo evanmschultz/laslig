@@ -1,0 +1,9 @@
+
+Spinner
+
+  Use Spinner when long-running work might otherwise stay quiet for several seconds. Prefer StatusLine or Notice when the operation starts and finishes quickly enough that durable output is enough.
+  
+  This focused example falls back to stable start and finish status rows in plain, JSON, and non-interactive output.
+
+  [RUNNING] Waiting for remote rollout
+  [SUCCESS] Rollout ready

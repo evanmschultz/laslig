@@ -1,12 +1,12 @@
-Output docs/vhs/demo.gif
+Output docs/vhs/spinner.gif
 
 Require go
 
 Set Shell "zsh"
 Set FontFamily "IosevkaTerm NFM"
 Set FontSize 16
-Set Width 1440
-Set Height 1280
+Set Width 1180
+Set Height 760
 Set Padding 24
 Set Theme "Catppuccin Mocha"
 Set TypingSpeed 20ms
@@ -20,7 +20,8 @@ Hide
 Type "clear"
 Enter
 Sleep 250ms
-Type "mage demo"
-Enter
 Show
-Sleep 25s
+
+Type "go run ./examples/spinner --format human --style always"
+Enter
+Sleep 4s

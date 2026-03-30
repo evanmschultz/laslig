@@ -4,7 +4,8 @@
 // Laslig is designed to sit above low-level styling and layout primitives and
 // below command frameworks. It focuses on ordinary command output such as
 // sections, notices, records, KV blocks, lists, tables, panels, paragraphs,
-// status lines, Markdown blocks, code blocks, and log blocks.
+// status lines, transient spinners, Markdown blocks, code blocks, and log
+// blocks.
 //
 // The package is intentionally small and data-oriented. Callers provide an
 // io.Writer and a Policy, then render semantic blocks through a Printer.

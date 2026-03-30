@@ -56,20 +56,25 @@ func (p *Printer) StatusLine(line StatusLine) error {
 		return fmt.Errorf("prepare status line: %w", err)
 	}
 
-	label := strings.TrimSpace(line.Label)
-	if label == "" {
-		label = strings.ToUpper(string(line.Level))
+	if err := p.writeContentString(p.renderStatusLineString(line)); err != nil {
+		return fmt.Errorf("write status line: %w", err)
+	}
+	return nil
+}
+
+// renderStatusLineString renders one compact semantic single-line status row.
+func (p *Printer) renderStatusLineString(line StatusLine) string {
+	if line.Level == "" {
+		line.Level = NoticeInfoLevel
 	}
 
 	if p.mode.Format != FormatHuman {
-		rendered := fmt.Sprintf("[%s] %s", strings.ToUpper(label), line.Text)
-		if detail := strings.TrimSpace(line.Detail); detail != "" {
-			rendered += " (" + detail + ")"
-		}
-		if err := p.writeContentString(rendered); err != nil {
-			return fmt.Errorf("write status line: %w", err)
-		}
-		return nil
+		return renderPlainStatusLineString(line)
+	}
+
+	label := strings.TrimSpace(line.Label)
+	if label == "" {
+		label = strings.ToUpper(string(line.Level))
 	}
 
 	parts := []string{
@@ -80,16 +85,26 @@ func (p *Printer) StatusLine(line StatusLine) error {
 	if detail := strings.TrimSpace(line.Detail); detail != "" {
 		parts = append(parts, " ", p.theme.Muted.Render("("+detail+")"))
 	}
-	if err := p.writeContentString(lipgloss.JoinHorizontal(lipgloss.Top, parts...)); err != nil {
-		return fmt.Errorf("write status line: %w", err)
+	return lipgloss.JoinHorizontal(lipgloss.Top, parts...)
+}
+
+func renderPlainStatusLineString(line StatusLine) string {
+	label := strings.TrimSpace(line.Label)
+	if label == "" {
+		label = strings.ToUpper(string(line.Level))
 	}
-	return nil
+
+	rendered := fmt.Sprintf("[%s] %s", strings.ToUpper(label), line.Text)
+	if detail := strings.TrimSpace(line.Detail); detail != "" {
+		rendered += " (" + detail + ")"
+	}
+	return rendered
 }
 
 // renderStatusLabel renders one compact status badge using a notice-level palette.
 func (p *Printer) renderStatusLabel(label string, level NoticeLevel) string {
 	plain := "[" + strings.ToUpper(strings.TrimSpace(label)) + "]"
-	if p.mode.Format != FormatHuman {
+	if p.mode.Format != FormatHuman || !p.mode.Styled {
 		return plain
 	}
 

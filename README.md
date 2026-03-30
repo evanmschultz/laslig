@@ -28,17 +28,17 @@ Run `mage demo` for the paced aggregate walkthrough in a real terminal, or run a
 | [![Panel example](docs/vhs/panel.gif)](./examples/panel) |
 | [`examples/panel`](./examples/panel) |
 
-### Rich Text Primitives
+### Rich Text And Progress
 
-| Paragraph | StatusLine | Markdown |
+| Paragraph | StatusLine | Spinner |
 | --- | --- | --- |
-| [![Paragraph example](docs/vhs/paragraph.gif)](./examples/paragraph) | [![StatusLine example](docs/vhs/statusline.gif)](./examples/statusline) | [![Markdown example](docs/vhs/markdown.gif)](./examples/markdown) |
-| [`examples/paragraph`](./examples/paragraph) | [`examples/statusline`](./examples/statusline) | [`examples/markdown`](./examples/markdown) |
+| [![Paragraph example](docs/vhs/paragraph.gif)](./examples/paragraph) | [![StatusLine example](docs/vhs/statusline.gif)](./examples/statusline) | [![Spinner example](docs/vhs/spinner.gif)](./examples/spinner) |
+| [`examples/paragraph`](./examples/paragraph) | [`examples/statusline`](./examples/statusline) | [`examples/spinner`](./examples/spinner) |
 
-| CodeBlock | LogBlock |
-| --- | --- |
-| [![CodeBlock example](docs/vhs/codeblock.gif)](./examples/codeblock) | [![LogBlock example](docs/vhs/logblock.gif)](./examples/logblock) |
-| [`examples/codeblock`](./examples/codeblock) | [`examples/logblock`](./examples/logblock) |
+| Markdown | CodeBlock | LogBlock |
+| --- | --- | --- |
+| [![Markdown example](docs/vhs/markdown.gif)](./examples/markdown) | [![CodeBlock example](docs/vhs/codeblock.gif)](./examples/codeblock) | [![LogBlock example](docs/vhs/logblock.gif)](./examples/logblock) |
+| [`examples/markdown`](./examples/markdown) | [`examples/codeblock`](./examples/codeblock) | [`examples/logblock`](./examples/logblock) |
 
 ### Specialized Packages
 
@@ -73,6 +73,7 @@ Today the package includes:
 - aligned key-value blocks
 - paragraph blocks
 - compact status lines
+- opt-in transient spinners with stable plain and JSON fallbacks
 - tables
 - panels
 - Glamour-backed Markdown blocks
@@ -81,7 +82,7 @@ Today the package includes:
 - compact and detailed `gotestout` rendering for `go test -json`
 - caller-tunable `gotestout` summary and output sections
 
-Deferred until after `v0.1.0`:
+Deferred for a later release:
 
 - named theme presets and more ergonomic theme overrides on top of the shipped raw `Theme` surface
 - deeper `gotestout` classification and subtest rollups
@@ -154,6 +155,9 @@ printer.KV(laslig.KV{Title: "Config"})
 printer.List(laslig.List{Title: "Packages"})
 printer.Paragraph(laslig.Paragraph{Title: "Why", Body: "Readable defaults matter."})
 printer.StatusLine(laslig.StatusLine{Level: laslig.NoticeSuccessLevel, Text: "Build ready"})
+spin := printer.NewSpinner()
+_ = spin.Start("Waiting for rollout")
+_ = spin.Stop("Rollout ready", laslig.NoticeSuccessLevel)
 printer.Table(laslig.Table{Title: "Results"})
 printer.Panel(laslig.Panel{Title: "Next step", Body: "Run mage check."})
 printer.Markdown(laslig.Markdown{Body: "# Notes\n\n- first\n- second"})
@@ -189,7 +193,7 @@ printer := laslig.New(os.Stdout, laslig.Policy{
 
 `Policy` can also carry a raw `Theme` override when one command wants to swap
 the default styles directly. Higher-level theme presets are still deferred
-until after `v0.1.0`.
+for a later release.
 
 Markdown and code blocks render through Glamour and default to its `dracula`
 preset. Commands can override that with `Policy.GlamourStyle`.
@@ -223,6 +227,10 @@ _ = printer.StatusLine(laslig.StatusLine{
 	Detail: "mage check",
 })
 
+spin := printer.NewSpinner()
+_ = spin.Start("Waiting for remote rollout")
+_ = spin.Stop("Rollout ready", laslig.NoticeSuccessLevel)
+
 _ = printer.Markdown(laslig.Markdown{
 	Body: "# Release Notes\n\n## Highlights\n\n- one renderer\n- three output surfaces",
 })
@@ -241,6 +249,9 @@ _ = printer.LogBlock(laslig.LogBlock{
 ```
 
 `Markdown` and `CodeBlock` use Glamour for rich terminal rendering when styled human output is active. `LogBlock` is for explicit caller-provided excerpts, transcripts, and stderr captures. `laslig` still does not replace the application's logger.
+
+Use `Spinner` only when work may otherwise be silent for several seconds. For
+short operations, a durable `StatusLine` or `Notice` is usually clearer.
 
 ## Structured Test Output
 
@@ -306,15 +317,15 @@ skipped, and failing test events plus one package build failure. The separate
 `magecheck` GIF shows the passing task-runner path. That keeps the README
 honest about both the success path and the failure path.
 
-Post-`v0.1.0` work in `gotestout` is about smarter summaries, not basic
+Future `gotestout` work is about smarter summaries, not basic
 functionality: clearer buckets for test failures vs package/build failures,
 subtest-aware rollups, and better handling for noisy captured output.
 
 ## Demo
 
-Focused runnable examples now live one-per-item under [`examples/`](./examples): `section`, `notice`, `record`, `kv`, `list`, `table`, `panel`, `paragraph`, `statusline`, `markdown`, `codeblock`, `logblock`, `gotestout`, and `magecheck`.
+Focused runnable examples now live one-per-item under [`examples/`](./examples): `section`, `notice`, `record`, `kv`, `list`, `table`, `panel`, `paragraph`, `statusline`, `spinner`, `markdown`, `codeblock`, `logblock`, `gotestout`, and `magecheck`.
 The aggregate walkthrough renderer also lives in [`examples/all/main.go`](./examples/all/main.go).
-The focused `logblock` example captures real `charm.land/log/v2` output internally so the demo still shows an actual Charm log transcript without making `charm/log` a core library dependency.
+The focused `logblock` example captures real `charm.land/log/v2` output internally so the demo still shows an actual Charm log transcript without making `charm/log` part of laslig's public API.
 Small verified Go doc examples live in [`example_test.go`](./example_test.go).
 `mage demo` is the paced walkthrough entrypoint. It renders the focused examples one after another as one accumulating document. `examples/all` remains the aggregate renderer for direct example runs and tests.
 
@@ -324,6 +335,7 @@ Run it locally:
 mage demo
 go run ./examples/section --format human --style always
 go run ./examples/notice --format human --style always
+go run ./examples/spinner --format human --style always
 go run ./examples/gotestout --format human --style always
 go run ./examples/magecheck --format human --style always
 go run ./examples/all --format human --style always
@@ -334,11 +346,12 @@ mage test
 
 The README GIFs are generated from the focused VHS tapes under [`docs/vhs/`](./docs/vhs). `mage vhs` renders all tracked tapes so the README stays aligned with the runnable examples.
 
-## Deferred After `v0.1.0`
+## Deferred
 
 - theme presets and higher-level theme configuration
 - richer `gotestout` failure classification and subtest rollups
 - explicit `gotestout` JSONL capture/export helpers
+- future standalone `Badge` or `Header` primitives only if real use cases appear
 
 ## Development
 

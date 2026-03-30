@@ -28,6 +28,7 @@ Tests
 [PKG PASS] github.com/evanmschultz/laslig/examples/paragraph (0.00s)
 [PKG PASS] github.com/evanmschultz/laslig/examples/record (0.00s)
 [PKG PASS] github.com/evanmschultz/laslig/examples/section (0.00s)
+[PKG PASS] github.com/evanmschultz/laslig/examples/spinner (0.00s)
 [PKG PASS] github.com/evanmschultz/laslig/examples/statusline (0.00s)
 [PKG PASS] github.com/evanmschultz/laslig/examples/table (0.00s)
 [PKG PASS] github.com/evanmschultz/laslig/gotestout (0.00s)
@@ -38,23 +39,23 @@ Tests
 [PKG PASS] github.com/evanmschultz/laslig/internal/table (0.00s)
 
 Test summary
-  tests: 156
-  passed: 156
+  tests: 178
+  passed: 178
   failed: 0
   skipped: 0
-  packages: 22
-  pkg passed: 22
+  packages: 23
+  pkg passed: 23
   pkg failed: 0
   pkg skipped: 0
 
 [SUCCESS] All tests passed
-  156 tests passed across 22 packages.
+  178 tests passed across 23 packages.
 
 Coverage
 
   package                                                 | cover
   --------------------------------------------------------+-------
-  github.com/evanmschultz/laslig                          | 71.7%
+  github.com/evanmschultz/laslig                          | 73.7%
   github.com/evanmschultz/laslig/examples/all             | 100.0%
   github.com/evanmschultz/laslig/examples/codeblock       | 100.0%
   github.com/evanmschultz/laslig/examples/gotestout       | 100.0%
@@ -68,12 +69,13 @@ Coverage
   github.com/evanmschultz/laslig/examples/paragraph       | 100.0%
   github.com/evanmschultz/laslig/examples/record          | 100.0%
   github.com/evanmschultz/laslig/examples/section         | 100.0%
+  github.com/evanmschultz/laslig/examples/spinner         | 100.0%
   github.com/evanmschultz/laslig/examples/statusline      | 100.0%
   github.com/evanmschultz/laslig/examples/table           | 100.0%
   github.com/evanmschultz/laslig/gotestout                | 82.0%
   github.com/evanmschultz/laslig/internal/examples        | 70.5%
   github.com/evanmschultz/laslig/internal/exampletestutil | 75.5%
-  github.com/evanmschultz/laslig/internal/glamrender      | 83.3%
+  github.com/evanmschultz/laslig/internal/glamrender      | 86.7%
   github.com/evanmschultz/laslig/internal/layout          | 87.5%
   github.com/evanmschultz/laslig/internal/table           | 96.6%
   Minimum package coverage: 70.0%.

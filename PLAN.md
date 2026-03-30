@@ -14,7 +14,7 @@ The package should feel:
 
 ## Shipped Surface
 
-The current `v0.1.0` candidate surface is:
+The current shipped surface is:
 
 - `Policy`
 - `Mode`
@@ -30,6 +30,7 @@ The current `v0.1.0` candidate surface is:
 - `Table`
 - `Panel`
 - `StatusLine`
+- `Spinner`
 - `Markdown`
 - `CodeBlock`
 - `LogBlock`
@@ -65,7 +66,8 @@ logging policy stays with the application.
 
 ## Release State
 
-The repository is in release-candidate shape for `v0.1.0`.
+The repository is in released shape and ready for iterative patch and minor
+releases.
 
 Implemented and aligned:
 
@@ -73,6 +75,7 @@ Implemented and aligned:
 - layout defaults with leading gap, section ownership, indentation, and list-marker control
 - printer-wide theme overrides
 - printer-wide Glamour style selection, defaulting to `dracula`
+- opt-in spinner/progress rendering with transient TTY output and stable plain/JSON fallbacks
 - focused runnable examples for each public primitive
 - aggregate `mage demo` walkthrough
 - `gotestout` focused example and Mage integration path
@@ -89,9 +92,9 @@ Implemented and aligned:
   - GoReleaser
   - CI and release workflows
 
-## Deferred After `v0.1.0`
+## Deferred
 
-These are intentionally not blocking the first release:
+These are intentionally deferred beyond the current release line:
 
 - higher-level theme presets/configuration flow:
   - named presets on top of the shipped raw `Theme` override surface
@@ -110,7 +113,7 @@ These are intentionally not blocking the first release:
 
 ## Release Checklist
 
-Before tagging `v0.1.0`:
+Before tagging the next release:
 
 1. Confirm the worktree is clean.
 2. Run:

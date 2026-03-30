@@ -6,8 +6,10 @@ import (
 	"io"
 	"os"
 	"strings"
+	"time"
 
 	charmlog "charm.land/log/v2"
+	"github.com/charmbracelet/x/term"
 
 	"github.com/evanmschultz/laslig"
 	"github.com/evanmschultz/laslig/gotestout"
@@ -40,6 +42,7 @@ func RenderAll(out io.Writer, printer *laslig.Printer) error {
 		RenderPanel,
 		RenderParagraph,
 		RenderStatusLine,
+		RenderSpinner,
 		RenderMarkdown,
 		RenderCodeBlock,
 		RenderLogBlock,
@@ -220,6 +223,37 @@ func RenderStatusLine(_ io.Writer, printer *laslig.Printer) error {
 	})
 }
 
+// RenderSpinner demonstrates the transient Spinner helper.
+func RenderSpinner(out io.Writer, printer *laslig.Printer) error {
+	if err := printer.Section("Spinner"); err != nil {
+		return fmt.Errorf("render spinner section: %w", err)
+	}
+	if err := printer.Paragraph(laslig.Paragraph{
+		Body:   "Use Spinner when long-running work might otherwise stay quiet for several seconds. Prefer StatusLine or Notice when the operation starts and finishes quickly enough that durable output is enough.",
+		Footer: "This focused example falls back to stable start and finish status rows in plain, JSON, and non-interactive output.",
+	}); err != nil {
+		return fmt.Errorf("render spinner intro: %w", err)
+	}
+
+	spin := printer.NewSpinner()
+	if err := spin.Start("Waiting for remote rollout"); err != nil {
+		return fmt.Errorf("start spinner: %w", err)
+	}
+	if writerSupportsAnimation(out) {
+		time.Sleep(200 * time.Millisecond)
+	}
+	if err := spin.Update("Waiting for remote rollout (2/3)"); err != nil {
+		return fmt.Errorf("update spinner: %w", err)
+	}
+	if writerSupportsAnimation(out) {
+		time.Sleep(200 * time.Millisecond)
+	}
+	if err := spin.Stop("Rollout ready", laslig.NoticeSuccessLevel); err != nil {
+		return fmt.Errorf("stop spinner: %w", err)
+	}
+	return nil
+}
+
 // RenderMarkdown demonstrates the Markdown primitive.
 func RenderMarkdown(_ io.Writer, printer *laslig.Printer) error {
 	if err := printer.Section("Markdown"); err != nil {
@@ -381,7 +415,7 @@ func renderMageCheckPreview(out io.Writer, printer *laslig.Printer) error {
 	if err := printer.Table(laslig.Table{
 		Header: []string{"package", "cover"},
 		Rows: [][]string{
-			{"github.com/evanmschultz/laslig", "71.7%"},
+			{"github.com/evanmschultz/laslig", "73.7%"},
 			{"github.com/evanmschultz/laslig/examples/all", "100.0%"},
 			{"github.com/evanmschultz/laslig/examples/codeblock", "100.0%"},
 			{"github.com/evanmschultz/laslig/examples/gotestout", "100.0%"},
@@ -395,12 +429,13 @@ func renderMageCheckPreview(out io.Writer, printer *laslig.Printer) error {
 			{"github.com/evanmschultz/laslig/examples/paragraph", "100.0%"},
 			{"github.com/evanmschultz/laslig/examples/record", "100.0%"},
 			{"github.com/evanmschultz/laslig/examples/section", "100.0%"},
+			{"github.com/evanmschultz/laslig/examples/spinner", "100.0%"},
 			{"github.com/evanmschultz/laslig/examples/statusline", "100.0%"},
 			{"github.com/evanmschultz/laslig/examples/table", "100.0%"},
 			{"github.com/evanmschultz/laslig/gotestout", "82.0%"},
 			{"github.com/evanmschultz/laslig/internal/examples", "70.5%"},
 			{"github.com/evanmschultz/laslig/internal/exampletestutil", "75.5%"},
-			{"github.com/evanmschultz/laslig/internal/glamrender", "83.3%"},
+			{"github.com/evanmschultz/laslig/internal/glamrender", "86.7%"},
 			{"github.com/evanmschultz/laslig/internal/layout", "87.5%"},
 			{"github.com/evanmschultz/laslig/internal/table", "96.6%"},
 		},
@@ -425,7 +460,7 @@ func mageCheckSampleStream() string {
 		name  string
 		tests int
 	}{
-		{"github.com/evanmschultz/laslig", 44},
+		{"github.com/evanmschultz/laslig", 60},
 		{"github.com/evanmschultz/laslig/examples/all", 8},
 		{"github.com/evanmschultz/laslig/examples/codeblock", 4},
 		{"github.com/evanmschultz/laslig/examples/gotestout", 7},
@@ -439,10 +474,11 @@ func mageCheckSampleStream() string {
 		{"github.com/evanmschultz/laslig/examples/paragraph", 4},
 		{"github.com/evanmschultz/laslig/examples/record", 4},
 		{"github.com/evanmschultz/laslig/examples/section", 4},
+		{"github.com/evanmschultz/laslig/examples/spinner", 4},
 		{"github.com/evanmschultz/laslig/examples/statusline", 4},
 		{"github.com/evanmschultz/laslig/examples/table", 4},
 		{"github.com/evanmschultz/laslig/gotestout", 10},
-		{"github.com/evanmschultz/laslig/internal/examples", 24},
+		{"github.com/evanmschultz/laslig/internal/examples", 26},
 		{"github.com/evanmschultz/laslig/internal/exampletestutil", 5},
 		{"github.com/evanmschultz/laslig/internal/glamrender", 2},
 		{"github.com/evanmschultz/laslig/internal/layout", 2},
@@ -468,6 +504,14 @@ type ttyBuffer struct {
 // Fd reports the current stdout descriptor.
 func (ttyBuffer) Fd() uintptr {
 	return os.Stdout.Fd()
+}
+
+func writerSupportsAnimation(out io.Writer) bool {
+	file, ok := out.(term.File)
+	if !ok {
+		return false
+	}
+	return term.IsTerminal(file.Fd())
 }
 
 // transcript captures one real charm/log transcript for the LogBlock demo.
