@@ -45,6 +45,9 @@ func Check() error {
 	if err := VerifyBootstrap(); err != nil {
 		return err
 	}
+	if err := runStage("Magefiles", MageTagCheck); err != nil {
+		return err
+	}
 	if err := FmtCheck(); err != nil {
 		return err
 	}
@@ -74,7 +77,7 @@ func VerifyBootstrap() error {
 		"LICENSE",
 		"CONTRIBUTING.md",
 		"SECURITY.md",
-		"magefile.go",
+		"magefiles/magefile.go",
 		"go.mod",
 		".goreleaser.yaml",
 		".github/workflows/ci.yml",
@@ -90,6 +93,14 @@ func VerifyBootstrap() error {
 		if _, err := os.Stat(path); err != nil {
 			return fmt.Errorf("verify bootstrap %q: %w", path, err)
 		}
+	}
+	return nil
+}
+
+// MageTagCheck ensures the module remains importable under the mage build tag.
+func MageTagCheck() error {
+	if _, err := output("go", "list", localBuildVCSFlag, "-tags", "mage", "./..."); err != nil {
+		return fmt.Errorf("verify mage-tag package layout: %w", err)
 	}
 	return nil
 }
