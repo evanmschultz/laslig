@@ -68,6 +68,26 @@ func TestGlamourStyleValidation(t *testing.T) {
 	}
 }
 
+// TestSpinnerStyleValidation verifies supported spinner styles validate and
+// invalid values fall back to the default frame set.
+func TestSpinnerStyleValidation(t *testing.T) {
+	if got := DefaultSpinnerStyle(); got != SpinnerStyleBraille {
+		t.Fatalf("DefaultSpinnerStyle() = %q, want %q", got, SpinnerStyleBraille)
+	}
+	if !SpinnerStyleLine.Valid() {
+		t.Fatal("SpinnerStyleLine.Valid() = false, want true")
+	}
+	if SpinnerStyle("bogus").Valid() {
+		t.Fatal("SpinnerStyle(\"bogus\").Valid() = true, want false")
+	}
+	if got := resolveSpinnerStyle(Policy{SpinnerStyle: SpinnerStyle("bogus")}); got != SpinnerStyleBraille {
+		t.Fatalf("resolveSpinnerStyle(invalid) = %q, want %q", got, SpinnerStyleBraille)
+	}
+	if got := resolveSpinnerStyle(Policy{SpinnerStyle: SpinnerStylePulse}); got != SpinnerStylePulse {
+		t.Fatalf("resolveSpinnerStyle(valid) = %q, want %q", got, SpinnerStylePulse)
+	}
+}
+
 // TestCustomListMarker verifies list-marker customization affects rendered output.
 func TestCustomListMarker(t *testing.T) {
 	var buf bytes.Buffer

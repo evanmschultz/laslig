@@ -215,6 +215,20 @@ func ExamplePrinter_NewSpinner() {
 	// [SUCCESS] Rollout ready
 }
 
+// ExamplePrinter_NewSpinnerWithStyle shows one spinner using an explicit
+// built-in frame set.
+func ExamplePrinter_NewSpinnerWithStyle() {
+	printer := newExamplePrinter()
+	spin := printer.NewSpinnerWithStyle(laslig.SpinnerStyleLine)
+
+	_ = spin.Start("Waiting for rollout")
+	_ = spin.Stop("Rollout ready", laslig.NoticeSuccessLevel)
+
+	// Output:
+	// [RUNNING] Waiting for rollout
+	// [SUCCESS] Rollout ready
+}
+
 // ExamplePrinter_Markdown shows one Markdown block rendered as source in plain mode.
 func ExamplePrinter_Markdown() {
 	printer := newExamplePrinter()

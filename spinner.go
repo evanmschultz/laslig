@@ -14,6 +14,7 @@ import (
 var defaultSpinnerFrames = []string{"⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"}
 
 const defaultSpinnerInterval = 100 * time.Millisecond
+const spinnerClearLine = "\r\x1b[2K"
 
 // Spinner renders one opt-in transient progress line for long-running work.
 //
@@ -27,6 +28,7 @@ const defaultSpinnerInterval = 100 * time.Millisecond
 type Spinner struct {
 	printer  *Printer
 	interval time.Duration
+	style    SpinnerStyle
 	frames   []string
 
 	mu             sync.Mutex
@@ -43,16 +45,27 @@ type Spinner struct {
 }
 
 // NewSpinner constructs one opt-in transient progress helper bound to the
-// printer's resolved mode, layout, and theme.
+// printer's resolved mode, layout, theme, and default spinner style.
 //
 // Styled human terminals animate one transient line in place. Plain output,
 // human output with StyleNever, and JSON output degrade to stable start/finish
 // status records without transient frames.
 func (p *Printer) NewSpinner() *Spinner {
+	return p.NewSpinnerWithStyle(p.spinnerStyle)
+}
+
+// NewSpinnerWithStyle constructs one opt-in transient progress helper bound to
+// the printer, using one specific built-in spinner frame set.
+//
+// Supported styles are braille, dot, line, pulse, and meter. Invalid values
+// fall back to the default braille style.
+func (p *Printer) NewSpinnerWithStyle(style SpinnerStyle) *Spinner {
+	resolved := resolveSpinnerStyle(Policy{SpinnerStyle: style})
 	return &Spinner{
 		printer:  p,
 		interval: defaultSpinnerInterval,
-		frames:   append([]string(nil), defaultSpinnerFrames...),
+		style:    resolved,
+		frames:   spinnerFrames(resolved),
 	}
 }
 
@@ -309,10 +322,25 @@ func (s *Spinner) writeAnimatedLineLocked(line string, newline bool) error {
 		s.lastWidth = width
 	}
 
-	if _, err := io.WriteString(s.printer.out, "\r"+line+padding+suffix); err != nil {
+	if _, err := io.WriteString(s.printer.out, spinnerClearLine+line+padding+suffix); err != nil {
 		return err
 	}
 	return nil
+}
+
+func spinnerFrames(style SpinnerStyle) []string {
+	switch style {
+	case SpinnerStyleDot:
+		return []string{"⣾", "⣽", "⣻", "⢿", "⡿", "⣟", "⣯", "⣷"}
+	case SpinnerStyleLine:
+		return []string{"-", "\\", "|", "/"}
+	case SpinnerStylePulse:
+		return []string{"∙∙∙", "●∙∙", "∙●∙", "∙∙●", "∙●∙"}
+	case SpinnerStyleMeter:
+		return []string{"[    ]", "[=   ]", "[==  ]", "[=== ]", "[ ===]", "[  ==]", "[   =]"}
+	default:
+		return append([]string(nil), defaultSpinnerFrames...)
+	}
 }
 
 func truncateVisible(value string, width int) string {

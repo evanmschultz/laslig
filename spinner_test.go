@@ -33,6 +33,9 @@ func TestSpinnerHumanStyledTransient(t *testing.T) {
 	if !strings.Contains(got, "\r") {
 		t.Fatalf("spinner output = %q, want carriage-return redraws", got)
 	}
+	if !strings.Contains(got, "\x1b[2K") {
+		t.Fatalf("spinner output = %q, want line-clear redraws", got)
+	}
 	if !strings.Contains(got, "\x1b[") {
 		t.Fatalf("spinner output = %q, want ANSI styling", got)
 	}
@@ -42,6 +45,52 @@ func TestSpinnerHumanStyledTransient(t *testing.T) {
 	}
 	if !strings.Contains(plain, "Rollout ready") {
 		t.Fatalf("spinner output missing final text:\n%s", plain)
+	}
+}
+
+// TestSpinnerStyleSelection verifies printers can choose one built-in spinner
+// frame set explicitly.
+func TestSpinnerStyleSelection(t *testing.T) {
+	var buf bytes.Buffer
+	printer := New(&buf, Policy{
+		Format:       FormatHuman,
+		Style:        StyleAlways,
+		SpinnerStyle: SpinnerStyleLine,
+	})
+	spin := printer.NewSpinner()
+	spin.forceAnimation = true
+
+	if err := spin.Start("Waiting"); err != nil {
+		t.Fatalf("Start() error = %v", err)
+	}
+	if err := spin.Stop("Done", NoticeSuccessLevel); err != nil {
+		t.Fatalf("Stop() error = %v", err)
+	}
+
+	plain := spinnerANSIPattern.ReplaceAllString(buf.String(), "")
+	if !strings.Contains(plain, "- Waiting") {
+		t.Fatalf("spinner output = %q, want line spinner frame", plain)
+	}
+}
+
+// TestNewSpinnerWithStyleFallback verifies explicit construction falls back to
+// the default style for invalid values.
+func TestNewSpinnerWithStyleFallback(t *testing.T) {
+	var buf bytes.Buffer
+	printer := newTestPrinter(&buf, Mode{Format: FormatHuman, Styled: true, Width: 72})
+	spin := printer.NewSpinnerWithStyle(SpinnerStyle("bogus"))
+	spin.forceAnimation = true
+
+	if err := spin.Start("Waiting"); err != nil {
+		t.Fatalf("Start() error = %v", err)
+	}
+	if err := spin.Stop("Done", NoticeSuccessLevel); err != nil {
+		t.Fatalf("Stop() error = %v", err)
+	}
+
+	plain := spinnerANSIPattern.ReplaceAllString(buf.String(), "")
+	if !strings.Contains(plain, "⠋ Waiting") {
+		t.Fatalf("spinner output = %q, want default braille spinner frame", plain)
 	}
 }
 

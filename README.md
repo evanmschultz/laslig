@@ -6,7 +6,7 @@ The package and module name stay `laslig`. The product branding is `Läslig`, fr
 
 ## Visual Examples
 
-Every guided demo item now has its own runnable example under [`examples/`](./examples) and its own focused VHS capture under [`docs/vhs/`](./docs/vhs). `mage demo` now prints those focused examples one after another as one accumulating walkthrough. The hero GIF below is a direct capture of that real `mage demo` flow, while the smaller GIFs underneath stay focused one primitive at a time.
+Every guided demo item now has its own runnable example under [`examples/`](./examples) and its own focused VHS capture under [`docs/vhs/`](./docs/vhs). `mage demo` now prints those focused examples one after another as one accumulating walkthrough, with the default braille spinner bridging each example transition. The hero GIF below is a direct capture of that real `mage demo` flow, while the smaller GIFs underneath stay focused one primitive at a time.
 
 The hero demo is intentionally slowed down between sections for README display. Läslig itself does not add runtime delays to your commands by default.
 
@@ -74,6 +74,7 @@ Today the package includes:
 - paragraph blocks
 - compact status lines
 - opt-in transient spinners with stable plain and JSON fallbacks
+- built-in spinner styles: braille, dot, line, pulse, and meter
 - tables
 - panels
 - Glamour-backed Markdown blocks
@@ -252,6 +253,9 @@ _ = printer.LogBlock(laslig.LogBlock{
 
 Use `Spinner` only when work may otherwise be silent for several seconds. For
 short operations, a durable `StatusLine` or `Notice` is usually clearer.
+Built-in spinner styles are `braille`, `dot`, `line`, `pulse`, and `meter`.
+The default is `braille`. Set `Policy.SpinnerStyle` for a printer-wide default
+or call `printer.NewSpinnerWithStyle(...)` for one explicit spinner instance.
 
 ## Structured Test Output
 
@@ -304,6 +308,7 @@ That shape works well in ordinary Go CLIs, Mage targets, Cobra/Fang commands, an
 
 This repository dogfoods that pattern in [`magefiles/magefile.go`](./magefiles/magefile.go): `mage test` runs `go test -json ./...`, renders compact package and failure output through `gotestout`, and still returns a normal Mage error on failure.
 The focused runnable example for that package lives in [`examples/gotestout/main.go`](./examples/gotestout/main.go).
+The separate Mage-facing example in [`examples/magecheck/main.go`](./examples/magecheck/main.go) now also shows the recommended spinner handoff: keep one transient progress line alive while the command is quiet, then stop it before `gotestout` starts streaming package results.
 
 Common ways to try that surface locally:
 
@@ -314,8 +319,9 @@ mage test
 
 The focused `gotestout` GIF and example command intentionally include passing,
 skipped, and failing test events plus one package build failure. The separate
-`magecheck` GIF shows the passing task-runner path. That keeps the README
-honest about both the success path and the failure path.
+`magecheck` GIF shows the passing task-runner path plus the spinner-to-stream
+handoff before the live package output begins. That keeps the README honest
+about both the success path and the failure path.
 
 Future `gotestout` work is about smarter summaries, not basic
 functionality: clearer buckets for test failures vs package/build failures,
@@ -327,7 +333,7 @@ Focused runnable examples now live one-per-item under [`examples/`](./examples):
 The aggregate walkthrough renderer also lives in [`examples/all/main.go`](./examples/all/main.go).
 The focused `logblock` example captures real `charm.land/log/v2` output internally so the demo still shows an actual Charm log transcript without making `charm/log` part of laslig's public API.
 Small verified Go doc examples live in [`example_test.go`](./example_test.go).
-`mage demo` is the paced walkthrough entrypoint. It renders the focused examples one after another as one accumulating document. `examples/all` remains the aggregate renderer for direct example runs and tests.
+`mage demo` is the paced walkthrough entrypoint. It renders the focused examples one after another as one accumulating document, using the default braille spinner between examples so the walkthrough never pauses silently. `examples/all` remains the aggregate renderer for direct example runs and tests.
 
 Run it locally:
 
@@ -342,7 +348,7 @@ go run ./examples/all --format human --style always
 mage test
 ```
 
-`mage demo` is the normal paced walkthrough entrypoint. `mage test` is the real Mage-facing `gotestout` dogfood path. The `go run` forms above show the focused per-item examples directly, while `go run ./examples/all` renders the aggregate example without the paced demo wrapper.
+`mage demo` is the normal paced walkthrough entrypoint. `mage test` is the real Mage-facing `gotestout` dogfood path. The `magecheck` focused example demonstrates the recommended spinner handoff before the live test stream. The `go run` forms above show the focused per-item examples directly, while `go run ./examples/all` renders the aggregate example without the paced demo wrapper.
 
 The README GIFs are generated from the focused VHS tapes under [`docs/vhs/`](./docs/vhs). `mage vhs` renders all tracked tapes so the README stays aligned with the runnable examples.
 

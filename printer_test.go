@@ -13,7 +13,7 @@ import (
 // primitive formatting tests can focus on block content.
 func newTestPrinter(out io.Writer, mode Mode) *Printer {
 	layout := DefaultLayout().WithLeadingGap(0)
-	return newPrinter(out, mode, layout, DefaultTheme(mode), DefaultGlamourStyle())
+	return newPrinter(out, mode, layout, DefaultTheme(mode), DefaultSpinnerStyle(), DefaultGlamourStyle())
 }
 
 // TestResolveModePlainForBuffer verifies that non-terminal writers resolve to plain output by default.
