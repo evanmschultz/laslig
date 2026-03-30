@@ -122,6 +122,29 @@ func TestNoticeHumanWrap(t *testing.T) {
 	}
 }
 
+// TestNoticeHumanNoStyle verifies unstyled human notices preserve human layout without ANSI.
+func TestNoticeHumanNoStyle(t *testing.T) {
+	var buf bytes.Buffer
+	printer := newTestPrinter(&buf, Mode{Format: FormatHuman, Styled: false})
+
+	err := printer.Notice(Notice{
+		Level: NoticeWarningLevel,
+		Title: "Careful",
+		Body:  "Something needs attention.",
+	})
+	if err != nil {
+		t.Fatalf("Notice() error = %v", err)
+	}
+
+	want := "[WARNING] Careful\n  Something needs attention.\n"
+	if got := buf.String(); got != want {
+		t.Fatalf("Notice() output = %q, want %q", got, want)
+	}
+	if strings.Contains(buf.String(), "\x1b[") {
+		t.Fatalf("Notice() output = %q, want no ANSI", buf.String())
+	}
+}
+
 // TestRenderBadgeHumanStyled verifies semantic badge values use distinct styled chips.
 func TestRenderBadgeHumanStyled(t *testing.T) {
 	printer := newTestPrinter(&bytes.Buffer{}, Mode{Format: FormatHuman, Styled: true})
@@ -147,6 +170,28 @@ func TestRenderBadgeHumanStyled(t *testing.T) {
 	}
 	if warn == custom {
 		t.Fatalf("renderBadge(warning) = %q, want semantic style distinct from custom badge", warn)
+	}
+}
+
+// TestRenderBadgeHumanNoStyle verifies unstyled human badges fall back to plain bracketed text.
+func TestRenderBadgeHumanNoStyle(t *testing.T) {
+	printer := newTestPrinter(&bytes.Buffer{}, Mode{Format: FormatHuman, Styled: false})
+
+	pass := printer.renderBadge("pass")
+	custom := printer.renderBadge("custom")
+	warn := printer.renderBadge("warning")
+
+	if got, want := pass, "[PASS]"; got != want {
+		t.Fatalf("renderBadge(pass) = %q, want %q", got, want)
+	}
+	if got, want := custom, "[CUSTOM]"; got != want {
+		t.Fatalf("renderBadge(custom) = %q, want %q", got, want)
+	}
+	if got, want := warn, "[WARNING]"; got != want {
+		t.Fatalf("renderBadge(warning) = %q, want %q", got, want)
+	}
+	if strings.Contains(pass, "\x1b[") || strings.Contains(custom, "\x1b[") || strings.Contains(warn, "\x1b[") {
+		t.Fatal("renderBadge() output contained ANSI styling in unstyled human mode")
 	}
 }
 
@@ -289,6 +334,55 @@ func TestListHumanNoStyle(t *testing.T) {
 	want := "Profiles\n- default\n  provider: codex\n"
 	if got := buf.String(); got != want {
 		t.Fatalf("List() output = %q, want %q", got, want)
+	}
+}
+
+// TestListHumanNoStyleBadge verifies unstyled human list badges stay plain without ANSI.
+func TestListHumanNoStyleBadge(t *testing.T) {
+	var buf bytes.Buffer
+	printer := newTestPrinter(&buf, Mode{Format: FormatHuman, Styled: false})
+
+	err := printer.List(List{
+		Title: "Profiles",
+		Items: []ListItem{{
+			Title: "dev",
+			Badge: "active",
+		}},
+	})
+	if err != nil {
+		t.Fatalf("List() error = %v", err)
+	}
+
+	want := "Profiles\n- dev [ACTIVE]\n"
+	if got := buf.String(); got != want {
+		t.Fatalf("List() output = %q, want %q", got, want)
+	}
+	if strings.Contains(buf.String(), "\x1b[") {
+		t.Fatalf("List() output = %q, want no ANSI", buf.String())
+	}
+}
+
+// TestRecordHumanNoStyleBadge verifies unstyled human record field badges stay plain without ANSI.
+func TestRecordHumanNoStyleBadge(t *testing.T) {
+	var buf bytes.Buffer
+	printer := newTestPrinter(&buf, Mode{Format: FormatHuman, Styled: false})
+
+	err := printer.Record(Record{
+		Title: "Build",
+		Fields: []Field{
+			{Label: "status", Value: "pass", Badge: true},
+		},
+	})
+	if err != nil {
+		t.Fatalf("Record() error = %v", err)
+	}
+
+	want := "Build\n  status: [PASS]\n"
+	if got := buf.String(); got != want {
+		t.Fatalf("Record() output = %q, want %q", got, want)
+	}
+	if strings.Contains(buf.String(), "\x1b[") {
+		t.Fatalf("Record() output = %q, want no ANSI", buf.String())
 	}
 }
 
