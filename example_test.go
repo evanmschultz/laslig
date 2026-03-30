@@ -201,6 +201,20 @@ func ExamplePrinter_StatusLine() {
 	// [SUCCESS] Build ready (mage check)
 }
 
+// ExamplePrinter_NewSpinner shows one spinner falling back to stable status
+// rows in plain output.
+func ExamplePrinter_NewSpinner() {
+	printer := newExamplePrinter()
+	spin := printer.NewSpinner()
+
+	_ = spin.Start("Waiting for rollout")
+	_ = spin.Stop("Rollout ready", laslig.NoticeSuccessLevel)
+
+	// Output:
+	// [RUNNING] Waiting for rollout
+	// [SUCCESS] Rollout ready
+}
+
 // ExamplePrinter_Markdown shows one Markdown block rendered as source in plain mode.
 func ExamplePrinter_Markdown() {
 	printer := newExamplePrinter()

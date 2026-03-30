@@ -253,6 +253,7 @@ func Demo() error {
 		"panel",
 		"paragraph",
 		"statusline",
+		"spinner",
 		"markdown",
 		"codeblock",
 		"logblock",

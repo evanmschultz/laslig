@@ -538,6 +538,30 @@ func TestStatusLinePlain(t *testing.T) {
 	}
 }
 
+// TestStatusLineHumanNoStyle verifies unstyled human output keeps the human
+// layout but falls back to plain bracketed labels with no ANSI.
+func TestStatusLineHumanNoStyle(t *testing.T) {
+	var buf bytes.Buffer
+	printer := newTestPrinter(&buf, Mode{Format: FormatHuman, Styled: false})
+
+	err := printer.StatusLine(StatusLine{
+		Level:  NoticeSuccessLevel,
+		Text:   "Build ready",
+		Detail: "mage check",
+	})
+	if err != nil {
+		t.Fatalf("StatusLine() error = %v", err)
+	}
+
+	want := "[SUCCESS] Build ready (mage check)\n"
+	if got := buf.String(); got != want {
+		t.Fatalf("StatusLine() output = %q, want %q", got, want)
+	}
+	if strings.Contains(buf.String(), "\x1b[") {
+		t.Fatalf("StatusLine() output = %q, want no ANSI", buf.String())
+	}
+}
+
 // TestStatusLineJSON verifies machine-readable status-line rendering.
 func TestStatusLineJSON(t *testing.T) {
 	var buf bytes.Buffer

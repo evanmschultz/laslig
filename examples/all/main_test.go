@@ -45,6 +45,7 @@ func TestRunArgsPlain(t *testing.T) {
 		"Panel",
 		"Paragraph",
 		"StatusLine",
+		"Spinner",
 		"Markdown",
 		"CodeBlock",
 		"LogBlock",

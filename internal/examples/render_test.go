@@ -16,6 +16,21 @@ import (
 // ansiPattern matches ANSI escape sequences for stable styled-output assertions.
 var ansiPattern = regexp.MustCompile(`\x1b\[[0-9;]*m`)
 
+type failingWriter struct{}
+
+func (failingWriter) Write(_ []byte) (int, error) {
+	return 0, errors.New("boom")
+}
+
+type fakeFileWriter struct {
+	bytes.Buffer
+	fd uintptr
+}
+
+func (w fakeFileWriter) Fd() uintptr {
+	return w.fd
+}
+
 // stripANSI removes ANSI escape sequences for stable golden snapshots.
 func stripANSI(value string) string {
 	return ansiPattern.ReplaceAllString(value, "")
@@ -36,6 +51,7 @@ func TestRunFocusedPlainGolden(t *testing.T) {
 		{name: "panel", render: RenderPanel},
 		{name: "paragraph", render: RenderParagraph},
 		{name: "statusline", render: RenderStatusLine},
+		{name: "spinner", render: RenderSpinner},
 		{name: "markdown", render: RenderMarkdown},
 		{name: "codeblock", render: RenderCodeBlock},
 		{name: "logblock", render: RenderLogBlock},
@@ -152,6 +168,7 @@ func TestMageCheckSampleStream(t *testing.T) {
 	for _, want := range []string{
 		"github.com/evanmschultz/laslig/examples/section",
 		"github.com/evanmschultz/laslig/examples/notice",
+		"github.com/evanmschultz/laslig/examples/spinner",
 		"github.com/evanmschultz/laslig/examples/magecheck",
 		"github.com/evanmschultz/laslig/internal/examples",
 	} {
@@ -180,5 +197,32 @@ func TestTTYBufferFd(t *testing.T) {
 	var writer ttyBuffer
 	if got, want := writer.Fd(), os.Stdout.Fd(); got != want {
 		t.Fatalf("ttyBuffer.Fd() = %d, want %d", got, want)
+	}
+}
+
+// TestWriterSupportsAnimation verifies both the plain-writer and term.File
+// branches of the animation probe remain stable.
+func TestWriterSupportsAnimation(t *testing.T) {
+	if writerSupportsAnimation(&bytes.Buffer{}) {
+		t.Fatal("writerSupportsAnimation(bytes.Buffer) = true, want false")
+	}
+
+	writer := fakeFileWriter{fd: ^uintptr(0)}
+	if writerSupportsAnimation(&writer) {
+		t.Fatal("writerSupportsAnimation(fakeFileWriter) = true, want false for non-tty fd")
+	}
+}
+
+// TestRenderSpinnerWriteError verifies the spinner demo wraps underlying write
+// failures instead of swallowing them.
+func TestRenderSpinnerWriteError(t *testing.T) {
+	printer := laslig.NewWithMode(failingWriter{}, laslig.Mode{Format: laslig.FormatPlain})
+
+	err := RenderSpinner(failingWriter{}, printer)
+	if err == nil {
+		t.Fatal("RenderSpinner() error = nil, want write failure")
+	}
+	if !strings.Contains(err.Error(), "render spinner section") {
+		t.Fatalf("RenderSpinner() error = %v, want wrapped spinner-section prefix", err)
 	}
 }
