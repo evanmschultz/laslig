@@ -276,7 +276,9 @@ func Demo() error {
 			return err
 		}
 		if index < len(examples)-1 {
-			time.Sleep(pacedDemoDelay)
+			if err := pauseBeforeExample(printer, examples[index+1]); err != nil {
+				return err
+			}
 		}
 	}
 
@@ -293,6 +295,18 @@ func Demo() error {
 		},
 	}); err != nil {
 		return fmt.Errorf("write demo display note: %w", err)
+	}
+	return nil
+}
+
+func pauseBeforeExample(printer *laslig.Printer, next string) error {
+	spin := printer.NewSpinner()
+	if err := spin.Start("Preparing next example: " + next); err != nil {
+		return fmt.Errorf("start transition spinner for %q: %w", next, err)
+	}
+	time.Sleep(pacedDemoDelay)
+	if err := spin.Stop("Next example ready: "+next, laslig.NoticeInfoLevel); err != nil {
+		return fmt.Errorf("stop transition spinner for %q: %w", next, err)
 	}
 	return nil
 }

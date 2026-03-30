@@ -6,7 +6,7 @@ The package and module name stay `laslig`. The product branding is `Läslig`, fr
 
 ## Visual Examples
 
-Every guided demo item now has its own runnable example under [`examples/`](./examples) and its own focused VHS capture under [`docs/vhs/`](./docs/vhs). `mage demo` now prints those focused examples one after another as one accumulating walkthrough. The hero GIF below is a direct capture of that real `mage demo` flow, while the smaller GIFs underneath stay focused one primitive at a time.
+Every guided demo item now has its own runnable example under [`examples/`](./examples) and its own focused VHS capture under [`docs/vhs/`](./docs/vhs). `mage demo` now prints those focused examples one after another as one accumulating walkthrough, with the default braille spinner bridging each example transition. The hero GIF below is a direct capture of that real `mage demo` flow, while the smaller GIFs underneath stay focused one primitive at a time.
 
 The hero demo is intentionally slowed down between sections for README display. Läslig itself does not add runtime delays to your commands by default.
 
@@ -74,6 +74,7 @@ Today the package includes:
 - paragraph blocks
 - compact status lines
 - opt-in transient spinners with stable plain and JSON fallbacks
+- built-in spinner styles: braille, dot, line, pulse, and meter
 - tables
 - panels
 - Glamour-backed Markdown blocks
@@ -252,6 +253,9 @@ _ = printer.LogBlock(laslig.LogBlock{
 
 Use `Spinner` only when work may otherwise be silent for several seconds. For
 short operations, a durable `StatusLine` or `Notice` is usually clearer.
+Built-in spinner styles are `braille`, `dot`, `line`, `pulse`, and `meter`.
+The default is `braille`. Set `Policy.SpinnerStyle` for a printer-wide default
+or call `printer.NewSpinnerWithStyle(...)` for one explicit spinner instance.
 
 ## Structured Test Output
 
@@ -329,7 +333,7 @@ Focused runnable examples now live one-per-item under [`examples/`](./examples):
 The aggregate walkthrough renderer also lives in [`examples/all/main.go`](./examples/all/main.go).
 The focused `logblock` example captures real `charm.land/log/v2` output internally so the demo still shows an actual Charm log transcript without making `charm/log` part of laslig's public API.
 Small verified Go doc examples live in [`example_test.go`](./example_test.go).
-`mage demo` is the paced walkthrough entrypoint. It renders the focused examples one after another as one accumulating document. `examples/all` remains the aggregate renderer for direct example runs and tests.
+`mage demo` is the paced walkthrough entrypoint. It renders the focused examples one after another as one accumulating document, using the default braille spinner between examples so the walkthrough never pauses silently. `examples/all` remains the aggregate renderer for direct example runs and tests.
 
 Run it locally:
 

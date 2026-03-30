@@ -10,8 +10,9 @@
 // The package is intentionally small and data-oriented. Callers provide an
 // io.Writer and a Policy, then render semantic blocks through a Printer.
 // Policy may also carry a Layout when a command wants to tune the default
-// document rhythm, section indentation, or list marker shape, or a Theme when
-// one command wants to swap the default styles directly.
+// document rhythm, section indentation, or list marker shape, a Theme when one
+// command wants to swap the default styles directly, or a built-in spinner
+// style when one command wants a different transient progress frame set.
 // Laslig does not own logging, command parsing, or process lifecycle. Callers
 // may render explicit log excerpts or transcripts through laslig, but logging
 // policy and sinks remain application concerns.

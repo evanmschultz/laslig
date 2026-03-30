@@ -20,11 +20,16 @@ func Run(out io.Writer, args []string, name string, render Renderer) error {
 
 	format := flags.String("format", string(laslig.FormatAuto), "output format: auto, human, plain, json")
 	style := flags.String("style", string(laslig.StyleAuto), "style policy: auto, always, never")
+	spinnerStyle := flags.String("spinner-style", string(laslig.DefaultSpinnerStyle()), "spinner style: braille, dot, line, pulse, meter")
 	glamourStyle := flags.String("glamour-style", string(laslig.DefaultGlamourStyle()), "glamour markdown style: dark, light, pink, dracula, tokyo-night, ascii, notty")
 	if err := flags.Parse(args); err != nil {
 		return fmt.Errorf("parse flags: %w", err)
 	}
 
+	resolvedSpinnerStyle := laslig.SpinnerStyle(strings.ToLower(*spinnerStyle))
+	if !resolvedSpinnerStyle.Valid() {
+		return fmt.Errorf("parse flags: invalid spinner style %q", *spinnerStyle)
+	}
 	resolvedGlamourStyle := laslig.GlamourStyle(strings.ToLower(*glamourStyle))
 	if !resolvedGlamourStyle.Valid() {
 		return fmt.Errorf("parse flags: invalid glamour style %q", *glamourStyle)
@@ -33,6 +38,7 @@ func Run(out io.Writer, args []string, name string, render Renderer) error {
 	printer := laslig.New(out, laslig.Policy{
 		Format:       laslig.Format(strings.ToLower(*format)),
 		Style:        laslig.StylePolicy(strings.ToLower(*style)),
+		SpinnerStyle: resolvedSpinnerStyle,
 		GlamourStyle: resolvedGlamourStyle,
 	})
 	if err := render(out, printer); err != nil {

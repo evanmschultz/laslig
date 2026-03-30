@@ -24,4 +24,4 @@ Show
 
 Type "go run ./examples/spinner --format human --style always"
 Enter
-Sleep 4s
+Sleep 5s

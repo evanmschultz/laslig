@@ -15,6 +15,8 @@ import (
 	"github.com/evanmschultz/laslig/gotestout"
 )
 
+const demoSpinnerStepDelay = 450 * time.Millisecond
+
 // RenderAll writes the aggregate walkthrough used by mage demo.
 func RenderAll(out io.Writer, printer *laslig.Printer) error {
 	if err := printer.Section("Läslig demo"); err != nil {
@@ -239,15 +241,15 @@ func RenderSpinner(out io.Writer, printer *laslig.Printer) error {
 	if err := spin.Start("Waiting for remote rollout"); err != nil {
 		return fmt.Errorf("start spinner: %w", err)
 	}
-	if writerSupportsAnimation(out) {
-		time.Sleep(200 * time.Millisecond)
-	}
+	pauseForAnimatedPreview(out, demoSpinnerStepDelay)
 	if err := spin.Update("Waiting for remote rollout (2/3)"); err != nil {
 		return fmt.Errorf("update spinner: %w", err)
 	}
-	if writerSupportsAnimation(out) {
-		time.Sleep(200 * time.Millisecond)
+	pauseForAnimatedPreview(out, demoSpinnerStepDelay)
+	if err := spin.Update("Waiting for remote rollout (3/3)"); err != nil {
+		return fmt.Errorf("update spinner final step: %w", err)
 	}
+	pauseForAnimatedPreview(out, demoSpinnerStepDelay)
 	if err := spin.Stop("Rollout ready", laslig.NoticeSuccessLevel); err != nil {
 		return fmt.Errorf("stop spinner: %w", err)
 	}
@@ -399,15 +401,11 @@ func renderMageCheckPreview(out io.Writer, printer *laslig.Printer) error {
 	if err := spin.Start("Waiting for first test event"); err != nil {
 		return fmt.Errorf("start mage spinner: %w", err)
 	}
-	if writerSupportsAnimation(out) {
-		time.Sleep(200 * time.Millisecond)
-	}
+	pauseForAnimatedPreview(out, demoSpinnerStepDelay)
 	if err := spin.Update("Waiting for first test event from go test -json"); err != nil {
 		return fmt.Errorf("update mage spinner: %w", err)
 	}
-	if writerSupportsAnimation(out) {
-		time.Sleep(200 * time.Millisecond)
-	}
+	pauseForAnimatedPreview(out, demoSpinnerStepDelay)
 	if err := spin.Stop("Test stream detected", laslig.NoticeSuccessLevel); err != nil {
 		return fmt.Errorf("stop mage spinner: %w", err)
 	}
@@ -528,6 +526,12 @@ func writerSupportsAnimation(out io.Writer) bool {
 		return false
 	}
 	return term.IsTerminal(file.Fd())
+}
+
+func pauseForAnimatedPreview(out io.Writer, delay time.Duration) {
+	if writerSupportsAnimation(out) {
+		time.Sleep(delay)
+	}
 }
 
 // transcript captures one real charm/log transcript for the LogBlock demo.

@@ -43,10 +43,49 @@ type Policy struct {
 	Layout *Layout
 	// Theme overrides the printer-wide lipgloss style roles.
 	Theme *Theme
+	// SpinnerStyle selects the built-in transient spinner frame set used by
+	// Printer.NewSpinner. Supported values are braille, dot, line, pulse, and
+	// meter. The default is braille.
+	SpinnerStyle SpinnerStyle
 	// GlamourStyle selects the built-in Glamour preset used for Markdown and
 	// code-block rendering. Supported values are dark, light, pink, dracula,
 	// tokyo-night, ascii, and notty. The default is dracula.
 	GlamourStyle GlamourStyle
+}
+
+// SpinnerStyle identifies one supported built-in spinner frame set.
+//
+// Supported built-ins are braille, dot, line, pulse, and meter.
+type SpinnerStyle string
+
+const (
+	// SpinnerStyleBraille renders the default braille-dot spinner.
+	SpinnerStyleBraille SpinnerStyle = "braille"
+	// SpinnerStyleDot renders a larger dot spinner.
+	SpinnerStyleDot SpinnerStyle = "dot"
+	// SpinnerStyleLine renders a compact ASCII-friendly line spinner.
+	SpinnerStyleLine SpinnerStyle = "line"
+	// SpinnerStylePulse renders a pulsing dot spinner.
+	SpinnerStylePulse SpinnerStyle = "pulse"
+	// SpinnerStyleMeter renders a meter-like spinner.
+	SpinnerStyleMeter SpinnerStyle = "meter"
+)
+
+// DefaultSpinnerStyle returns the default built-in spinner style used by
+// laslig, which is braille.
+func DefaultSpinnerStyle() SpinnerStyle {
+	return SpinnerStyleBraille
+}
+
+// Valid reports whether the style matches one of laslig's supported built-in
+// spinner styles.
+func (s SpinnerStyle) Valid() bool {
+	switch s {
+	case SpinnerStyleBraille, SpinnerStyleDot, SpinnerStyleLine, SpinnerStylePulse, SpinnerStyleMeter:
+		return true
+	default:
+		return false
+	}
 }
 
 // GlamourStyle identifies one supported built-in Glamour style preset.
@@ -240,6 +279,15 @@ func resolveGlamourStyle(policy Policy) GlamourStyle {
 		return DefaultGlamourStyle()
 	}
 	return policy.GlamourStyle
+}
+
+// resolveSpinnerStyle resolves the requested spinner style to one supported
+// built-in frame set.
+func resolveSpinnerStyle(policy Policy) SpinnerStyle {
+	if !policy.SpinnerStyle.Valid() {
+		return DefaultSpinnerStyle()
+	}
+	return policy.SpinnerStyle
 }
 
 // clampNonNegative keeps layout counts at zero or above.

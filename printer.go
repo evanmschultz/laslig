@@ -18,6 +18,7 @@ type Printer struct {
 	mode         Mode
 	layout       Layout
 	theme        Theme
+	spinnerStyle SpinnerStyle
 	glamourStyle GlamourStyle
 	wroteBlocks  bool
 	lastBlock    blockKind
@@ -37,7 +38,7 @@ const (
 // New constructs one printer by resolving a writer against the provided policy.
 func New(out io.Writer, policy Policy) *Printer {
 	mode := ResolveMode(out, policy)
-	return newPrinter(out, mode, resolveLayout(policy), resolveTheme(policy, mode), resolveGlamourStyle(policy))
+	return newPrinter(out, mode, resolveLayout(policy), resolveTheme(policy, mode), resolveSpinnerStyle(policy), resolveGlamourStyle(policy))
 }
 
 // NewWithMode constructs one printer using an already-resolved output mode.
@@ -45,12 +46,12 @@ func New(out io.Writer, policy Policy) *Printer {
 // NewWithMode is a convenience for callers that already resolved the output
 // mode and are happy with the default Layout and Theme for that mode.
 func NewWithMode(out io.Writer, mode Mode) *Printer {
-	return newPrinter(out, mode, DefaultLayout(), DefaultTheme(mode), DefaultGlamourStyle())
+	return newPrinter(out, mode, DefaultLayout(), DefaultTheme(mode), DefaultSpinnerStyle(), DefaultGlamourStyle())
 }
 
 // newPrinter constructs one printer from already-resolved mode, layout, and
 // theme inputs.
-func newPrinter(out io.Writer, mode Mode, layout Layout, theme Theme, glamourStyle GlamourStyle) *Printer {
+func newPrinter(out io.Writer, mode Mode, layout Layout, theme Theme, spinnerStyle SpinnerStyle, glamourStyle GlamourStyle) *Printer {
 	if out == nil {
 		out = io.Discard
 	}
@@ -59,6 +60,7 @@ func newPrinter(out io.Writer, mode Mode, layout Layout, theme Theme, glamourSty
 		mode:         mode,
 		layout:       layout,
 		theme:        theme,
+		spinnerStyle: spinnerStyle,
 		glamourStyle: glamourStyle,
 	}
 }
