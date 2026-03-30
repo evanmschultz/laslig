@@ -351,7 +351,7 @@ func RenderMageCheckPreview(out io.Writer, printer *laslig.Printer) error {
 	}
 	if err := printer.Paragraph(laslig.Paragraph{
 		Body:   "Use gotestout inside Mage or small Go helpers behind make, just, or task when you want caller-owned process control with a readable test stream.",
-		Footer: "The preview below matches this repository's mage check and mage test shape.",
+		Footer: "The preview below matches this repository's mage check and mage test shape, including the recommended spinner handoff before the live test stream starts.",
 	}); err != nil {
 		return fmt.Errorf("render mage preview intro: %w", err)
 	}
@@ -394,6 +394,22 @@ func renderMageCheckPreview(out io.Writer, printer *laslig.Printer) error {
 		Detail: "./examples/...",
 	}); err != nil {
 		return fmt.Errorf("render build success: %w", err)
+	}
+	spin := printer.NewSpinner()
+	if err := spin.Start("Waiting for first test event"); err != nil {
+		return fmt.Errorf("start mage spinner: %w", err)
+	}
+	if writerSupportsAnimation(out) {
+		time.Sleep(200 * time.Millisecond)
+	}
+	if err := spin.Update("Waiting for first test event from go test -json"); err != nil {
+		return fmt.Errorf("update mage spinner: %w", err)
+	}
+	if writerSupportsAnimation(out) {
+		time.Sleep(200 * time.Millisecond)
+	}
+	if err := spin.Stop("Test stream detected", laslig.NoticeSuccessLevel); err != nil {
+		return fmt.Errorf("stop mage spinner: %w", err)
 	}
 
 	if err := printer.Section("Tests"); err != nil {

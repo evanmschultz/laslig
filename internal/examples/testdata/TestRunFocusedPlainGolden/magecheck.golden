@@ -3,7 +3,7 @@ gotestout + Mage
 
   Use gotestout inside Mage or small Go helpers behind make, just, or task when you want caller-owned process control with a readable test stream.
   
-  The preview below matches this repository's mage check and mage test shape.
+  The preview below matches this repository's mage check and mage test shape, including the recommended spinner handoff before the live test stream starts.
 
 
 Build
@@ -11,6 +11,9 @@ Build
   [INFO] Building example packages (./examples/...)
 
   [SUCCESS] Built example packages (./examples/...)
+
+  [RUNNING] Waiting for first test event
+  [SUCCESS] Test stream detected
 
 
 Tests

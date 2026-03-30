@@ -226,3 +226,32 @@ func TestRenderSpinnerWriteError(t *testing.T) {
 		t.Fatalf("RenderSpinner() error = %v, want wrapped spinner-section prefix", err)
 	}
 }
+
+// TestRenderMageCheckPreviewWriteError verifies the Mage-focused preview wraps
+// early writer failures through the public renderer entrypoint.
+func TestRenderMageCheckPreviewWriteError(t *testing.T) {
+	printer := laslig.NewWithMode(failingWriter{}, laslig.Mode{Format: laslig.FormatPlain})
+
+	err := RenderMageCheckPreview(io.Discard, printer)
+	if err == nil {
+		t.Fatal("RenderMageCheckPreview() error = nil, want write failure")
+	}
+	if !strings.Contains(err.Error(), "render mage preview section") {
+		t.Fatalf("RenderMageCheckPreview() error = %v, want wrapped mage-preview prefix", err)
+	}
+}
+
+// TestRenderMageCheckPreviewStreamError verifies the focused Mage preview
+// reports stream-writer failures after the spinner handoff.
+func TestRenderMageCheckPreviewStreamError(t *testing.T) {
+	var buf bytes.Buffer
+	printer := laslig.NewWithMode(&buf, laslig.Mode{Format: laslig.FormatPlain})
+
+	err := renderMageCheckPreview(failingWriter{}, printer)
+	if err == nil {
+		t.Fatal("renderMageCheckPreview() error = nil, want stream failure")
+	}
+	if !strings.Contains(err.Error(), "render mage gotestout stream") {
+		t.Fatalf("renderMageCheckPreview() error = %v, want wrapped gotestout prefix", err)
+	}
+}
