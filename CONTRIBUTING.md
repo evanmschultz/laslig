@@ -5,7 +5,7 @@ Contributions should keep the library small, readable, and easy to adopt.
 
 ## Prerequisites
 
-- Go matching the version in [`go.mod`](./go.mod)
+- Go `1.25.8` or newer (matching the floor declared in [`go.mod`](./go.mod))
 - Mage installed with the same pinned version used in CI:
 
 ```bash

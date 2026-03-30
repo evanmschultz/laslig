@@ -112,6 +112,8 @@ Deferred for a later release:
 go get github.com/evanmschultz/laslig
 ```
 
+The current minimum supported Go version is `1.25.8`.
+
 ## Quick Start
 
 ```go
