@@ -381,6 +381,10 @@ func runGoTest(packages ...string) error {
 	args := []string{"test", "-json"}
 	args = append(args, packages...)
 
+	printer := laslig.New(os.Stdout, laslig.Policy{
+		Format: laslig.FormatAuto,
+		Style:  laslig.StyleAuto,
+	})
 	cmd := exec.Command("go", args...)
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
@@ -390,6 +394,13 @@ func runGoTest(packages ...string) error {
 
 	if err := cmd.Start(); err != nil {
 		return fmt.Errorf("start go test: %w", err)
+	}
+	if err := printer.StatusLine(laslig.StatusLine{
+		Level:  laslig.NoticeInfoLevel,
+		Text:   "Started go test -json",
+		Detail: strings.Join(packages, " "),
+	}); err != nil {
+		return fmt.Errorf("write go test start status: %w", err)
 	}
 
 	summary, renderErr := gotestout.Render(os.Stdout, stdout, gotestout.Options{

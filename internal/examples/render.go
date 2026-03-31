@@ -16,6 +16,7 @@ import (
 )
 
 const demoSpinnerStepDelay = 450 * time.Millisecond
+const demoTestEventDelay = 180 * time.Millisecond
 
 // RenderAll writes the aggregate walkthrough used by mage demo.
 func RenderAll(out io.Writer, printer *laslig.Printer) error {
@@ -317,7 +318,7 @@ func RenderGotestout(out io.Writer, printer *laslig.Printer) error {
 		}
 		if err := printer.Paragraph(laslig.Paragraph{
 			Body:   "Use gotestout for attractive, structured go test output when your task runner, CLI command, or Go helper behind make/just should keep owning process control.",
-			Footer: "This focused example intentionally mixes passing, skipped, and failing test events plus one package build failure.",
+			Footer: "This focused example intentionally mixes passing, skipped, and failing test events plus one package build failure, and styled human terminals show gotestout's live activity footer while the stream is still active.",
 		}); err != nil {
 			return fmt.Errorf("render gotestout intro: %w", err)
 		}
@@ -333,12 +334,18 @@ func RenderGotestout(out io.Writer, printer *laslig.Printer) error {
 		}
 	}
 
-	_, err := gotestout.Render(out, strings.NewReader(focusedGotestoutSampleStream), gotestout.Options{
+	_, err := gotestout.Render(out, previewStreamReader(out, focusedGotestoutSampleStream, demoTestEventDelay), gotestout.Options{
 		Policy: laslig.Policy{
 			Format: printer.Mode().Format,
 			Style:  StylePolicyForMode(printer.Mode()),
 		},
 		View: gotestout.ViewDetailed,
+		Activity: gotestout.ActivityOptions{
+			Mode:         gotestout.ActivityAuto,
+			Delay:        time.Millisecond,
+			SpinnerStyle: laslig.DefaultSpinnerStyle(),
+			Text:         "Streaming mixed go test -json fixture",
+		},
 	})
 	if err != nil {
 		return fmt.Errorf("render gotestout stream: %w", err)
@@ -353,7 +360,7 @@ func RenderMageCheckPreview(out io.Writer, printer *laslig.Printer) error {
 	}
 	if err := printer.Paragraph(laslig.Paragraph{
 		Body:   "Use gotestout inside Mage or small Go helpers behind make, just, or task when you want caller-owned process control with a readable test stream.",
-		Footer: "The preview below matches this repository's mage check and mage test shape, including the recommended spinner handoff before the live test stream starts.",
+		Footer: "The preview below matches this repository's mage check and mage test shape, including the live gotestout activity footer while the test stream is still active.",
 	}); err != nil {
 		return fmt.Errorf("render mage preview intro: %w", err)
 	}
@@ -397,28 +404,28 @@ func renderMageCheckPreview(out io.Writer, printer *laslig.Printer) error {
 	}); err != nil {
 		return fmt.Errorf("render build success: %w", err)
 	}
-	spin := printer.NewSpinner()
-	if err := spin.Start("Waiting for first test event"); err != nil {
-		return fmt.Errorf("start mage spinner: %w", err)
-	}
-	pauseForAnimatedPreview(out, demoSpinnerStepDelay)
-	if err := spin.Update("Waiting for first test event from go test -json"); err != nil {
-		return fmt.Errorf("update mage spinner: %w", err)
-	}
-	pauseForAnimatedPreview(out, demoSpinnerStepDelay)
-	if err := spin.Stop("Test stream detected", laslig.NoticeSuccessLevel); err != nil {
-		return fmt.Errorf("stop mage spinner: %w", err)
-	}
 
 	if err := printer.Section("Tests"); err != nil {
 		return fmt.Errorf("render tests section: %w", err)
 	}
-	if _, err := gotestout.Render(out, strings.NewReader(mageCheckSampleStream()), gotestout.Options{
+	if err := printer.StatusLine(laslig.StatusLine{
+		Level:  laslig.NoticeInfoLevel,
+		Text:   "Started go test -json",
+		Detail: "./...",
+	}); err != nil {
+		return fmt.Errorf("render test start status: %w", err)
+	}
+	if _, err := gotestout.Render(out, previewStreamReader(out, mageCheckSampleStream(), demoTestEventDelay), gotestout.Options{
 		Policy: laslig.Policy{
 			Format: printer.Mode().Format,
 			Style:  StylePolicyForMode(printer.Mode()),
 		},
 		View: gotestout.ViewCompact,
+		Activity: gotestout.ActivityOptions{
+			Mode:         gotestout.ActivityAuto,
+			Delay:        time.Millisecond,
+			SpinnerStyle: laslig.DefaultSpinnerStyle(),
+		},
 	}); err != nil {
 		return fmt.Errorf("render mage gotestout stream: %w", err)
 	}
@@ -529,9 +536,37 @@ func writerSupportsAnimation(out io.Writer) bool {
 }
 
 func pauseForAnimatedPreview(out io.Writer, delay time.Duration) {
-	if writerSupportsAnimation(out) {
-		time.Sleep(delay)
+	maybeSleepAnimatedPreview(writerSupportsAnimation(out), delay, time.Sleep)
+}
+
+func previewStreamReader(out io.Writer, raw string, delay time.Duration) io.Reader {
+	if !writerSupportsAnimation(out) || delay <= 0 {
+		return strings.NewReader(raw)
 	}
+	return delayedPreviewStreamReader(raw, delay)
+}
+
+func maybeSleepAnimatedPreview(animated bool, delay time.Duration, sleep func(time.Duration)) {
+	if animated {
+		sleep(delay)
+	}
+}
+
+func delayedPreviewStreamReader(raw string, delay time.Duration) io.Reader {
+	reader, writer := io.Pipe()
+	go func() {
+		defer writer.Close()
+		for _, line := range strings.SplitAfter(raw, "\n") {
+			if line == "" {
+				continue
+			}
+			if _, err := io.WriteString(writer, line); err != nil {
+				return
+			}
+			time.Sleep(delay)
+		}
+	}()
+	return reader
 }
 
 // transcript captures one real charm/log transcript for the LogBlock demo.

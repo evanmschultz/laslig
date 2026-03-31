@@ -8,6 +8,7 @@ import (
 	"regexp"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/charmbracelet/x/exp/golden"
 	"github.com/evanmschultz/laslig"
@@ -213,6 +214,58 @@ func TestWriterSupportsAnimation(t *testing.T) {
 	}
 }
 
+// TestMaybeSleepAnimatedPreview verifies the preview pause only sleeps when
+// animation is enabled.
+func TestMaybeSleepAnimatedPreview(t *testing.T) {
+	calls := 0
+	var slept time.Duration
+	sleep := func(delay time.Duration) {
+		calls++
+		slept = delay
+	}
+
+	maybeSleepAnimatedPreview(false, 10*time.Millisecond, sleep)
+	if calls != 0 {
+		t.Fatalf("maybeSleepAnimatedPreview(false) sleep calls = %d, want 0", calls)
+	}
+
+	maybeSleepAnimatedPreview(true, 10*time.Millisecond, sleep)
+	if calls != 1 {
+		t.Fatalf("maybeSleepAnimatedPreview(true) sleep calls = %d, want 1", calls)
+	}
+	if slept != 10*time.Millisecond {
+		t.Fatalf("maybeSleepAnimatedPreview(true) slept = %v, want %v", slept, 10*time.Millisecond)
+	}
+}
+
+// TestDelayedPreviewStreamReader verifies the animation-only stream helper
+// still replays the full input in order.
+func TestDelayedPreviewStreamReader(t *testing.T) {
+	const raw = "{\"Action\":\"pass\"}\n{\"Action\":\"fail\"}\n"
+
+	data, err := io.ReadAll(delayedPreviewStreamReader(raw, time.Millisecond))
+	if err != nil {
+		t.Fatalf("ReadAll(delayedPreviewStreamReader()) error = %v", err)
+	}
+	if got := string(data); got != raw {
+		t.Fatalf("delayedPreviewStreamReader() = %q, want %q", got, raw)
+	}
+}
+
+// TestPreviewStreamReaderNoAnimation verifies the public preview helper falls
+// back to one immediate reader when animation is unavailable.
+func TestPreviewStreamReaderNoAnimation(t *testing.T) {
+	const raw = "{\"Action\":\"pass\"}\n"
+
+	data, err := io.ReadAll(previewStreamReader(&bytes.Buffer{}, raw, time.Second))
+	if err != nil {
+		t.Fatalf("ReadAll(previewStreamReader()) error = %v", err)
+	}
+	if got := string(data); got != raw {
+		t.Fatalf("previewStreamReader() = %q, want %q", got, raw)
+	}
+}
+
 // TestRenderSpinnerWriteError verifies the spinner demo wraps underlying write
 // failures instead of swallowing them.
 func TestRenderSpinnerWriteError(t *testing.T) {
@@ -242,7 +295,7 @@ func TestRenderMageCheckPreviewWriteError(t *testing.T) {
 }
 
 // TestRenderMageCheckPreviewStreamError verifies the focused Mage preview
-// reports stream-writer failures after the spinner handoff.
+// reports stream-writer failures during the live gotestout render.
 func TestRenderMageCheckPreviewStreamError(t *testing.T) {
 	var buf bytes.Buffer
 	printer := laslig.NewWithMode(&buf, laslig.Mode{Format: laslig.FormatPlain})

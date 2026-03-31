@@ -25,5 +25,6 @@
 //
 // A specialist gotestout package provides structured rendering for go test
 // -json streams in Mage targets, ordinary Go CLI commands, and small Go
-// helpers invoked from tools such as make or just.
+// helpers invoked from tools such as make or just, including an optional live
+// spinner footer for styled human terminals while a test stream is active.
 package laslig

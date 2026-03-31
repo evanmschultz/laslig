@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"strings"
+	"sync"
 
 	"charm.land/lipgloss/v2"
 
@@ -33,6 +34,8 @@ type Renderer struct {
 	packageError []outcome
 	wroteResults bool
 	jsonEncoder  *json.Encoder
+	writeMu      sync.Mutex
+	activity     *activityState
 }
 
 // NewRenderer constructs one renderer for the provided writer and options.
@@ -69,6 +72,9 @@ func (r *Renderer) Summary() Summary {
 
 // WriteEvent consumes one parsed event and writes any corresponding output.
 func (r *Renderer) WriteEvent(event Event) error {
+	if err := r.activityError(); err != nil {
+		return err
+	}
 	if r.mode.Format == laslig.FormatJSON {
 		if err := r.jsonEncoder.Encode(event); err != nil {
 			return fmt.Errorf("write json event: %w", err)
@@ -78,8 +84,10 @@ func (r *Renderer) WriteEvent(event Event) error {
 	switch event.Action {
 	case ActionOutput, ActionBuildOutput:
 		r.recordOutput(event)
+		r.updateActivity(event)
 	case ActionPass, ActionFail, ActionSkip:
 		r.recordTerminal(event)
+		r.updateActivity(event)
 		if r.mode.Format != laslig.FormatJSON {
 			if err := r.renderTerminal(event); err != nil {
 				return err
@@ -92,6 +100,9 @@ func (r *Renderer) WriteEvent(event Event) error {
 
 // Finish writes the final summary for human and plain output.
 func (r *Renderer) Finish() error {
+	if err := r.stopActivity(); err != nil {
+		return err
+	}
 	if r.mode.Format == laslig.FormatJSON {
 		return nil
 	}
@@ -181,6 +192,12 @@ func Parse(in io.Reader) ([]Event, error) {
 // Render parses a stream, renders it, and returns a summary of terminal events.
 func Render(out io.Writer, in io.Reader, options Options) (Summary, error) {
 	renderer := NewRenderer(out, options)
+	if err := renderer.startActivity(); err != nil {
+		return Summary{}, err
+	}
+	defer func() {
+		_ = renderer.stopActivity()
+	}()
 	decoder := json.NewDecoder(bufio.NewReader(in))
 
 	for {
@@ -211,6 +228,18 @@ func withDefaults(options Options) Options {
 	}
 	if options.View == "" {
 		options.View = ViewCompact
+	}
+	if !options.Activity.Mode.Valid() {
+		options.Activity.Mode = ActivityAuto
+	}
+	if !options.Activity.SpinnerStyle.Valid() {
+		options.Activity.SpinnerStyle = laslig.DefaultSpinnerStyle()
+	}
+	if options.Activity.Delay <= 0 {
+		options.Activity.Delay = defaultActivityDelay
+	}
+	if options.Activity.Text == "" {
+		options.Activity.Text = "Running go test -json"
 	}
 	return options
 }
@@ -293,30 +322,32 @@ func (r *Renderer) recordTerminal(event Event) {
 }
 
 func (r *Renderer) renderTerminal(event Event) error {
-	if event.PackageEvent() {
-		if err := r.writeLine(r.renderPackageLine(event)); err != nil {
+	return r.withActivityHidden(func() error {
+		if event.PackageEvent() {
+			if err := r.writeLine(r.renderPackageLine(event)); err != nil {
+				return err
+			}
+			if r.sectionEnabled(SectionOutput) && (event.Action == ActionFail || r.options.View == ViewDetailed) {
+				if err := r.writeOutputLines(outputKey{pkg: event.Package}); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+
+		if r.options.View == ViewCompact && event.Action != ActionFail {
+			return nil
+		}
+		if err := r.writeLine(r.renderTestLine(event)); err != nil {
 			return err
 		}
 		if r.sectionEnabled(SectionOutput) && (event.Action == ActionFail || r.options.View == ViewDetailed) {
-			if err := r.writeOutputLines(outputKey{pkg: event.Package}); err != nil {
+			if err := r.writeOutputLines(outputKey{pkg: event.Package, test: event.Test}); err != nil {
 				return err
 			}
 		}
 		return nil
-	}
-
-	if r.options.View == ViewCompact && event.Action != ActionFail {
-		return nil
-	}
-	if err := r.writeLine(r.renderTestLine(event)); err != nil {
-		return err
-	}
-	if r.sectionEnabled(SectionOutput) && (event.Action == ActionFail || r.options.View == ViewDetailed) {
-		if err := r.writeOutputLines(outputKey{pkg: event.Package, test: event.Test}); err != nil {
-			return err
-		}
-	}
-	return nil
+	})
 }
 
 func (r *Renderer) outcomeList(title string, badge string, outcomes []outcome, includeOutput bool) laslig.List {
