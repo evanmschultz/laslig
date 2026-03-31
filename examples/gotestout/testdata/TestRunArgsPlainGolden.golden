@@ -3,7 +3,7 @@ gotestout
 
   Use gotestout for attractive, structured go test output when your task runner, CLI command, or Go helper behind make/just should keep owning process control.
   
-  This focused example intentionally mixes passing, skipped, and failing test events plus one package build failure, and styled human terminals show gotestout's live activity footer while the stream is still active.
+  This focused example intentionally mixes passing, skipped, and failing test events plus one package build failure, and styled human terminals show gotestout's live activity block while the stream is still active.
 
   [INFO] Mixed fixture demo
     The example command itself is expected to exit successfully so you can inspect the output shape.

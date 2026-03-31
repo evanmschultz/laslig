@@ -30,6 +30,7 @@ type activityState struct {
 	pkgsPassed   int
 	pkgsFailed   int
 	pkgsSkipped  int
+	height       int
 	shown        bool
 	stopCh       chan struct{}
 	doneCh       chan struct{}
@@ -70,6 +71,7 @@ func (r *Renderer) stopActivity() error {
 	stopCh := activity.stopCh
 	doneCh := activity.doneCh
 	shown := activity.shown
+	height := activity.height
 	err := activity.err
 	r.writeMu.Unlock()
 
@@ -82,7 +84,7 @@ func (r *Renderer) stopActivity() error {
 
 	if shown {
 		r.writeMu.Lock()
-		if _, clearErr := io.WriteString(r.out, activityClearLine); err == nil && clearErr != nil {
+		if _, clearErr := io.WriteString(r.out, clearActivityBlock(height)); err == nil && clearErr != nil {
 			err = fmt.Errorf("clear activity footer: %w", clearErr)
 		}
 		r.writeMu.Unlock()
@@ -221,10 +223,16 @@ func (r *Renderer) tickActivity(advance bool) error {
 	if advance {
 		r.activity.frame = (r.activity.frame + 1) % len(r.activity.frames)
 	}
-	if _, err := io.WriteString(r.out, activityClearLine+r.renderActivityLineLocked()); err != nil {
+	block, height := r.renderActivityBlockLocked()
+	output := block
+	if r.activity.shown {
+		output = clearActivityBlock(r.activity.height) + output
+	}
+	if _, err := io.WriteString(r.out, output); err != nil {
 		r.activity.err = fmt.Errorf("write activity footer: %w", err)
 		return r.activity.err
 	}
+	r.activity.height = height
 	r.activity.shown = true
 	return nil
 }
@@ -233,10 +241,11 @@ func (r *Renderer) clearActivityLocked() error {
 	if r.activity == nil || !r.activity.shown {
 		return nil
 	}
-	if _, err := io.WriteString(r.out, activityClearLine); err != nil {
+	if _, err := io.WriteString(r.out, clearActivityBlock(r.activity.height)); err != nil {
 		r.activity.err = fmt.Errorf("clear activity footer: %w", err)
 		return r.activity.err
 	}
+	r.activity.height = 0
 	r.activity.shown = false
 	return nil
 }
@@ -248,50 +257,148 @@ func (r *Renderer) redrawActivityLocked() error {
 		}
 		return nil
 	}
-	if _, err := io.WriteString(r.out, activityClearLine+r.renderActivityLineLocked()); err != nil {
+	block, height := r.renderActivityBlockLocked()
+	if _, err := io.WriteString(r.out, block); err != nil {
 		r.activity.err = fmt.Errorf("redraw activity footer: %w", err)
 		return r.activity.err
 	}
+	r.activity.height = height
 	r.activity.shown = true
 	return nil
 }
 
-func (r *Renderer) renderActivityLineLocked() string {
+func (r *Renderer) renderActivityBlockLocked() (string, int) {
 	frame := r.activity.frames[r.activity.frame%len(r.activity.frames)]
-	subject := r.activity.currentPkg
-	if r.activity.currentTest != "" {
-		subject += " :: " + r.activity.currentTest
-	}
-
 	text := strings.TrimSpace(r.activity.text)
 	if text == "" {
 		text = "Running go test -json"
 	}
 
-	details := []string{
-		fmt.Sprintf("tests: %d/%d/%d", r.activity.testsPassed, r.activity.testsFailed, r.activity.testsSkipped),
-		fmt.Sprintf("pkgs: %d/%d/%d", r.activity.pkgsPassed, r.activity.pkgsFailed, r.activity.pkgsSkipped),
-		formatActivityElapsed(time.Since(r.activity.startedAt)),
+	lines := []string{}
+	lines = append(lines, r.renderActivityHeaderLines(frame, text)...)
+
+	subject := strings.TrimSpace(r.activity.currentPkg)
+	if subject != "" && strings.TrimSpace(r.activity.currentTest) != "" {
+		subject += " :: " + strings.TrimSpace(r.activity.currentTest)
 	}
 	if subject != "" {
-		details = append([]string{"current: " + subject}, details...)
+		lines = append(lines, r.renderActivityValueLines("- ", subject, r.theme.Identifier)...)
 	}
-	lineText := text + "  " + strings.Join(details, "  ")
 
-	if r.mode.Width > 0 {
-		textWidth := r.mode.Width - lipgloss.Width(frame) - 1
-		if textWidth < 0 {
-			textWidth = 0
+	if pkg := strings.TrimSpace(r.activity.currentPkg); pkg != "" {
+		lines = append(lines, r.renderActivityFieldLines("package", pkg, r.theme.Identifier)...)
+	}
+	if test := strings.TrimSpace(r.activity.currentTest); test != "" {
+		lines = append(lines, r.renderActivityFieldLines("test", test, r.theme.Identifier)...)
+	}
+	lines = append(lines, r.renderActivityCountsLines(
+		"tests",
+		r.activity.testsPassed,
+		r.activity.testsFailed,
+		r.activity.testsSkipped,
+	)...)
+	lines = append(lines, r.renderActivityCountsLines(
+		"packages",
+		r.activity.pkgsPassed,
+		r.activity.pkgsFailed,
+		r.activity.pkgsSkipped,
+	)...)
+	lines = append(lines, r.renderActivityFieldLines("elapsed", formatActivityElapsed(time.Since(r.activity.startedAt)), r.theme.Muted)...)
+	return strings.Join(lines, "\n"), len(lines)
+}
+
+func clearActivityBlock(height int) string {
+	if height <= 0 {
+		return activityClearLine
+	}
+
+	var builder strings.Builder
+	builder.WriteString(activityClearLine)
+	for i := 1; i < height; i++ {
+		builder.WriteString("\x1b[1A")
+		builder.WriteString(activityClearLine)
+	}
+	return builder.String()
+}
+
+func (r *Renderer) renderActivityHeaderLines(frame string, text string) []string {
+	lines := wrapActivityText(text, r.activityContentWidth(lipgloss.Width(frame)+1))
+	if len(lines) == 0 {
+		lines = []string{""}
+	}
+
+	rendered := make([]string, 0, len(lines))
+	for index, line := range lines {
+		if index == 0 {
+			rendered = append(rendered, lipgloss.JoinHorizontal(
+				lipgloss.Top,
+				r.theme.Identifier.Render(frame),
+				" ",
+				r.theme.Value.Render(line),
+			))
+			continue
 		}
-		lineText = truncateActivityText(lineText, textWidth)
+		rendered = append(rendered, strings.Repeat(" ", lipgloss.Width(frame)+1)+r.theme.Value.Render(line))
+	}
+	return rendered
+}
+
+func (r *Renderer) renderActivityValueLines(prefix string, value string, style lipgloss.Style) []string {
+	return renderWrappedStyledValueLines(prefix, "", value, style, style, r.activityContentWidth(lipgloss.Width(prefix)))
+}
+
+func (r *Renderer) renderActivityFieldLines(label string, value string, style lipgloss.Style) []string {
+	prefixPlain := "  " + label + ": "
+	prefixStyled := "  " + r.theme.Label.Render(label+":") + " "
+	return renderWrappedStyledValueLines(prefixPlain, prefixStyled, value, style, style, r.activityContentWidth(lipgloss.Width(prefixPlain)))
+}
+
+func (r *Renderer) renderActivityCountsLines(label string, passed int, failed int, skipped int) []string {
+	prefixPlain := "  " + label + ": "
+	prefixStyled := "  " + r.theme.Label.Render(label+":") + " "
+	plainValue := fmt.Sprintf("%d pass, %d fail, %d skip", passed, failed, skipped)
+	valueWidth := r.activityContentWidth(lipgloss.Width(prefixPlain))
+	lines := wrapActivityText(plainValue, valueWidth)
+	if len(lines) == 0 {
+		lines = []string{""}
 	}
 
-	return lipgloss.JoinHorizontal(
-		lipgloss.Top,
-		r.theme.Identifier.Render(frame),
-		" ",
-		r.theme.Value.Render(lineText),
-	)
+	rendered := make([]string, 0, len(lines))
+	for index, line := range lines {
+		prefix := strings.Repeat(" ", lipgloss.Width(prefixPlain))
+		if index == 0 {
+			prefix = prefixStyled
+		}
+		rendered = append(rendered, prefix+r.renderActivityCountsValue(line))
+	}
+	return rendered
+}
+
+func (r *Renderer) renderActivityCountsValue(value string) string {
+	if r.mode.Format != laslig.FormatHuman {
+		return value
+	}
+
+	passStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("#04B575"))
+	failStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("160"))
+	skipStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("214"))
+
+	replaced := value
+	replaced = strings.ReplaceAll(replaced, " pass", " "+passStyle.Render("pass"))
+	replaced = strings.ReplaceAll(replaced, " fail", " "+failStyle.Render("fail"))
+	replaced = strings.ReplaceAll(replaced, " skip", " "+skipStyle.Render("skip"))
+	return r.theme.Value.Render(replaced)
+}
+
+func (r *Renderer) activityContentWidth(prefixWidth int) int {
+	if r.mode.Width <= 0 {
+		return 0
+	}
+	width := r.mode.Width - prefixWidth
+	if width < 1 {
+		return 1
+	}
+	return width
 }
 
 func activityFrames(style laslig.SpinnerStyle) []string {
@@ -316,28 +423,66 @@ func formatActivityElapsed(elapsed time.Duration) string {
 	return elapsed.Round(time.Second).String()
 }
 
-func truncateActivityText(value string, width int) string {
-	if width <= 0 {
-		return ""
+func wrapActivityText(value string, width int) []string {
+	trimmed := strings.TrimSpace(value)
+	if trimmed == "" {
+		return nil
 	}
-	if lipgloss.Width(value) <= width {
-		return value
+	if width <= 0 || lipgloss.Width(trimmed) <= width {
+		return []string{trimmed}
 	}
 
-	const ellipsis = "…"
-	if width == 1 {
-		return ellipsis
+	lines := []string{}
+	remaining := trimmed
+	for strings.TrimSpace(remaining) != "" {
+		lines = append(lines, sliceVisibleWidth(remaining, width))
+		if len(lines[len(lines)-1]) >= len(remaining) {
+			break
+		}
+		remaining = strings.TrimLeft(remaining[len(lines[len(lines)-1]):], " ")
+	}
+	return lines
+}
+
+func sliceVisibleWidth(value string, width int) string {
+	if width <= 0 {
+		return value
 	}
 
 	var builder strings.Builder
 	for _, r := range value {
 		candidate := builder.String() + string(r)
-		if lipgloss.Width(candidate+ellipsis) > width {
+		if lipgloss.Width(candidate) > width {
 			break
 		}
 		builder.WriteRune(r)
 	}
-	return strings.TrimRight(builder.String(), " ") + ellipsis
+	if builder.Len() == 0 {
+		return value
+	}
+	return builder.String()
+}
+
+func renderWrappedStyledValueLines(prefixPlain string, prefixStyled string, value string, firstStyle lipgloss.Style, continuationStyle lipgloss.Style, width int) []string {
+	if prefixStyled == "" {
+		prefixStyled = prefixPlain
+	}
+	lines := wrapActivityText(value, width)
+	if len(lines) == 0 {
+		lines = []string{""}
+	}
+
+	rendered := make([]string, 0, len(lines))
+	for index, line := range lines {
+		prefix := strings.Repeat(" ", lipgloss.Width(prefixPlain))
+		style := continuationStyle
+		if index == 0 {
+			prefix = prefixStyled
+			style = firstStyle
+		}
+		rendered = append(rendered, prefix+style.Render(line))
+	}
+	return rendered
 }
 
 func writerIsTerminal(out io.Writer) bool {

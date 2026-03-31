@@ -244,13 +244,19 @@ func TestRenderHumanStyledActivityOn(t *testing.T) {
 	if !strings.Contains(plain, "Running go test -json") {
 		t.Fatalf("Render() output missing activity text:\n%s", plain)
 	}
-	if !strings.Contains(plain, "tests: 1/1/1") {
+	if !strings.Contains(plain, "package: example/pkg") {
+		t.Fatalf("Render() output missing package field:\n%s", plain)
+	}
+	if !strings.Contains(plain, "tests: 1 pass, 1 fail, 1 skip") {
 		t.Fatalf("Render() output missing live test counts:\n%s", plain)
+	}
+	if !strings.Contains(plain, "packages: 0 pass, 1 fail, 0 skip") {
+		t.Fatalf("Render() output missing live package counts:\n%s", plain)
 	}
 }
 
 // TestRenderPlainActivityOnNoFooter verifies plain output never emits the live
-// activity footer even when callers force activity on.
+// activity block even when callers force activity on.
 func TestRenderPlainActivityOnNoFooter(t *testing.T) {
 	var buf bytes.Buffer
 	_, err := Render(&buf, strings.NewReader(sampleStream), Options{

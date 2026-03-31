@@ -199,8 +199,7 @@ gotestout
   
   This focused example intentionally mixes passing, skipped, and failing
   test events plus one package build failure, and styled human terminals
-  show gotestout's live activity footer while the stream is still       
-  active.                                                               
+  show gotestout's live activity block while the stream is still active.
 
    INFO  Mixed fixture demo
     The example command itself is expected to exit successfully so you can
@@ -250,7 +249,7 @@ gotestout + Mage
   stream.
   
   The preview below matches this repository's mage check and mage test
-  shape, including the live gotestout activity footer while the test  
+  shape, including the live gotestout activity block while the test   
   stream is still active.                                             
 
 
