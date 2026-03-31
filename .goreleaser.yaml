@@ -24,7 +24,7 @@ changelog:
   disable: true
 
 release:
-  draft: true
+  draft: false
   prerelease: auto
   make_latest: true
   name_template: "{{ .ProjectName }} v{{ .Version }}"
