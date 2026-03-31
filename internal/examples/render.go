@@ -318,7 +318,7 @@ func RenderGotestout(out io.Writer, printer *laslig.Printer) error {
 		}
 		if err := printer.Paragraph(laslig.Paragraph{
 			Body:   "Use gotestout for attractive, structured go test output when your task runner, CLI command, or Go helper behind make/just should keep owning process control.",
-			Footer: "This focused example intentionally mixes passing, skipped, and failing test events plus one package build failure, and styled human terminals show gotestout's live activity footer while the stream is still active.",
+			Footer: "This focused example intentionally mixes passing, skipped, and failing test events plus one package build failure, and styled human terminals show gotestout's live activity block while the stream is still active.",
 		}); err != nil {
 			return fmt.Errorf("render gotestout intro: %w", err)
 		}
@@ -360,7 +360,7 @@ func RenderMageCheckPreview(out io.Writer, printer *laslig.Printer) error {
 	}
 	if err := printer.Paragraph(laslig.Paragraph{
 		Body:   "Use gotestout inside Mage or small Go helpers behind make, just, or task when you want caller-owned process control with a readable test stream.",
-		Footer: "The preview below matches this repository's mage check and mage test shape, including the live gotestout activity footer while the test stream is still active.",
+		Footer: "The preview below matches this repository's mage check and mage test shape, including the live gotestout activity block while the test stream is still active.",
 	}); err != nil {
 		return fmt.Errorf("render mage preview intro: %w", err)
 	}
