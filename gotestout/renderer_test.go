@@ -2,9 +2,11 @@ package gotestout
 
 import (
 	"bytes"
+	"io"
 	"regexp"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/evanmschultz/laslig"
 )
@@ -211,4 +213,82 @@ func TestRenderJSON(t *testing.T) {
 	if strings.Contains(buf.String(), "Test summary") {
 		t.Fatalf("Render() JSON output should not include human summary:\n%s", buf.String())
 	}
+}
+
+// TestRenderHumanStyledActivityOn verifies callers can force one live activity
+// footer in styled human output.
+func TestRenderHumanStyledActivityOn(t *testing.T) {
+	var buf bytes.Buffer
+	_, err := Render(&buf, slowStreamReader(sampleStream, 25*time.Millisecond), Options{
+		Policy: laslig.Policy{
+			Format: laslig.FormatHuman,
+			Style:  laslig.StyleAlways,
+		},
+		View: ViewCompact,
+		Activity: ActivityOptions{
+			Mode:         ActivityOn,
+			Delay:        time.Millisecond,
+			SpinnerStyle: laslig.SpinnerStyleLine,
+			Text:         "Running go test -json",
+		},
+	})
+	if err != nil {
+		t.Fatalf("Render() error = %v", err)
+	}
+
+	got := buf.String()
+	if !strings.Contains(got, "\r\x1b[2K") {
+		t.Fatalf("Render() output missing activity redraws:\n%q", got)
+	}
+	plain := stripANSI(got)
+	if !strings.Contains(plain, "Running go test -json") {
+		t.Fatalf("Render() output missing activity text:\n%s", plain)
+	}
+	if !strings.Contains(plain, "tests: 1/1/1") {
+		t.Fatalf("Render() output missing live test counts:\n%s", plain)
+	}
+}
+
+// TestRenderPlainActivityOnNoFooter verifies plain output never emits the live
+// activity footer even when callers force activity on.
+func TestRenderPlainActivityOnNoFooter(t *testing.T) {
+	var buf bytes.Buffer
+	_, err := Render(&buf, strings.NewReader(sampleStream), Options{
+		Policy: laslig.Policy{
+			Format: laslig.FormatPlain,
+			Style:  laslig.StyleNever,
+		},
+		View: ViewCompact,
+		Activity: ActivityOptions{
+			Mode: ActivityOn,
+		},
+	})
+	if err != nil {
+		t.Fatalf("Render() error = %v", err)
+	}
+
+	got := buf.String()
+	if strings.Contains(got, "Running go test -json") {
+		t.Fatalf("Render() plain output unexpectedly included activity text:\n%s", got)
+	}
+	if strings.Contains(got, "\r\x1b[2K") {
+		t.Fatalf("Render() plain output unexpectedly included activity redraws:\n%q", got)
+	}
+}
+
+func slowStreamReader(stream string, delay time.Duration) io.Reader {
+	reader, writer := io.Pipe()
+	go func() {
+		defer writer.Close()
+		for _, line := range strings.SplitAfter(stream, "\n") {
+			if line == "" {
+				continue
+			}
+			if _, err := io.WriteString(writer, line); err != nil {
+				return
+			}
+			time.Sleep(delay)
+		}
+	}()
+	return reader
 }

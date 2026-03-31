@@ -198,7 +198,9 @@ gotestout
   process control.
   
   This focused example intentionally mixes passing, skipped, and failing
-  test events plus one package build failure.                           
+  test events plus one package build failure, and styled human terminals
+  show gotestout's live activity footer while the stream is still       
+  active.                                                               
 
    INFO  Mixed fixture demo
     The example command itself is expected to exit successfully so you can
@@ -247,9 +249,9 @@ gotestout + Mage
   task when you want caller-owned process control with a readable test
   stream.
   
-  The preview below matches this repository's mage check and mage test 
-  shape, including the recommended spinner handoff before the live test
-  stream starts.                                                       
+  The preview below matches this repository's mage check and mage test
+  shape, including the live gotestout activity footer while the test  
+  stream is still active.                                             
 
 
 Build
@@ -258,11 +260,10 @@ Build
 
    SUCCESS  Built example packages (./examples/...)
 
-  [RUNNING] Waiting for first test event
-  [SUCCESS] Test stream detected
-
 
 Tests
+
+   INFO  Started go test -json (./...)
  PKG PASS  github.com/evanmschultz/laslig (0.00s)
  PKG PASS  github.com/evanmschultz/laslig/examples/all (0.00s)
  PKG PASS  github.com/evanmschultz/laslig/examples/codeblock (0.00s)
@@ -299,6 +300,7 @@ Test summary
 
  SUCCESS  All tests passed
   178 tests passed across 23 packages.
+
 
 Coverage
 

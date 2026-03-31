@@ -125,6 +125,52 @@ type Options struct {
 	Policy           laslig.Policy
 	View             View
 	DisabledSections []Section
+	Activity         ActivityOptions
+}
+
+// ActivityMode controls whether gotestout renders one live activity footer
+// while a test stream is still running.
+type ActivityMode string
+
+const (
+	// ActivityAuto enables the activity footer only for styled human terminal
+	// output where transient redraws are appropriate.
+	ActivityAuto ActivityMode = "auto"
+	// ActivityOn forces the activity footer for styled human output even when
+	// the writer is not a terminal, which is useful for demos and tests.
+	ActivityOn ActivityMode = "on"
+	// ActivityOff disables the activity footer completely.
+	ActivityOff ActivityMode = "off"
+)
+
+// Valid reports whether the activity mode is one supported built-in value.
+func (m ActivityMode) Valid() bool {
+	switch m {
+	case ActivityAuto, ActivityOn, ActivityOff:
+		return true
+	default:
+		return false
+	}
+}
+
+// ActivityOptions configures the optional live activity footer shown while a
+// go test stream is still running.
+//
+// The footer is spinner-only. It is transient in styled human output and is
+// suppressed entirely in plain, unstyled human, and JSON modes.
+type ActivityOptions struct {
+	// Mode selects whether the footer is enabled automatically, forced on for
+	// styled human output, or disabled entirely. The default is auto.
+	Mode ActivityMode
+	// SpinnerStyle selects the built-in spinner frame set used when the footer
+	// is visible. The default is laslig.DefaultSpinnerStyle().
+	SpinnerStyle laslig.SpinnerStyle
+	// Delay waits this long before showing the footer, which helps avoid
+	// flicker on very short test runs. The default is 750ms.
+	Delay time.Duration
+	// Text overrides the leading activity label. The default is
+	// "Running go test -json".
+	Text string
 }
 
 // Summary records the terminal outcomes seen in one stream.

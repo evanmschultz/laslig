@@ -308,9 +308,16 @@ if summary.HasFailures() {
 
 That shape works well in ordinary Go CLIs, Mage targets, Cobra/Fang commands, and small Go helpers invoked from tools like `make`, `just`, or `task`. `laslig` stays responsible for rendering, while the caller stays responsible for process control. Callers can also disable grouped failed-test, skipped-test, package-error, or captured-output sections when they want a tighter stream.
 
+`gotestout` also supports one spinner-only live activity footer for active test
+streams. The footer defaults to `auto`, which means styled human terminal
+output gets one transient spinner line while the stream is active, while plain,
+unstyled human, and JSON output stay stable and non-transient. Callers can
+force that footer on with `gotestout.ActivityOn` for demos or disable it
+entirely with `gotestout.ActivityOff`.
+
 This repository dogfoods that pattern in [`magefiles/magefile.go`](./magefiles/magefile.go): `mage test` runs `go test -json ./...`, renders compact package and failure output through `gotestout`, and still returns a normal Mage error on failure.
 The focused runnable example for that package lives in [`examples/gotestout/main.go`](./examples/gotestout/main.go).
-The separate Mage-facing example in [`examples/magecheck/main.go`](./examples/magecheck/main.go) now also shows the recommended spinner handoff: keep one transient progress line alive while the command is quiet, then stop it before `gotestout` starts streaming package results.
+The separate Mage-facing example in [`examples/magecheck/main.go`](./examples/magecheck/main.go) shows the same passing task-runner path with `gotestout`'s live activity footer enabled while the test stream is active.
 
 Common ways to try that surface locally:
 
@@ -321,9 +328,9 @@ mage test
 
 The focused `gotestout` GIF and example command intentionally include passing,
 skipped, and failing test events plus one package build failure. The separate
-`magecheck` GIF shows the passing task-runner path plus the spinner-to-stream
-handoff before the live package output begins. That keeps the README honest
-about both the success path and the failure path.
+`magecheck` GIF shows the passing task-runner path with the live activity
+footer active during the running stream. That keeps the README honest about
+both the success path and the failure path.
 
 Future `gotestout` work is about smarter summaries, not basic
 functionality: clearer buckets for test failures vs package/build failures,
@@ -350,7 +357,7 @@ go run ./examples/all --format human --style always
 mage test
 ```
 
-`mage demo` is the normal paced walkthrough entrypoint. `mage test` is the real Mage-facing `gotestout` dogfood path. The `magecheck` focused example demonstrates the recommended spinner handoff before the live test stream. The `go run` forms above show the focused per-item examples directly, while `go run ./examples/all` renders the aggregate example without the paced demo wrapper.
+`mage demo` is the normal paced walkthrough entrypoint. `mage test` is the real Mage-facing `gotestout` dogfood path. The `magecheck` focused example demonstrates the live activity footer during the running test stream. The `go run` forms above show the focused per-item examples directly, while `go run ./examples/all` renders the aggregate example without the paced demo wrapper.
 
 The README GIFs are generated from the focused VHS tapes under [`docs/vhs/`](./docs/vhs). `mage vhs` renders all tracked tapes so the README stays aligned with the runnable examples.
 
