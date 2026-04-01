@@ -40,6 +40,9 @@ Caller-provided log excerpts are fine. Logging policy is not.
 - standard library first
 - add external dependencies only when they clearly improve the library
 - do not make command frameworks or logging libraries core dependencies
+- keep direct dependencies intentionally current when there is a clear benefit
+- do not proactively bump indirect dependencies just because newer versions exist
+- only update indirect dependencies when a direct dependency upgrade, security fix, breakage, or another concrete need requires it
 
 ## Docs And Demos
 
