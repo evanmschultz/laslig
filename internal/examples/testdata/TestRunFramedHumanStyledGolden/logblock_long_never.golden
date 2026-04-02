@@ -1,0 +1,20 @@
+
+LogBlock
+
+  Use LogBlock for selected stderr or log excerpts while the
+  application keeps owning logging.
+  
+  The block below captures real charm/log output and renders it
+  through Läslig.                                              
+
+  ╭──────────────────────────────────────────────╮
+  │                                              │
+  │  Captured charm/log transcript               │
+  │                                              │
+  │  INFO demo: boot complete component=cache…   │
+  │  WARN demo: retry scheduled after=3s run_i…  │
+  │  ERRO demo: dependency missing url=https:/…  │
+  │                                              │
+  │  Use LogBlock for selected transcripts whi…  │
+  │                                              │
+  ╰──────────────────────────────────────────────╯

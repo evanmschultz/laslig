@@ -50,6 +50,11 @@ Caller-provided log excerpts are fine. Logging policy is not.
 - keep focused runnable demos under `examples/`
 - keep guided demos explicit about what primitive or package is being shown
 - when output changes intentionally, update the relevant snapshots and GIFs in the same change
+- any change that affects a focused runnable example must update that
+  example directory's `README.md` and the referenced GIF in `docs/vhs/`
+  in the same change
+- any change that affects the default, non-customized examples or standard
+  walkthrough shown in the root `README.md` must update that README too
 
 ## Workflow
 

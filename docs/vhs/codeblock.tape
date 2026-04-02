@@ -5,8 +5,8 @@ Require go
 Set Shell "zsh"
 Set FontFamily "IosevkaTerm NFM"
 Set FontSize 16
-Set Width 1280
-Set Height 920
+Set Width 1480
+Set Height 980
 Set Padding 24
 Set Theme "Catppuccin Mocha"
 Set TypingSpeed 20ms

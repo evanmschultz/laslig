@@ -1,0 +1,12 @@
+
+Table
+
+  Table
+  ╭──────────────────────────────────────────────╮
+  │ artifact_ref │ run_id        │ created       │
+  │ ─────────────┼───────────────┼────────────── │
+  │ github.com/… │ run_2026-04-… │ 2026-04-01T0… │
+  │ https://sto… │ run_2026-04-… │ 2026-04-02T1… │
+  ╰──────────────────────────────────────────────╯
+  Use Table when comparison matters and long refs still need to
+  fit narrow terminals.                                        

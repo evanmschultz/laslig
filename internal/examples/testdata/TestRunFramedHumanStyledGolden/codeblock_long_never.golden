@@ -1,0 +1,35 @@
+
+CodeBlock
+
+  Use CodeBlock for commands, snippets, generated files, and
+  config examples.
+  
+  The block below shows a Go snippet rendered through Glamour.
+
+  ╭────────────────────────────────────────────────╮
+  │                                                │
+  │  Go snippet                                    │
+  │                                                │
+  │                                                │
+  │      package main                              │
+  │                                                │
+  │      import (                                  │
+  │          "fmt"                                 │
+  │          "strings"                             │
+  │      )                                         │
+  │                                                │
+  │      func main() {                             │
+  │          runID := "run_2026-04-01T00:00:00.    │
+  │    123456789Z_very_long_artifact_id_abc"       │
+  │          artifactRef := "https://storage.      │
+  │    googleapis.com/hylla-                       │
+  │    artifacts/2026/04/01/very/long/artifac      │
+  │    t/reference/path"                           │
+  │          fmt.Println(strings.                  │
+  │    Join([]string{"artifact", artifactRef,      │
+  │    runID}, " -- "))                            │
+  │      }                                         │
+  │                                                │
+  │  Use CodeBlock when long generated command…    │
+  │                                                │
+  ╰────────────────────────────────────────────────╯

@@ -2,6 +2,9 @@ package laslig
 
 import (
 	"io"
+	"os"
+	"strconv"
+	"strings"
 
 	"github.com/charmbracelet/x/term"
 )
@@ -213,6 +216,14 @@ func ResolveMode(out io.Writer, policy Policy) Mode {
 		if isTTY {
 			if terminalWidth, _, err := term.GetSize(file.Fd()); err == nil {
 				width = terminalWidth
+			}
+		}
+	}
+
+	if width <= 0 {
+		if rawColumns := strings.TrimSpace(os.Getenv("COLUMNS")); rawColumns != "" {
+			if parsed, err := strconv.Atoi(rawColumns); err == nil && parsed > 0 {
+				width = parsed
 			}
 		}
 	}

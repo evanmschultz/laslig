@@ -8,6 +8,10 @@ The package and module name stay `laslig`. The product branding is `Läslig`, fr
 
 Every guided demo item now has its own runnable example under [`examples/`](./examples) and its own focused VHS capture under [`docs/vhs/`](./docs/vhs). `mage demo` now prints those focused examples one after another as one accumulating walkthrough, with the default braille spinner bridging each example transition. The hero GIF below is a direct capture of that real `mage demo` flow, while the smaller GIFs underneath stay focused one primitive at a time.
 
+Every runnable example directory under [`examples/`](./examples) also carries
+its own focused `README.md` with the matching GIF, run commands, and a real
+library-usage snippet.
+
 The hero demo is intentionally slowed down between sections for README display. Läslig itself does not add runtime delays to your commands by default.
 
 [![Läslig full demo walkthrough](docs/vhs/demo.gif)](./examples)
@@ -166,6 +170,69 @@ printer.Panel(laslig.Panel{Title: "Next step", Body: "Run mage check."})
 printer.Markdown(laslig.Markdown{Body: "# Notes\n\n- first\n- second"})
 printer.CodeBlock(laslig.CodeBlock{Title: "Example", Language: "go", Body: `fmt.Println("hi")`})
 printer.LogBlock(laslig.LogBlock{Title: "stderr excerpt", Body: "INFO boot complete\nWARN retry scheduled"})
+```
+
+## Width and wrapping for framed blocks
+
+Tables, panels, code blocks, and log blocks share a bordered width policy in styled human mode:
+
+- `MaxWidth` — explicit cap for the rendered block (content + frame), useful for strict layouts.
+- `WrapMode` — control how long values are compacted when constraints apply.
+- If `MaxWidth` is omitted, styled blocks shrink toward content width and stay within the available terminal width, with an opinionated readable cap of `88` columns.
+
+Wrap mode is intentionally small and opinionated:
+
+- `TableWrapAuto` (default) — wrap words where possible and rebalance columns to stay within the budget.
+- `TableWrapTruncate` — truncate long values with an ellipsis (`…`) to keep one logical line per cell.
+- `TableWrapNever` — disable wrapping and truncate with an ellipsis when needed.
+
+Today `TableWrapNever` and `TableWrapTruncate` render the same way. The library keeps both names because caller intent still matters: `never` means "do not wrap", while `truncate` means "compact this by truncating". The duplicate behavior is intentional for now, not an accident.
+
+There is no separate `MinWidth` knob. The default behavior is deliberately opinionated: fit the content when possible, respect the available terminal width, and cap readable framed output before it becomes too wide.
+
+The focused framed examples also accept `--content long`, `--max-width <n>`, and `--wrap-mode auto|truncate|never` so width behavior can be inspected directly:
+
+```bash
+go run ./examples/table --format human --style always --content long --max-width 48 --wrap-mode truncate
+go run ./examples/panel --format human --style always --content long --max-width 48 --wrap-mode auto
+go run ./examples/codeblock --format human --style always --content long --max-width 48 --wrap-mode never
+go run ./examples/logblock --format human --style always --content long --max-width 48 --wrap-mode truncate
+```
+
+Terminal-width sweeps are useful when checking the adaptation strategy directly:
+
+```bash
+COLUMNS=96 go run ./examples/table --format human --style always --content long --wrap-mode auto
+COLUMNS=72 go run ./examples/table --format human --style always --content long --wrap-mode auto
+COLUMNS=56 go run ./examples/table --format human --style always --content long --wrap-mode auto
+COLUMNS=48 go run ./examples/table --format human --style always --content long --wrap-mode truncate
+
+COLUMNS=72 go run ./examples/panel --format human --style always --content long --max-width 48 --wrap-mode auto
+COLUMNS=72 go run ./examples/codeblock --format human --style always --content long --max-width 48 --wrap-mode truncate
+COLUMNS=72 go run ./examples/logblock --format human --style always --content long --max-width 48 --wrap-mode never
+```
+
+```go
+printer.Table(laslig.Table{
+	Title:  "Artifacts",
+	MaxWidth: 58,
+	WrapMode: laslig.TableWrapAuto,
+	Header: []string{"artifact_ref", "run_id", "created"},
+	Rows: [][]string{
+		{
+			"github.com/evanmschultz/hylla-fixture-go-2/pkg/very-long-artifact-reference/module",
+			"run_2026-04-01T00:00:00.123456789Z_very_long",
+			"2026-04-01T00:00:00Z",
+		},
+	},
+})
+
+printer.Panel(laslig.Panel{
+	Title:    "Release note",
+	MaxWidth: 42,
+	WrapMode: laslig.TableWrapTruncate,
+	Body:     "Artifacts with long refs and run ids are preserved while still fitting constrained terminals.",
+})
 ```
 
 `FormatAuto` resolves to human output on a terminal and plain text otherwise. `StyleAuto` enables ANSI styling only when the writer is attached to a TTY.

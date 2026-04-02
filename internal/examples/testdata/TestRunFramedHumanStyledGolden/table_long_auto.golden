@@ -1,0 +1,22 @@
+
+Table
+
+  Table
+  ╭────────────────────────────────────────────────────────╮
+  │ artifact_ref     │ run_id           │ created          │
+  │ ─────────────────┼──────────────────┼───────────────── │
+  │ github.com/evanm │ run_2026-04-01T0 │ 2026-04-01T00:00 │
+  │ schultz/hylla-fi │ 0:00:00.12345678 │ :00.123456789Z   │
+  │ xture-go-2/pkg/v │ 9Z_very_long     │                  │
+  │ ery-long-artifac │                  │                  │
+  │ t-reference/modu │                  │                  │
+  │ le               │                  │                  │
+  │ https://storage. │ run_2026-04-02T1 │ 2026-04-02T11:23 │
+  │ googleapis.com/h │ 1:23:45.98765432 │ :45.987654321Z   │
+  │ ylla-artifacts/2 │ 1Z_very_long_sec │                  │
+  │ 026/04/01/very/l │ ond              │                  │
+  │ ong/artifact/ref │                  │                  │
+  │ erence           │                  │                  │
+  ╰────────────────────────────────────────────────────────╯
+  Use Table when comparison matters and long refs still need to
+  fit narrow terminals.                                        

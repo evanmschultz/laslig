@@ -1,0 +1,18 @@
+
+Panel
+
+  ╭────────────────────────────────────────────────────────╮
+  │                                                        │
+  │  Panel                                                 │
+  │                                                        │
+  │  Use Panel for rationale, release notes, and artifact  │
+  │  context when one long identifier or timestamp needs   │
+  │  to remain readable without blowing past the terminal  │
+  │  width.                                                │
+  │                                                        │
+  │  Example values include                                │
+  │  github.com/evanmschultz/hylla-fixture-go-2/pkg/very-  │
+  │  long-artifact-reference/module and                    │
+  │  run_2026-04-01T00:00:00.123456789Z_very_long.         │
+  │                                                        │
+  ╰────────────────────────────────────────────────────────╯

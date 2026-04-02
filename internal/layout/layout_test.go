@@ -11,6 +11,14 @@ func TestWrapText(t *testing.T) {
 	}
 }
 
+func TestWrapTextSplitsLongWords(t *testing.T) {
+	got := WrapText("very-long-artifact-reference-module/with-very-long-token", 12)
+	want := "very-long-ar\ntifact-refer\nence-module/\nwith-very-lo\nng-token"
+	if got != want {
+		t.Fatalf("WrapText() = %q, want %q", got, want)
+	}
+}
+
 // TestIndentBlock verifies each rendered line receives the same prefix.
 func TestIndentBlock(t *testing.T) {
 	got := IndentBlock("  ", "one\ntwo")

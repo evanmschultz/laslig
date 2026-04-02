@@ -18,6 +18,68 @@ import (
 const demoSpinnerStepDelay = 450 * time.Millisecond
 const demoTestEventDelay = 180 * time.Millisecond
 
+func exampleRenderOptionsForFrame() (int, laslig.TableWrapMode) {
+	opts := getExampleRenderOptions()
+	return opts.maxWidth, opts.wrapMode
+}
+
+func exampleLongContentEnabled() bool {
+	return getExampleRenderOptions().contentMode == "long"
+}
+
+func tableExampleContent() ([]string, [][]string, string) {
+	if exampleLongContentEnabled() {
+		return []string{"artifact_ref", "run_id", "created"}, [][]string{
+				{
+					"github.com/evanmschultz/hylla-fixture-go-2/pkg/very-long-artifact-reference/module",
+					"run_2026-04-01T00:00:00.123456789Z_very_long",
+					"2026-04-01T00:00:00.123456789Z",
+				},
+				{
+					"https://storage.googleapis.com/hylla-artifacts/2026/04/01/very/long/artifact/reference",
+					"run_2026-04-02T11:23:45.987654321Z_very_long_second",
+					"2026-04-02T11:23:45.987654321Z",
+				},
+			},
+			"Use Table when comparison matters and long refs still need to fit narrow terminals."
+	}
+	return []string{"compare", "prefer when"}, [][]string{
+			{"Table", "column alignment matters across many rows"},
+			{"List", "items are unordered and short"},
+			{"Record", "you are describing one object"},
+		},
+		"Use Table when comparison matters more than prose."
+}
+
+func panelExampleContent() (string, string, string) {
+	if exampleLongContentEnabled() {
+		return "Panel",
+			"Use Panel for rationale, release notes, and artifact context when one long identifier or timestamp needs to remain readable without blowing past the terminal width.",
+			"Example values include github.com/evanmschultz/hylla-fixture-go-2/pkg/very-long-artifact-reference/module and run_2026-04-01T00:00:00.123456789Z_very_long."
+	}
+	return "Panel",
+		"Use Panel for rationale, next steps, and larger callouts that should stand apart from the rest of the document.",
+		"Panels are stronger than Paragraph and lighter than inventing a custom layout."
+}
+
+func codeBlockExampleContent() (string, string, string, string) {
+	if exampleLongContentEnabled() {
+		return "Go snippet", "go", "package main\n\nimport (\n\t\"fmt\"\n\t\"strings\"\n)\n\nfunc main() {\n\trunID := \"run_2026-04-01T00:00:00.123456789Z_very_long_artifact_id_abc\"\n\tartifactRef := \"https://storage.googleapis.com/hylla-artifacts/2026/04/01/very/long/artifact/reference/path\"\n\tfmt.Println(strings.Join([]string{\"artifact\", artifactRef, runID}, \" -- \"))\n}\n",
+			"Use CodeBlock when long generated commands or snippets still need a clean frame."
+	}
+	return "Go snippet", "go", "package main\n\nimport \"fmt\"\n\nfunc main() {\n\tfmt.Println(\"hello from laslig\")\n}",
+		"Use CodeBlock when code should stay visibly distinct from prose."
+}
+
+func logBlockExampleContent() (string, string, string) {
+	if exampleLongContentEnabled() {
+		return "Captured charm/log transcript",
+			"INFO demo: boot complete component=cache artifact_ref=github.com/evanmschultz/hylla-fixture-go-2/pkg/very-long-artifact-reference/module\nWARN demo: retry scheduled after=3s run_id=run_2026-04-01T00:00:00.123456789Z_very_long\nERRO demo: dependency missing url=https://storage.googleapis.com/hylla-artifacts/2026/04/01/very/long/artifact/reference/path",
+			"Use LogBlock for selected transcripts while the application keeps owning the logger."
+	}
+	return "Captured charm/log transcript", transcript(), "Use LogBlock for selected transcripts while the application keeps owning the logger."
+}
+
 // RenderAll writes the aggregate walkthrough used by mage demo.
 func RenderAll(out io.Writer, printer *laslig.Printer) error {
 	if err := printer.Section("Läslig demo"); err != nil {
@@ -178,15 +240,15 @@ func RenderTable(_ io.Writer, printer *laslig.Printer) error {
 	if err := printer.Section("Table"); err != nil {
 		return fmt.Errorf("render table section: %w", err)
 	}
+	header, rows, caption := tableExampleContent()
+	maxWidth, wrapMode := exampleRenderOptionsForFrame()
 	return printer.Table(laslig.Table{
-		Title:  "Table",
-		Header: []string{"compare", "prefer when"},
-		Rows: [][]string{
-			{"Table", "column alignment matters across many rows"},
-			{"List", "items are unordered and short"},
-			{"Record", "you are describing one object"},
-		},
-		Caption: "Use Table when comparison matters more than prose.",
+		Title:    "Table",
+		Header:   header,
+		Rows:     rows,
+		Caption:  caption,
+		MaxWidth: maxWidth,
+		WrapMode: wrapMode,
 	})
 }
 
@@ -195,10 +257,14 @@ func RenderPanel(_ io.Writer, printer *laslig.Printer) error {
 	if err := printer.Section("Panel"); err != nil {
 		return fmt.Errorf("render panel section: %w", err)
 	}
+	title, body, footer := panelExampleContent()
+	maxWidth, wrapMode := exampleRenderOptionsForFrame()
 	return printer.Panel(laslig.Panel{
-		Title:  "Panel",
-		Body:   "Use Panel for rationale, next steps, and larger callouts that should stand apart from the rest of the document.",
-		Footer: "Panels are stronger than Paragraph and lighter than inventing a custom layout.",
+		Title:    title,
+		Body:     body,
+		Footer:   footer,
+		MaxWidth: maxWidth,
+		WrapMode: wrapMode,
 	})
 }
 
@@ -284,11 +350,15 @@ func RenderCodeBlock(_ io.Writer, printer *laslig.Printer) error {
 	}); err != nil {
 		return fmt.Errorf("render code block intro: %w", err)
 	}
+	title, language, body, footer := codeBlockExampleContent()
+	maxWidth, wrapMode := exampleRenderOptionsForFrame()
 	return printer.CodeBlock(laslig.CodeBlock{
-		Title:    "Go snippet",
-		Language: "go",
-		Body:     "package main\n\nimport \"fmt\"\n\nfunc main() {\n\tfmt.Println(\"hello from laslig\")\n}",
-		Footer:   "Use CodeBlock when code should stay visibly distinct from prose.",
+		Title:    title,
+		Language: language,
+		Body:     body,
+		Footer:   footer,
+		MaxWidth: maxWidth,
+		WrapMode: wrapMode,
 	})
 }
 
@@ -303,10 +373,14 @@ func RenderLogBlock(_ io.Writer, printer *laslig.Printer) error {
 	}); err != nil {
 		return fmt.Errorf("render log block intro: %w", err)
 	}
+	title, body, footer := logBlockExampleContent()
+	maxWidth, wrapMode := exampleRenderOptionsForFrame()
 	return printer.LogBlock(laslig.LogBlock{
-		Title:  "Captured charm/log transcript",
-		Body:   transcript(),
-		Footer: "Use LogBlock for selected transcripts while the application keeps owning the logger.",
+		Title:    title,
+		Body:     body,
+		Footer:   footer,
+		MaxWidth: maxWidth,
+		WrapMode: wrapMode,
 	})
 }
 
