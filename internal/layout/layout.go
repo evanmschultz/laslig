@@ -38,7 +38,11 @@ func wrapWords(value string, width int) string {
 		return ""
 	}
 
-	lines := []string{words[0]}
+	lines := make([]string, 0, len(words))
+	for _, chunk := range splitWideToken(words[0], width) {
+		lines = append(lines, chunk)
+	}
+
 	for _, word := range words[1:] {
 		current := lines[len(lines)-1]
 		candidate := current + " " + word
@@ -46,7 +50,43 @@ func wrapWords(value string, width int) string {
 			lines[len(lines)-1] = candidate
 			continue
 		}
-		lines = append(lines, word)
+		for _, chunk := range splitWideToken(word, width) {
+			lines = append(lines, chunk)
+		}
 	}
 	return strings.Join(lines, "\n")
+}
+
+func splitWideToken(value string, width int) []string {
+	if width <= 0 || lipgloss.Width(value) <= width {
+		return []string{value}
+	}
+
+	parts := []string{}
+	current := strings.Builder{}
+	currentWidth := 0
+	for _, r := range value {
+		segment := string(r)
+		segmentWidth := lipgloss.Width(segment)
+
+		if segmentWidth == 0 {
+			current.WriteRune(r)
+			continue
+		}
+
+		if currentWidth > 0 && currentWidth+segmentWidth > width {
+			parts = append(parts, current.String())
+			current.Reset()
+			currentWidth = 0
+		}
+		current.WriteRune(r)
+		currentWidth += segmentWidth
+	}
+	if current.Len() > 0 {
+		parts = append(parts, current.String())
+	}
+	if len(parts) == 0 {
+		parts = []string{value}
+	}
+	return parts
 }

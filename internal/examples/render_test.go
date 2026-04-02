@@ -6,16 +6,18 @@ import (
 	"io"
 	"os"
 	"regexp"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
 
+	"charm.land/lipgloss/v2"
 	"github.com/charmbracelet/x/exp/golden"
 	"github.com/evanmschultz/laslig"
 )
 
-// ansiPattern matches ANSI escape sequences for stable styled-output assertions.
-var ansiPattern = regexp.MustCompile(`\x1b\[[0-9;]*m`)
+// ansiPattern matches ANSI CSI escape sequences for stable styled-output assertions.
+var ansiPattern = regexp.MustCompile(`\x1b\[[0-?]*[ -/]*[@-~]`)
 
 type failingWriter struct{}
 
@@ -73,6 +75,91 @@ func TestRunFocusedPlainGolden(t *testing.T) {
 	}
 }
 
+// TestRunFramedHumanStyledGolden verifies framed examples across width and wrap
+// combinations using the public example flags.
+func TestRunFramedHumanStyledGolden(t *testing.T) {
+	t.Setenv("COLUMNS", "72")
+
+	tests := []struct {
+		name   string
+		render Renderer
+		args   []string
+	}{
+		{name: "table_default", render: RenderTable, args: []string{"-format", "human", "-style", "always"}},
+		{name: "table_long_auto", render: RenderTable, args: []string{"-format", "human", "-style", "always", "-content", "long", "-max-width", "58"}},
+		{name: "table_long_truncate", render: RenderTable, args: []string{"-format", "human", "-style", "always", "-content", "long", "-max-width", "48", "-wrap-mode", "truncate"}},
+		{name: "table_long_never", render: RenderTable, args: []string{"-format", "human", "-style", "always", "-content", "long", "-max-width", "48", "-wrap-mode", "never"}},
+		{name: "panel_default", render: RenderPanel, args: []string{"-format", "human", "-style", "always"}},
+		{name: "panel_long_auto", render: RenderPanel, args: []string{"-format", "human", "-style", "always", "-content", "long", "-max-width", "58"}},
+		{name: "panel_long_truncate", render: RenderPanel, args: []string{"-format", "human", "-style", "always", "-content", "long", "-max-width", "48", "-wrap-mode", "truncate"}},
+		{name: "panel_long_never", render: RenderPanel, args: []string{"-format", "human", "-style", "always", "-content", "long", "-max-width", "48", "-wrap-mode", "never"}},
+		{name: "codeblock_default", render: RenderCodeBlock, args: []string{"-format", "human", "-style", "always"}},
+		{name: "codeblock_long_auto", render: RenderCodeBlock, args: []string{"-format", "human", "-style", "always", "-content", "long", "-max-width", "58"}},
+		{name: "codeblock_long_truncate", render: RenderCodeBlock, args: []string{"-format", "human", "-style", "always", "-content", "long", "-max-width", "48", "-wrap-mode", "truncate"}},
+		{name: "codeblock_long_never", render: RenderCodeBlock, args: []string{"-format", "human", "-style", "always", "-content", "long", "-max-width", "48", "-wrap-mode", "never"}},
+		{name: "logblock_default", render: RenderLogBlock, args: []string{"-format", "human", "-style", "always"}},
+		{name: "logblock_long_auto", render: RenderLogBlock, args: []string{"-format", "human", "-style", "always", "-content", "long", "-max-width", "58"}},
+		{name: "logblock_long_truncate", render: RenderLogBlock, args: []string{"-format", "human", "-style", "always", "-content", "long", "-max-width", "48", "-wrap-mode", "truncate"}},
+		{name: "logblock_long_never", render: RenderLogBlock, args: []string{"-format", "human", "-style", "always", "-content", "long", "-max-width", "48", "-wrap-mode", "never"}},
+	}
+
+	for _, tc := range tests {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			var buf bytes.Buffer
+			if err := Run(&buf, tc.args, tc.name, tc.render); err != nil {
+				t.Fatalf("Run(%q) error = %v", tc.name, err)
+			}
+
+			value := stripANSI(buf.String())
+			for _, line := range strings.Split(strings.TrimRight(value, "\n"), "\n") {
+				if lipgloss.Width(line) > 72 {
+					t.Fatalf("styled example line exceeded width budget: %q (%d > 72)", line, lipgloss.Width(line))
+				}
+			}
+
+			golden.RequireEqual(t, []byte(value))
+		})
+	}
+}
+
+// TestRunFramedExamplesAdaptAcrossColumns verifies the public example runner
+// stays inside varying terminal widths so layout regressions are obvious.
+func TestRunFramedExamplesAdaptAcrossColumns(t *testing.T) {
+	tests := []struct {
+		name   string
+		width  int
+		render Renderer
+		args   []string
+	}{
+		{name: "table_auto_72", width: 72, render: RenderTable, args: []string{"-format", "human", "-style", "always", "-content", "long", "-wrap-mode", "auto"}},
+		{name: "table_auto_56", width: 56, render: RenderTable, args: []string{"-format", "human", "-style", "always", "-content", "long", "-wrap-mode", "auto"}},
+		{name: "table_truncate_48", width: 48, render: RenderTable, args: []string{"-format", "human", "-style", "always", "-content", "long", "-max-width", "48", "-wrap-mode", "truncate"}},
+		{name: "panel_auto_56", width: 56, render: RenderPanel, args: []string{"-format", "human", "-style", "always", "-content", "long", "-wrap-mode", "auto"}},
+		{name: "codeblock_truncate_48", width: 48, render: RenderCodeBlock, args: []string{"-format", "human", "-style", "always", "-content", "long", "-max-width", "48", "-wrap-mode", "truncate"}},
+		{name: "logblock_never_48", width: 48, render: RenderLogBlock, args: []string{"-format", "human", "-style", "always", "-content", "long", "-max-width", "48", "-wrap-mode", "never"}},
+	}
+
+	for _, tc := range tests {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			t.Setenv("COLUMNS", strconv.Itoa(tc.width))
+
+			var buf bytes.Buffer
+			if err := Run(&buf, tc.args, tc.name, tc.render); err != nil {
+				t.Fatalf("Run(%q) error = %v", tc.name, err)
+			}
+
+			value := stripANSI(buf.String())
+			for _, line := range strings.Split(strings.TrimRight(value, "\n"), "\n") {
+				if lipgloss.Width(line) > tc.width {
+					t.Fatalf("example line exceeded width %d: %q (%d)", tc.width, line, lipgloss.Width(line))
+				}
+			}
+		})
+	}
+}
+
 // TestRunInvalidFlag verifies the shared runner wraps parse failures.
 func TestRunInvalidFlag(t *testing.T) {
 	err := Run(&bytes.Buffer{}, []string{"-unknown"}, "notice", RenderNotice)
@@ -93,6 +180,26 @@ func TestRunInvalidGlamourStyle(t *testing.T) {
 	}
 	if !strings.Contains(err.Error(), `invalid glamour style "bogus"`) {
 		t.Fatalf("Run() error = %v, want invalid glamour style message", err)
+	}
+}
+
+func TestRunInvalidWrapMode(t *testing.T) {
+	err := Run(&bytes.Buffer{}, []string{"-wrap-mode", "bogus"}, "table", RenderTable)
+	if err == nil {
+		t.Fatal("Run() error = nil, want wrap mode error")
+	}
+	if !strings.Contains(err.Error(), `invalid wrap mode "bogus"`) {
+		t.Fatalf("Run() error = %v, want invalid wrap mode message", err)
+	}
+}
+
+func TestRunInvalidContentMode(t *testing.T) {
+	err := Run(&bytes.Buffer{}, []string{"-content", "bogus"}, "table", RenderTable)
+	if err == nil {
+		t.Fatal("Run() error = nil, want content mode error")
+	}
+	if !strings.Contains(err.Error(), `invalid content mode "bogus"`) {
+		t.Fatalf("Run() error = %v, want invalid content mode message", err)
 	}
 }
 

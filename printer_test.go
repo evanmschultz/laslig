@@ -3,11 +3,19 @@ package laslig
 import (
 	"bytes"
 	"io"
+	"regexp"
+	"strconv"
 	"strings"
 	"testing"
 
 	"charm.land/lipgloss/v2"
 )
+
+var testANSI = regexp.MustCompile(`\x1b\[[0-9;]*m`)
+
+func stripANSI(value string) string {
+	return testANSI.ReplaceAllString(value, "")
+}
 
 // newTestPrinter constructs one printer with the default leading gap disabled so
 // primitive formatting tests can focus on block content.
@@ -424,6 +432,139 @@ func TestTablePlain(t *testing.T) {
 	}
 }
 
+// TestTableHumanStyledWrapAutoVerifiesNarrowWidth ensures styled human tables stay within width
+// and keep a full right border at constrained widths.
+func TestTableHumanStyledWrapAutoVerifiesNarrowWidth(t *testing.T) {
+	var buf bytes.Buffer
+	printer := newTestPrinter(&buf, Mode{Format: FormatHuman, Styled: true, Width: 62})
+
+	err := printer.Table(Table{
+		Title:    "Artifacts",
+		MaxWidth: 58,
+		WrapMode: TableWrapAuto,
+		Header:   []string{"artifact", "run_id", "created"},
+		Rows: [][]string{{
+			"github.com/evanmschultz/hylla-fixture-go-2/pkg/very-long-artifact-reference/module",
+			"run_2026-04-01T00:00:00.123456789Z_very_long",
+			"2026-04-01T00:00:00Z",
+		}},
+	})
+	if err != nil {
+		t.Fatalf("Table() error = %v", err)
+	}
+
+	got := stripANSI(buf.String())
+	if !strings.Contains(got, "╰") {
+		t.Fatalf("Table() output = %q, want trailing right border", got)
+	}
+
+	for _, line := range strings.Split(strings.TrimSpace(got), "\n") {
+		if lipgloss.Width(line) > 62 {
+			t.Fatalf("styled table output exceeded width budget:\n%q", line)
+		}
+	}
+}
+
+// TestTableHumanStyledDefaultFitsContent verifies styled tables without MaxWidth follow
+// readable width defaults and do not stretch to the entire terminal.
+func TestTableHumanStyledDefaultFitsContent(t *testing.T) {
+	var buf bytes.Buffer
+	printer := newTestPrinter(&buf, Mode{Format: FormatHuman, Styled: true, Width: 220})
+
+	err := printer.Table(Table{
+		Title:  "Artifacts",
+		Header: []string{"artifact", "status"},
+		Rows: [][]string{
+			{"pkg", "ready"},
+		},
+	})
+	if err != nil {
+		t.Fatalf("Table() error = %v", err)
+	}
+
+	got := stripANSI(buf.String())
+	maxLine := 0
+	maxBudget := printer.maxPanelWidth()
+	for _, line := range strings.Split(strings.TrimSpace(got), "\n") {
+		width := lipgloss.Width(line)
+		if width > maxLine {
+			maxLine = width
+		}
+		if strings.Contains(line, "│") && !strings.HasSuffix(strings.TrimRight(line, " "), "│") {
+			t.Fatalf("table line missing right border: %q", line)
+		}
+	}
+	if maxLine == 0 {
+		t.Fatalf("Table() output empty: %q", got)
+	}
+	if maxLine > maxBudget {
+		t.Fatalf("styled table output exceeded default readable budget: %d > %d", maxLine, maxBudget)
+	}
+}
+
+// TestTableHumanStyledDefaultRebalancesLongValues verifies a long table row uses
+// wrapping rather than terminal-width overflow and keeps right borders closed.
+func TestTableHumanStyledDefaultRebalancesLongValues(t *testing.T) {
+	var buf bytes.Buffer
+	printer := newTestPrinter(&buf, Mode{Format: FormatHuman, Styled: true, Width: 220})
+
+	err := printer.Table(Table{
+		Title:    "Artifacts",
+		WrapMode: TableWrapAuto,
+		Header:   []string{"artifact_ref", "run_id", "created"},
+		Rows: [][]string{{
+			"github.com/evanmschultz/hylla-fixture-go-2/pkg/very-long-artifact-reference/module",
+			"run_2026-04-01T00:00:00.123456789Z_very_long",
+			"2026-04-01T00:00:00Z",
+		}},
+	})
+	if err != nil {
+		t.Fatalf("Table() error = %v", err)
+	}
+
+	got := stripANSI(buf.String())
+	if !strings.Contains(got, "╰") || !strings.Contains(got, "╭") {
+		t.Fatalf("Table() output = %q, want table corners", got)
+	}
+	lines := strings.Split(strings.TrimSpace(got), "\n")
+	if len(lines) <= 4 {
+		t.Fatalf("Table() output should wrap long content into multiple lines: %s", got)
+	}
+
+	maxBudget := printer.maxPanelWidth()
+	for _, line := range lines {
+		width := lipgloss.Width(line)
+		if width > maxBudget {
+			t.Fatalf("styled table output exceeded default readable budget: %d > %d", width, maxBudget)
+		}
+		if strings.Contains(line, "│") && !strings.HasSuffix(strings.TrimRight(line, " "), "│") {
+			t.Fatalf("table line missing right border: %q", line)
+		}
+	}
+}
+
+// TestTableHumanStyledWrapTruncate clamps and truncates long cell values in narrow styled mode.
+func TestTableHumanStyledWrapTruncate(t *testing.T) {
+	var buf bytes.Buffer
+	printer := newTestPrinter(&buf, Mode{Format: FormatHuman, Styled: true, Width: 40})
+
+	err := printer.Table(Table{
+		Title:    "Artifacts",
+		MaxWidth: 40,
+		WrapMode: TableWrapTruncate,
+		Header:   []string{"artifact", "status"},
+		Rows:     [][]string{{"very-very-long-artifact-reference-should-truncate-when-narrow", "ready"}},
+	})
+	if err != nil {
+		t.Fatalf("Table() error = %v", err)
+	}
+
+	got := buf.String()
+	if !strings.Contains(got, "…") {
+		t.Fatalf("Table() output = %q, want truncation ellipsis in styled output", got)
+	}
+}
+
 // TestTableEmptyHumanNoStyle verifies human empty table rendering.
 func TestTableEmptyHumanNoStyle(t *testing.T) {
 	var buf bytes.Buffer
@@ -460,6 +601,45 @@ func TestPanelHumanNoStyle(t *testing.T) {
 	}
 }
 
+// TestPanelHumanStyledDefaultFitsContent verifies styled panels without MaxWidth
+// keep their width near actual wrapped content and do not expand to full terminal
+// width.
+func TestPanelHumanStyledDefaultFitsContent(t *testing.T) {
+	var buf bytes.Buffer
+	printer := newTestPrinter(&buf, Mode{Format: FormatHuman, Styled: true, Width: 200})
+
+	err := printer.Panel(Panel{
+		Title:  "Panel",
+		Body:   "Short rationale.",
+		Footer: "Action follows quickly.",
+	})
+	if err != nil {
+		t.Fatalf("Panel() error = %v", err)
+	}
+
+	maxWidth := 0
+	for _, line := range strings.Split(strings.TrimSpace(stripANSI(buf.String())), "\n") {
+		width := lipgloss.Width(line)
+		if width > maxWidth {
+			maxWidth = width
+		}
+	}
+
+	frameWidth, _ := printer.theme.Panel.GetFrameSize()
+	contentWidth := maxLineWidth(renderFrameSizingLines("Panel", "Short rationale.", "Action follows quickly."))
+	expected := contentWidth + frameWidth
+	if maxWidth > expected {
+		t.Fatalf("Panel() output exceeded content width budget: %d > %d", maxWidth, expected)
+	}
+	if frameWidth > 0 {
+		for _, line := range strings.Split(strings.TrimSpace(stripANSI(buf.String())), "\n") {
+			if strings.Contains(line, "│") && !strings.HasSuffix(strings.TrimRight(line, " "), "│") {
+				t.Fatalf("Panel() output frame line missing right border: %q", line)
+			}
+		}
+	}
+}
+
 // TestPanelHumanWrap verifies panel content wraps when a width is available.
 func TestPanelHumanWrap(t *testing.T) {
 	var buf bytes.Buffer
@@ -475,8 +655,307 @@ func TestPanelHumanWrap(t *testing.T) {
 	}
 
 	got := buf.String()
-	if !strings.Contains(got, "across the full\nterminal when a smaller") {
+	if !strings.Contains(got, "Panels should avoid stretching across the full\nterminal when a smaller readable width is more\nappropriate.") {
 		t.Fatalf("Panel() output did not wrap as expected:\n%s", got)
+	}
+}
+
+// TestPanelHumanStyledWrapAutoKeepsBorders verifies panel width and frame are
+// constrained when a narrow MaxWidth is provided.
+func TestPanelHumanStyledWrapAutoKeepsBorders(t *testing.T) {
+	var buf bytes.Buffer
+	printer := newTestPrinter(&buf, Mode{Format: FormatHuman, Styled: true, Width: 66})
+	err := printer.Panel(Panel{
+		Title:    "Artifact run details",
+		MaxWidth: 42,
+		WrapMode: TableWrapAuto,
+		Body:     "Artifact reference github.com/evanmschultz/hylla-fixture-go-2/pkg/very-long-artifact-reference/module and run ID run_2026-04-01T00:00:00.123456789Z_very_long.",
+		Footer:   "Captured at 2026-04-01T00:00:00Z.",
+	})
+	if err != nil {
+		t.Fatalf("Panel() error = %v", err)
+	}
+
+	got := stripANSI(buf.String())
+	if !strings.Contains(got, "╭") || !strings.Contains(got, "╰") {
+		t.Fatalf("Panel() = %q, want panel frame with corners", got)
+	}
+	frameSize, _ := printer.theme.Panel.GetFrameSize()
+	for _, line := range strings.Split(strings.TrimSpace(got), "\n") {
+		if lipgloss.Width(line) > 42+frameSize {
+			t.Fatalf("panel line exceeded width budget: %q (%d > %d)", line, lipgloss.Width(line), 42+frameSize)
+		}
+	}
+}
+
+// TestPanelHumanStyledWrapTruncate clamps panel body lines when truncation is
+// requested.
+func TestPanelHumanStyledWrapTruncate(t *testing.T) {
+	var buf bytes.Buffer
+	printer := newTestPrinter(&buf, Mode{Format: FormatHuman, Styled: true, Width: 40})
+	err := printer.Panel(Panel{
+		Title:    "Panel",
+		MaxWidth: 40,
+		WrapMode: TableWrapTruncate,
+		Body:     "very-very-long-panel-content-that-should-truncate-when-narrow",
+		Footer:   "narrow-footer-value-when-wrap-mode-is-truncate",
+	})
+	if err != nil {
+		t.Fatalf("Panel() error = %v", err)
+	}
+
+	got := stripANSI(buf.String())
+	if strings.Contains(got, "that-should-truncate-when-narrow") {
+		t.Fatalf("Panel() output = %q, want truncated content", got)
+	}
+	if strings.Contains(got, "very-very-long-panel-content-that-should-truncate-when-narrow") {
+		t.Fatalf("Panel() output = %q, want width-constrained truncation", got)
+	}
+	if !strings.Contains(got, "…") {
+		t.Fatalf("Panel() output = %q, want truncation marker", got)
+	}
+
+	maxWidth := 0
+	for _, line := range strings.Split(strings.TrimSpace(got), "\n") {
+		lineWidth := lipgloss.Width(line)
+		if lineWidth > maxWidth {
+			maxWidth = lineWidth
+		}
+	}
+	if maxWidth > 44 {
+		t.Fatalf("Panel() rendered beyond requested width: %d", maxWidth)
+	}
+}
+
+// TestCodeBlockHumanStyledWidthFitsContentAndAvailableWidth verifies styled code blocks
+// avoid stretching beyond natural content width and terminal bounds.
+func TestCodeBlockHumanStyledWidthFitsContentAndAvailableWidth(t *testing.T) {
+	var buf bytes.Buffer
+	printer := newTestPrinter(&buf, Mode{Format: FormatHuman, Styled: true, Width: 64})
+
+	err := printer.CodeBlock(CodeBlock{
+		Title:  "Code block",
+		Body:   strings.Repeat("a", 120),
+		Footer: "Footers and body lines should remain readable without consuming full terminal width.",
+	})
+	if err != nil {
+		t.Fatalf("CodeBlock() error = %v", err)
+	}
+
+	got := stripANSI(buf.String())
+	maxWidth := 0
+	for _, line := range strings.Split(got, "\n") {
+		width := lipgloss.Width(line)
+		if width > maxWidth {
+			maxWidth = width
+		}
+	}
+	// With width 64, the framed block has a maximum content+frame width of 60.
+	if maxWidth > 60 {
+		t.Fatalf("CodeBlock() rendered too wide: %d", maxWidth)
+	}
+}
+
+// TestCodeBlockStyledMaxWidthAndTruncate verifies framed code blocks honor max-width caps.
+func TestCodeBlockStyledMaxWidthAndTruncate(t *testing.T) {
+	var buf bytes.Buffer
+	printer := newTestPrinter(&buf, Mode{Format: FormatHuman, Styled: true, Width: 120})
+	frameSize, _ := printer.framedStyle().GetFrameSize()
+
+	err := printer.CodeBlock(CodeBlock{
+		Title:    "Code block",
+		MaxWidth: 44,
+		WrapMode: TableWrapTruncate,
+		Body:     "func veryLongIdentifierForExampleLongName(s string) string { return strings.ToUpper(strings.TrimSpace(s)) }",
+		Footer:   "This footer text is longer than the requested width and should truncate.",
+	})
+	if err != nil {
+		t.Fatalf("CodeBlock() error = %v", err)
+	}
+
+	got := stripANSI(buf.String())
+	maxWidth := 0
+	for _, line := range strings.Split(strings.TrimSpace(got), "\n") {
+		width := lipgloss.Width(line)
+		if width > maxWidth {
+			maxWidth = width
+		}
+		if strings.Contains(line, "│") && !strings.HasSuffix(strings.TrimRight(line, " "), "│") {
+			t.Fatalf("CodeBlock() output frame line missing right border: %q", line)
+		}
+	}
+	if maxWidth > 44 {
+		t.Fatalf("CodeBlock() rendered line beyond max width: %d", maxWidth)
+	}
+	if strings.Contains(got, "func veryLongIdentifierForExampleLongName(s string) string { return strings.ToUpper(strings.TrimSpace(s)) }") {
+		t.Fatalf("CodeBlock() output = %q, want truncated content", got)
+	}
+	if frameSize <= 0 {
+		t.Fatalf("CodeBlock() frameSize should be positive: got %d", frameSize)
+	}
+}
+
+// TestCodeBlockStyledNarrowWidthKeepsRightBorder verifies narrow terminals do
+// not let the rendered code frame outrun the available width.
+func TestCodeBlockStyledNarrowWidthKeepsRightBorder(t *testing.T) {
+	var buf bytes.Buffer
+	printer := newTestPrinter(&buf, Mode{Format: FormatHuman, Styled: true, Width: 44})
+
+	err := printer.CodeBlock(CodeBlock{
+		Title:  "Narrow code",
+		Body:   "package main\n\nfunc main() {\n\tprintln(\"this-is-a-very-long-command-or-string-that-must-wrap\")\n}",
+		Footer: "The frame should close cleanly on the right even when the terminal is narrow.",
+	})
+	if err != nil {
+		t.Fatalf("CodeBlock() error = %v", err)
+	}
+
+	got := stripANSI(buf.String())
+	for _, line := range strings.Split(strings.TrimSpace(got), "\n") {
+		if lipgloss.Width(line) > 44 {
+			t.Fatalf("CodeBlock() rendered line beyond terminal width: %q (%d > 44)", line, lipgloss.Width(line))
+		}
+		trimmed := strings.TrimRight(line, " ")
+		if strings.Contains(line, "│") && !strings.HasSuffix(trimmed, "│") {
+			t.Fatalf("CodeBlock() output frame line missing right border: %q", line)
+		}
+		if strings.Contains(line, "╭") && !strings.HasSuffix(trimmed, "╮") {
+			t.Fatalf("CodeBlock() top border missing right corner: %q", line)
+		}
+		if strings.Contains(line, "╰") && !strings.HasSuffix(trimmed, "╯") {
+			t.Fatalf("CodeBlock() bottom border missing right corner: %q", line)
+		}
+	}
+}
+
+// TestStyledFramedBlocksAdaptAcrossTerminalWidths sweeps narrow terminal widths
+// so regressions show up as overflow or broken right-side borders immediately.
+func TestStyledFramedBlocksAdaptAcrossTerminalWidths(t *testing.T) {
+	widths := []int{72, 56, 48, 40}
+	for _, width := range widths {
+		width := width
+		t.Run("table_auto_width_"+strconv.Itoa(width), func(t *testing.T) {
+			assertStyledBlockFitsWidth(t, width, func(printer *Printer) error {
+				return printer.Table(Table{
+					Title:    "Artifacts",
+					WrapMode: TableWrapAuto,
+					Header:   []string{"artifact_ref", "run_id", "created"},
+					Rows: [][]string{{
+						"github.com/evanmschultz/hylla-fixture-go-2/pkg/very-long-artifact-reference/module",
+						"run_2026-04-01T00:00:00.123456789Z_very_long",
+						"2026-04-01T00:00:00.123456789Z",
+					}},
+				})
+			})
+		})
+		t.Run("table_truncate_width_"+strconv.Itoa(width), func(t *testing.T) {
+			assertStyledBlockFitsWidth(t, width, func(printer *Printer) error {
+				return printer.Table(Table{
+					Title:    "Artifacts",
+					WrapMode: TableWrapTruncate,
+					Header:   []string{"artifact_ref", "run_id", "created"},
+					Rows: [][]string{{
+						"github.com/evanmschultz/hylla-fixture-go-2/pkg/very-long-artifact-reference/module",
+						"run_2026-04-01T00:00:00.123456789Z_very_long",
+						"2026-04-01T00:00:00.123456789Z",
+					}},
+				})
+			})
+		})
+		t.Run("panel_auto_width_"+strconv.Itoa(width), func(t *testing.T) {
+			assertStyledBlockFitsWidth(t, width, func(printer *Printer) error {
+				return printer.Panel(Panel{
+					Title:    "Panel",
+					WrapMode: TableWrapAuto,
+					Body:     "Use Panel for rationale, release notes, and artifact context when one long identifier or timestamp needs to remain readable without blowing past the terminal width.",
+					Footer:   "Example values include github.com/evanmschultz/hylla-fixture-go-2/pkg/very-long-artifact-reference/module.",
+				})
+			})
+		})
+		t.Run("panel_never_width_"+strconv.Itoa(width), func(t *testing.T) {
+			assertStyledBlockFitsWidth(t, width, func(printer *Printer) error {
+				return printer.Panel(Panel{
+					Title:    "Panel",
+					WrapMode: TableWrapNever,
+					Body:     "Use Panel for rationale, release notes, and artifact context when one long identifier or timestamp needs to remain readable without blowing past the terminal width.",
+					Footer:   "run_2026-04-01T00:00:00.123456789Z_very_long",
+				})
+			})
+		})
+		t.Run("codeblock_truncate_width_"+strconv.Itoa(width), func(t *testing.T) {
+			assertStyledBlockFitsWidth(t, width, func(printer *Printer) error {
+				return printer.CodeBlock(CodeBlock{
+					Title:    "Code block",
+					WrapMode: TableWrapTruncate,
+					Body:     "package main\n\nfunc main() {\n\tprintln(\"this-is-a-very-long-command-or-string-that-must-wrap-or-truncate-cleanly\")\n}",
+					Footer:   "Long generated code should still fit the terminal.",
+				})
+			})
+		})
+		t.Run("logblock_never_width_"+strconv.Itoa(width), func(t *testing.T) {
+			assertStyledBlockFitsWidth(t, width, func(printer *Printer) error {
+				return printer.LogBlock(LogBlock{
+					Title:    "Captured logs",
+					WrapMode: TableWrapNever,
+					Body:     "INFO artifact_ref=github.com/evanmschultz/hylla-fixture-go-2/pkg/very-long-artifact-reference/module run_id=run_2026-04-01T00:00:00.123456789Z_very_long",
+					Footer:   "https://storage.googleapis.com/hylla-artifacts/2026/04/01/very/long/artifact/reference/path",
+				})
+			})
+		})
+	}
+}
+
+func assertStyledBlockFitsWidth(t *testing.T, width int, render func(*Printer) error) {
+	t.Helper()
+
+	var buf bytes.Buffer
+	printer := newTestPrinter(&buf, Mode{Format: FormatHuman, Styled: true, Width: width})
+	if err := render(printer); err != nil {
+		t.Fatalf("render styled block: %v", err)
+	}
+
+	got := stripANSI(buf.String())
+	for _, line := range strings.Split(strings.TrimSpace(got), "\n") {
+		if lipgloss.Width(line) > width {
+			t.Fatalf("styled block exceeded width %d: %q (%d)", width, line, lipgloss.Width(line))
+		}
+		trimmed := strings.TrimRight(line, " ")
+		if strings.Contains(line, "│") && !strings.HasSuffix(trimmed, "│") {
+			t.Fatalf("styled block line missing right border at width %d: %q", width, line)
+		}
+		if strings.Contains(line, "╭") && !strings.HasSuffix(trimmed, "╮") {
+			t.Fatalf("styled block top border missing right corner at width %d: %q", width, line)
+		}
+		if strings.Contains(line, "╰") && !strings.HasSuffix(trimmed, "╯") {
+			t.Fatalf("styled block bottom border missing right corner at width %d: %q", width, line)
+		}
+	}
+}
+
+// TestLogBlockHumanStyledWidthFitsContentAndAvailableWidth verifies styled log blocks
+// keep frames bounded in both width and border placement.
+func TestLogBlockHumanStyledWidthFitsContentAndAvailableWidth(t *testing.T) {
+	var buf bytes.Buffer
+	printer := newTestPrinter(&buf, Mode{Format: FormatHuman, Styled: true, Width: 64})
+
+	err := printer.LogBlock(LogBlock{
+		Title: "Captured logs",
+		Body:  "INFO " + strings.Repeat("x", 120),
+	})
+	if err != nil {
+		t.Fatalf("LogBlock() error = %v", err)
+	}
+
+	got := stripANSI(buf.String())
+	maxWidth := 0
+	for _, line := range strings.Split(got, "\n") {
+		width := lipgloss.Width(line)
+		if width > maxWidth {
+			maxWidth = width
+		}
+	}
+	if maxWidth > 64 {
+		t.Fatalf("LogBlock() rendered too wide: %d", maxWidth)
 	}
 }
 

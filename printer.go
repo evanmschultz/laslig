@@ -280,8 +280,9 @@ func (p *Printer) Table(table Table) error {
 	}
 
 	rendered := internaltable.Render(table.Header, table.Rows, internaltable.Mode{
-		Human: p.mode.Format == FormatHuman,
-		Width: p.availableWidth(),
+		Human:    p.mode.Format == FormatHuman,
+		Width:    p.styledWidthBudget(table.MaxWidth),
+		WrapMode: internaltable.WrapMode(table.WrapMode.normalized()),
 	}, internaltable.Styles{
 		Header: p.theme.TableHeader,
 		Rule:   p.theme.TableRule,
@@ -292,6 +293,7 @@ func (p *Printer) Table(table Table) error {
 	if strings.TrimSpace(table.Caption) != "" {
 		caption := table.Caption
 		if p.mode.Format == FormatHuman {
+			caption = p.wrapText(caption, p.maxTextWidth())
 			caption = p.theme.Muted.Render(caption)
 		}
 		lines = append(lines, caption)
@@ -310,29 +312,7 @@ func (p *Printer) Panel(panel Panel) error {
 	if err := p.beginBlock(blockKindContent); err != nil {
 		return fmt.Errorf("prepare panel: %w", err)
 	}
-
-	lines := []string{}
-	if strings.TrimSpace(panel.Title) != "" {
-		lines = append(lines, p.renderHeading(p.wrapText(panel.Title, p.maxTextWidth())))
-	}
-	lines = append(lines, p.wrapText(panel.Body, p.maxTextWidth()))
-	if strings.TrimSpace(panel.Footer) != "" {
-		footer := panel.Footer
-		if p.mode.Format == FormatHuman {
-			footer = p.theme.Muted.Render(p.wrapText(footer, p.maxTextWidth()))
-		}
-		lines = append(lines, footer)
-	}
-
-	content := strings.Join(lines, "\n\n")
-	if p.mode.Format == FormatHuman {
-		if maxWidth := p.maxPanelWidth(); maxWidth > 0 && p.mode.Styled {
-			content = p.constrainStyledBlockWidth(p.theme.Panel, maxWidth).Render(content)
-		} else if p.mode.Styled {
-			content = p.theme.Panel.Render(content)
-		}
-	}
-	if err := p.writeContentString(content); err != nil {
+	if err := p.writeFramedBlockWithStyle("panel", panel.Title, panel.Body, panel.Footer, panel.MaxWidth, panel.WrapMode.normalized(), p.theme.Panel); err != nil {
 		return fmt.Errorf("write panel: %w", err)
 	}
 	return nil
@@ -488,13 +468,37 @@ func (p *Printer) maxTextWidth() int {
 		return 0
 	}
 	width -= 8
-	if width < 32 {
-		return 32
+	if width <= 0 {
+		return 0
 	}
 	if width > 76 {
 		return 76
 	}
 	return width
+}
+
+func (p *Printer) wrapByMode(value string, width int, mode TableWrapMode) string {
+	if width <= 0 || p.mode.Format != FormatHuman {
+		return value
+	}
+	switch mode.normalized() {
+	case TableWrapNever:
+		return truncateVisible(value, width)
+	case TableWrapTruncate:
+		return truncateVisible(value, width)
+	default:
+		return internallayout.WrapText(value, width)
+	}
+}
+
+func clampWidthForStyledBlock(available int, requested int) int {
+	if requested <= 0 || available <= 0 {
+		return available
+	}
+	if requested < available {
+		return requested
+	}
+	return available
 }
 
 func (p *Printer) maxPanelWidth() int {
@@ -503,13 +507,22 @@ func (p *Printer) maxPanelWidth() int {
 		return 0
 	}
 	width -= 4
-	if width < 48 {
-		return 48
+	if width <= 0 {
+		return 0
 	}
 	if width > 88 {
 		return 88
 	}
 	return width
+}
+
+// styledWidthBudget returns the width budget used by framed/human blocks.
+func (p *Printer) styledWidthBudget(requestedWidth int) int {
+	width := p.maxPanelWidth()
+	if requestedWidth > 0 {
+		width = requestedWidth
+	}
+	return clampWidthForStyledBlock(p.availableWidth(), width)
 }
 
 func (p *Printer) wrapText(value string, width int) string {
@@ -522,15 +535,7 @@ func (p *Printer) wrapText(value string, width int) string {
 // constrainStyledBlockWidth keeps bordered/padded blocks within one total width
 // without truncating the right border rune.
 func (p *Printer) constrainStyledBlockWidth(style lipgloss.Style, maxWidth int) lipgloss.Style {
-	if maxWidth <= 0 {
-		return style
-	}
-	frameX, _ := style.GetFrameSize()
-	contentWidth := maxWidth - frameX
-	if contentWidth <= 0 {
-		return style
-	}
-	return style.Width(contentWidth)
+	return style
 }
 
 // availableWidth returns the terminal width remaining after section indentation.

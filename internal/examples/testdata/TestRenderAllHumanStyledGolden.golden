@@ -82,19 +82,17 @@ Table
 
 Panel
 
-  ╭──────────────────────────────────────────────────────────────────╮
-  │                                                                  │
-  │  Panel                                                           │
-  │                                                                  │
-  │  Use Panel for rationale, next steps, and larger callouts that   │
-  │  should                                                          │
-  │  stand apart from the rest of the document.                      │
-  │                                                                  │
-  │  Panels are stronger than Paragraph and lighter than inventing   │
-  │  a custom                                                        │
-  │  layout.                                                         │
-  │                                                                  │
-  ╰──────────────────────────────────────────────────────────────────╯
+  ╭────────────────────────────────────────────────────────────────────────╮
+  │                                                                        │
+  │  Panel                                                                 │
+  │                                                                        │
+  │  Use Panel for rationale, next steps, and larger callouts that should  │
+  │  stand apart from the rest of the document.                            │
+  │                                                                        │
+  │  Panels are stronger than Paragraph and lighter than inventing a       │
+  │  custom layout.                                                        │
+  │                                                                        │
+  ╰────────────────────────────────────────────────────────────────────────╯
 
 
 Paragraph
@@ -149,23 +147,22 @@ CodeBlock
   
   The block below shows a Go snippet rendered through Glamour.
 
-  ╭─────────────────────────────────────────────────────────────────────────╮
-  │                                                                         │
-  │  Go snippet                                                             │
-  │                                                                         │
-  │                                                                         │
-  │      package main                                                       │
-  │                                                                         │
-  │      import "fmt"                                                       │
-  │                                                                         │
-  │      func main() {                                                      │
-  │          fmt.Println("hello from laslig")                               │
-  │      }                                                                  │
-  │                                                                         │
-  │  Use CodeBlock when code should stay visibly distinct from              │
-  │  prose.                                                                 │
-  │                                                                         │
-  ╰─────────────────────────────────────────────────────────────────────────╯
+  ╭──────────────────────────────────────────────────────────────────────────╮
+  │                                                                          │
+  │  Go snippet                                                              │
+  │                                                                          │
+  │                                                                          │
+  │      package main                                                        │
+  │                                                                          │
+  │      import "fmt"                                                        │
+  │                                                                          │
+  │      func main() {                                                       │
+  │          fmt.Println("hello from laslig")                                │
+  │      }                                                                   │
+  │                                                                          │
+  │  Use CodeBlock when code should stay visibly distinct from prose.        │
+  │                                                                          │
+  ╰──────────────────────────────────────────────────────────────────────────╯
 
 
 LogBlock
@@ -176,19 +173,18 @@ LogBlock
   The block below captures real charm/log output and renders it through
   Läslig.                                                              
 
-  ╭──────────────────────────────────────────────────────────────────╮
-  │                                                                  │
-  │  Captured charm/log transcript                                   │
-  │                                                                  │
-  │  INFO demo: boot complete component=cache                        │
-  │  WARN demo: retry scheduled after=3s                             │
-  │  ERRO demo: dependency missing name=git                          │
-  │                                                                  │
-  │  Use LogBlock for selected transcripts while the application     │
-  │  keeps                                                           │
-  │  owning the logger.                                              │
-  │                                                                  │
-  ╰──────────────────────────────────────────────────────────────────╯
+  ╭─────────────────────────────────────────────────────────────────────╮
+  │                                                                     │
+  │  Captured charm/log transcript                                      │
+  │                                                                     │
+  │  INFO demo: boot complete component=cache                           │
+  │  WARN demo: retry scheduled after=3s                                │
+  │  ERRO demo: dependency missing name=git                             │
+  │                                                                     │
+  │  Use LogBlock for selected transcripts while the application keeps  │
+  │  owning the logger.                                                 │
+  │                                                                     │
+  ╰─────────────────────────────────────────────────────────────────────╯
 
 
 gotestout

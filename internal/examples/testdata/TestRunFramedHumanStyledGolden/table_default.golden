@@ -1,0 +1,12 @@
+
+Table
+
+  Table
+  ╭─────────────────────────────────────────────────────╮
+  │ compare │ prefer when                               │
+  │ ────────┼────────────────────────────────────────── │
+  │ Table   │ column alignment matters across many rows │
+  │ List    │ items are unordered and short             │
+  │ Record  │ you are describing one object             │
+  ╰─────────────────────────────────────────────────────╯
+  Use Table when comparison matters more than prose.
